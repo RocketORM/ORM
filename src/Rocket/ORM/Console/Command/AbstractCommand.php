@@ -13,6 +13,7 @@ namespace Rocket\ORM\Console\Command;
 
 use Rocket\ORM\Connection\ConnectionInterface;
 use Rocket\ORM\Generator\Config\ConfigLoader;
+use Rocket\ORM\Generator\Schema\Loader\SchemaLoader;
 use Rocket\ORM\Rocket;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -51,5 +52,18 @@ class AbstractCommand extends Command
         }
 
         return Rocket::getConnection($name);
+    }
+
+    /**
+     * @param string|array $path
+     * @param string|array $exclude
+     *
+     * @return array
+     */
+    protected function getSchemas($path, $exclude = [])
+    {
+        $schemaLoader = new SchemaLoader($path, $exclude);
+
+        return $schemaLoader->load();
     }
 }

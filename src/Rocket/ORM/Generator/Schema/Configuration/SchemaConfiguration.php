@@ -50,9 +50,6 @@ class SchemaConfiguration implements ConfigurationInterface
                     ->prototype('array')
                         ->fixXmlConfig('column')
                         ->children()
-                            ->scalarNode('connection')
-                                ->defaultValue('default')
-                            ->end()
 
                             ->arrayNode('columns')
                                 ->requiresAtLeastOneElement()
