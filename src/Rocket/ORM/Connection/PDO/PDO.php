@@ -41,6 +41,9 @@ class PDO extends \PDO implements ConnectionInterface, LoggerAwareInterface
             $options = array_merge($options, $config['options']);
         }
 
+        // No database in the dns configuration, it is handled by the schema itself
+        $config['dsn'] = preg_replace('/dbname=(a-zA-Z0-9-_)+;?/', '', $config['dsn']);
+
         return new static($config['dsn'], $config['username'], $config['password'], $options);
     }
 
