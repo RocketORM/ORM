@@ -14,6 +14,7 @@ namespace Rocket\ORM\Generator\Schema\Loader;
 use Rocket\ORM\Generator\Schema\Configuration\SchemaConfiguration;
 use Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException;
 use Rocket\ORM\Generator\Schema\Loader\Exception\SchemaNotFoundException;
+use Rocket\ORM\Generator\Schema\SchemaInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException as ConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\Config\Util\XmlUtils;
@@ -36,19 +37,32 @@ class SchemaLoader
      */
     protected $exclude;
 
+    /**
+     * @var string
+     */
+    protected $modelNamespace;
+
 
     /**
      * @param string|array $path
      * @param string|array $exclude
+     * @param string       $modelNamespace
      */
-    public function __construct($path, $exclude = [])
+    public function __construct($path, $exclude = [], $modelNamespace = '\\Rocket\\ORM\\Generator\\Schema\\Schema')
     {
         $this->path    = $path;
         $this->exclude = $exclude;
+
+        $class = new \ReflectionClass($modelNamespace);
+        if (!$class->implementsInterface('\\Rocket\\ORM\\Generator\\Schema\\SchemaInterface')) {
+            throw new \InvalidArgumentException('The schema model must implement Rocket\ORM\Generator\Schema\SchemaInterface');
+        }
+
+        $this->modelNamespace = $modelNamespace;
     }
 
     /**
-     * @return array
+     * @return SchemaInterface[]
      *
      * @throws InvalidConfigurationException
      * @throws SchemaNotFoundException
@@ -66,7 +80,14 @@ class SchemaLoader
             $schemas[$path] = $this->parseYaml($path);
         }
 
-        return $this->validate($schemas);
+        $schemasAsArray = $this->validate($schemas);
+        $schemasAsModel = [];
+
+        foreach ($schemasAsArray as $schema) {
+            $schemasAsModel[] = new $this->modelNamespace($schema);
+        }
+
+        return $schemasAsModel;
     }
 
     /**
