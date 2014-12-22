@@ -33,6 +33,11 @@ class Rocket
     /**
      * @var array
      */
+    protected static $configCache = [];
+
+    /**
+     * @var array
+     */
     protected static $cons    = [];
 
 
@@ -58,5 +63,34 @@ class Rocket
     public static function setConfiguration(array $config)
     {
         self::$config = $config;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return mixed
+     */
+    public static function getConfiguration($name)
+    {
+        $name = 'rocket.' . $name;
+        if (isset(self::$configCache[$name])) {
+            return self::$configCache[$name];
+        }
+
+        $parts = explode('.', $name);
+        $config = self::$config;
+
+        foreach ($parts as $part) {
+            if (!array_key_exists($part, $config)) {
+                throw new \InvalidArgumentException('No configuration found for the key "' . $name . '"');
+            }
+
+            $config = $config[$part];
+        }
+
+        // Save to avoid next iteration
+        self::$configCache[$name] = $config;
+
+        return $config;
     }
 }
