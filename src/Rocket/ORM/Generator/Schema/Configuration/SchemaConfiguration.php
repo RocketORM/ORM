@@ -11,6 +11,8 @@
 
 namespace Rocket\ORM\Generator\Schema\Configuration;
 
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -29,9 +31,18 @@ class SchemaConfiguration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('schema');
 
-        $rootNode
-            ->fixXmlConfig('table')
+        $this->addSchemaConfigurationNode($rootNode);
 
+        return $treeBuilder;
+    }
+
+    /**
+     * @param ArrayNodeDefinition $node
+     */
+    protected function addSchemaConfigurationNode(ArrayNodeDefinition $node)
+    {
+        $node
+            ->fixXmlConfig('table')
             ->children()
                 ->scalarNode('connection')
                     ->defaultValue('default')
@@ -41,51 +52,70 @@ class SchemaConfiguration implements ConfigurationInterface
                 ->end()
                 ->scalarNode('namespace')
                     ->isRequired()
+                    ->cannotBeEmpty()
                 ->end()
 
-                ->arrayNode('tables')
-                    ->requiresAtLeastOneElement()
-                    ->isRequired()
-                    ->useAttributeAsKey('name')
-                    ->prototype('array')
-                        ->fixXmlConfig('column')
-                        ->children()
+                ->append($this->getTableConfigurationNode())
+            ->end()
+        ;
+    }
 
-                            ->arrayNode('columns')
-                                ->requiresAtLeastOneElement()
-                                ->isRequired()
-                                ->useAttributeAsKey('name')
-                                ->prototype('array')
-                                    ->children()
-                                        ->scalarNode('phpName')
-                                            ->defaultNull()
-                                        ->end()
-                                        ->scalarNode('type')
-                                            ->isRequired()
-                                        ->end()
-                                        ->scalarNode('size')
-                                            ->defaultNull()
-                                        ->end()
-                                        ->scalarNode('decimal')
-                                            ->defaultNull()
-                                        ->end()
-                                        ->scalarNode('default')
-                                            ->defaultNull()
-                                        ->end()
-                                        ->booleanNode('nullable')
-                                            ->defaultTrue()
-                                        ->end()
-                                    ->end()
-                                ->end()
-                            ->end()
+    /**
+     * @return ArrayNodeDefinition|NodeDefinition
+     */
+    protected function getTableConfigurationNode()
+    {
+        $builder = new TreeBuilder();
+        $node = $builder->root('tables');
+        $node
+            ->requiresAtLeastOneElement()
+            ->isRequired()
+            ->useAttributeAsKey('name')
+            ->prototype('array')
+            ->fixXmlConfig('column')
 
-                        ->end()
+            ->append($this->getTableColumnConfigurationNode())
+        ;
+
+        return $node;
+    }
+
+    /**
+     * @return ArrayNodeDefinition|NodeDefinition
+     */
+    protected function getTableColumnConfigurationNode()
+    {
+        $builder = new TreeBuilder();
+        $node = $builder->root('columns');
+        $node
+            ->requiresAtLeastOneElement()
+            ->isRequired()
+            ->useAttributeAsKey('name')
+            ->prototype('array')
+                ->children()
+                    ->scalarNode('phpName')
+                        ->defaultNull()
+                    ->end()
+                    ->scalarNode('type')
+                        ->isRequired()
+                        ->cannotBeEmpty()
+                    ->end()
+                    ->scalarNode('size')
+                        ->defaultNull()
+                    ->end()
+                    ->scalarNode('decimal')
+                        ->defaultNull()
+                    ->end()
+                    ->scalarNode('default')
+                        ->defaultNull()
+                    ->end()
+                    ->booleanNode('nullable')
+                        ->defaultTrue()
                     ->end()
                 ->end()
-
             ->end()
         ;
 
-        return $treeBuilder;
+        return $node;
     }
 }
