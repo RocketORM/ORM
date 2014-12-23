@@ -62,7 +62,8 @@ class AbstractCommand extends Command
      */
     protected function getSchemas($path, $exclude = [])
     {
-        $schemaLoader = new SchemaLoader($path, $exclude);
+        $schemaTransformerClass = Rocket::getConfiguration('generator.schema.transformer.class');
+        $schemaLoader = new SchemaLoader($path, $exclude, Rocket::getConfiguration('generator.schema.class'), new $schemaTransformerClass);
 
         return $schemaLoader->load();
     }

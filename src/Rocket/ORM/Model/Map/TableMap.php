@@ -20,6 +20,10 @@ abstract class TableMap implements TableMapInterface
     const COLUMN_TYPE_STRING   = 2;
     const COLUMN_TYPE_DOUBLE   = 3;
     const COLUMN_TYPE_BOOLEAN  = 4;
+    const COLUMN_TYPE_FLOAT    = 5;
+    const COLUMN_TYPE_TEXT     = 6;
+    const COLUMN_TYPE_DATE     = 7;
+    const COLUMN_TYPE_DATETIME = 8;
 
     const RELATION_TYPE_ONE_TO_MANY  = 0;
     const RELATION_TYPE_ONE_TO_ONE   = 1;
@@ -240,5 +244,26 @@ abstract class TableMap implements TableMapInterface
     public function setDatabase($database)
     {
         $this->databaseName = $database;
+    }
+
+    /**
+     * @param string $stringType
+     *
+     * @return int
+     */
+    public static function convertColumnTypeToConstant($stringType)
+    {
+        switch (strtolower($stringType)) {
+            case 'boolean':  return self::COLUMN_TYPE_BOOLEAN;
+            case 'text':     return self::COLUMN_TYPE_TEXT;
+            case 'varchar':  return self::COLUMN_TYPE_STRING;
+            case 'integer':  return self::COLUMN_TYPE_INTEGER;
+            case 'double':   return self::COLUMN_TYPE_DOUBLE;
+            case 'float':    return self::COLUMN_TYPE_FLOAT;
+            case 'date':     return self::COLUMN_TYPE_DATE;
+            case 'datetime': return self::COLUMN_TYPE_DATETIME;
+        }
+
+        throw new \InvalidArgumentException('Invalid column type for value "' . $stringType . '"');
     }
 }

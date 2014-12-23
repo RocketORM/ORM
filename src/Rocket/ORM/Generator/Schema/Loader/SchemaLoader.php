@@ -15,6 +15,7 @@ use Rocket\ORM\Generator\Schema\Configuration\SchemaConfiguration;
 use Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException;
 use Rocket\ORM\Generator\Schema\Loader\Exception\SchemaNotFoundException;
 use Rocket\ORM\Generator\Schema\SchemaInterface;
+use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException as ConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\Config\Util\XmlUtils;
@@ -42,16 +43,23 @@ class SchemaLoader
      */
     protected $modelNamespace;
 
+    /**
+     * @var SchemaTransformerInterface
+     */
+    protected $schemaTransformer;
+
 
     /**
-     * @param string|array $path
-     * @param string|array $exclude
-     * @param string       $modelNamespace
+     * @param string|array                    $path
+     * @param string|array                    $exclude
+     * @param string                          $modelNamespace
+     * @param SchemaTransformerInterface|null $schemaTransformer
      */
-    public function __construct($path, $exclude = [], $modelNamespace = '\\Rocket\\ORM\\Generator\\Schema\\Schema')
+    public function __construct($path, $exclude = [], $modelNamespace = '\\Rocket\\ORM\\Generator\\Schema\\Schema', SchemaTransformerInterface $schemaTransformer = null)
     {
-        $this->path    = $path;
-        $this->exclude = $exclude;
+        $this->path              = $path;
+        $this->exclude           = $exclude;
+        $this->schemaTransformer = $schemaTransformer;
 
         $class = new \ReflectionClass($modelNamespace);
         if (!$class->implementsInterface('\\Rocket\\ORM\\Generator\\Schema\\SchemaInterface')) {
@@ -84,7 +92,7 @@ class SchemaLoader
         $schemasAsModel = [];
 
         foreach ($schemasAsArray as $schema) {
-            $schemasAsModel[] = new $this->modelNamespace($schema);
+            $schemasAsModel[] = new $this->modelNamespace($schema, $this->schemaTransformer);
         }
 
         return $schemasAsModel;
