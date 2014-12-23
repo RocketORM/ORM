@@ -11,6 +11,7 @@
 
 namespace Rocket\ORM\Generator\Schema\Configuration;
 
+use Rocket\ORM\Model\Map\TableMap;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -109,11 +110,26 @@ class SchemaConfiguration implements ConfigurationInterface
                     ->scalarNode('type')
                         ->isRequired()
                         ->cannotBeEmpty()
+                        ->beforeNormalization()
+                        ->ifString()
+                            ->then(function ($value) {
+                                return TableMap::convertColumnTypeToConstant($value);
+                            })
+                        ->end()
+                        ->validate()
+                            ->ifNotInArray(range(1, 8))
+                            ->thenInvalid('Invalid column type for value "%s"')
+                        ->end()
                     ->end()
-                    ->scalarNode('size')
+                    ->integerNode('size')
+                        ->min(1)
+                        ->max(255)
                         ->defaultNull()
                     ->end()
-                    ->scalarNode('decimal')
+                    // TODO unsigned
+                    ->integerNode('decimal')
+                        ->min(1)
+                        ->max(20)
                         ->defaultNull()
                     ->end()
                     ->scalarNode('default')
