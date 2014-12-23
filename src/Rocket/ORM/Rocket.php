@@ -72,7 +72,6 @@ class Rocket
      */
     public static function getConfiguration($name)
     {
-        $name = 'rocket.' . $name;
         if (isset(self::$configCache[$name])) {
             return self::$configCache[$name];
         }
