@@ -9,3 +9,11 @@ rocket:
                 username:   ~
                 password:   ~
                 attributes: ~
+    model:
+        table_map: \Rocket\ORM\Model\Map\TableMap
+
+    generator:
+        schema:
+            class: \Rocket\ORM\Generator\Schema\Schema
+            transformer:
+                class: \Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer

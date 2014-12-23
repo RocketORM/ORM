@@ -16,7 +16,9 @@
         "symfony/yaml": "~2.6.1",
         "symfony/finder": "~2.6.1",
         "symfony/config": "~2.6.1",
-        "psr/log": "~1.0"
+        "psr/log": "~1.0",
+        "twig/twig": "~1.16.2",
+        "symfony/var-dumper": "~2.6.1"
     },
     "bin": [
         "bin/rocket"

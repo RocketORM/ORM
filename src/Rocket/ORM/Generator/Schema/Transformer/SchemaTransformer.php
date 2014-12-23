@@ -56,6 +56,7 @@ class SchemaTransformer implements SchemaTransformerInterface
             $table['columns']     = $this->transformColumns($rawTable['columns']);
             $table['primaryKeys'] = $this->transformPrimaryKeys($table['columns']);
             //$table['relations']   = $this->transformRelations($rawTable['relations']);
+            $table['relations']   = [];
 
             $tables[] = $table;
         }
