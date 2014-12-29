@@ -9,14 +9,15 @@
  * file that was distributed with this source code.
  */
 
-namespace Rocket\ORM\Generator\TableMap;
+namespace Rocket\ORM\Generator\Model\TableMap;
 
+use Rocket\ORM\Generator\GeneratorInterface;
 use Rocket\ORM\Generator\Schema\SchemaInterface;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-class TableMapGenerator
+class TableMapGenerator implements GeneratorInterface
 {
     /**
      * @var string
@@ -41,7 +42,7 @@ class TableMapGenerator
         }
 
         $this->modelNamespace = $modelNamespace;
-        $this->twig           = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templatePaths, [__DIR__ . '/../Resources/Skeletons'])), [
+        $this->twig           = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templatePaths, [__DIR__ . '/../../Resources/Skeletons'])), [
             'cache' => false
         ]);
     }
@@ -52,15 +53,19 @@ class TableMapGenerator
     public function generate(SchemaInterface $schema)
     {
         $root = $schema->getRoot();
+        $outputDirectory = $root['directory'] . DIRECTORY_SEPARATOR . 'Map';
+
+        if (!is_dir($outputDirectory)) {
+            mkdir($outputDirectory, 755, true);
+        }
 
         foreach ($schema->getTables() as $tableName => $table) {
-            $template = $this->twig->render('Map/table_map.php.twig', [
+            $template = $this->twig->render('Model/Map/table_map.php.twig', [
                 'schema' => $root,
                 'model'  => $table
             ]);
 
-            // TODO save to dir
-            dump($template);
+            file_put_contents($outputDirectory . DIRECTORY_SEPARATOR . $table['phpName'] . '.php', $template);
         }
     }
 }
