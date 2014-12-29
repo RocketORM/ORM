@@ -17,9 +17,11 @@ namespace Rocket\ORM\Model\Map;
 interface TableMapInterface
 {
     /**
+     * Configure the table map
+     *
      * @return void
      */
-    public function init();
+    public function configure();
 
     /**
      * @param string $columnName

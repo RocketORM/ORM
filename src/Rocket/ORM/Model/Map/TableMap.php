@@ -34,6 +34,11 @@ abstract class TableMap implements TableMapInterface
     /**
      * @var string
      */
+    protected $connectionName;
+
+    /**
+     * @var string
+     */
     protected $tableName;
 
     /**
@@ -64,7 +69,7 @@ abstract class TableMap implements TableMapInterface
     /**
      * @var string
      */
-    protected $databaseName;
+    protected $database;
 
 
     /**
@@ -237,7 +242,7 @@ abstract class TableMap implements TableMapInterface
      */
     public function getDatabase()
     {
-        return $this->databaseName;
+        return $this->database;
     }
 
     /**
@@ -245,7 +250,23 @@ abstract class TableMap implements TableMapInterface
      */
     public function setDatabase($database)
     {
-        $this->databaseName = $database;
+        $this->database = $database;
+    }
+
+    /**
+     * @return string
+     */
+    public function getConnectionName()
+    {
+        return $this->connectionName;
+    }
+
+    /**
+     * @param string $connectionName
+     */
+    public function setConnectionName($connectionName)
+    {
+        $this->connectionName = $connectionName;
     }
 
     /**
