@@ -36,13 +36,18 @@ class {{ model.className }}TableMap extends {% block extends 'TableMap' %}
 
         {% block columns -%}
         {% for column in model.columns -%}
-            $this->addColumn('{{ column.name }}', '{{ column.phpName }}', {{ column.type }}, {{ null == column.size ? 'null' : column.size }}, {{ null == column.decimal ? 'null' : column.decimal }}, {{ column.isNullable ? 'true' : 'false' }});
+            $this->addColumn('
+                {{- column.name }}', '{{ column.phpName }}', {{ column.type }}, {{ null == column.size ? 'null' : column.size }},
+                {{- null == column.decimal ? ' null' : ' ' ~ column.decimal }},
+                {%- if null == column.default %} null{% else %} '{{ column.default }}'{% endif %},
+                {{- column.required ? ' true' : ' false' -}}
+            );
         {% endfor %}
         {% endblock %}
 
         {% block primary_keys -%}
         {% for primaryKey in model.primaryKeys -%}
-            $this->addPrimaryKey('{{ primaryKey.name }}', {{ primaryKey.isAutoincremented ? 'true' : 'false' }});
+            $this->addPrimaryKey('{{ primaryKey.name }}', {{ primaryKey.autoincrement ? 'true' : 'false' }});
         {%- endfor %}
         {% endblock %}
         {% block relations %}{% if model.relations.length > 0 %}

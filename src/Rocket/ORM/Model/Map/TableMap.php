@@ -24,11 +24,12 @@ abstract class TableMap implements TableMapInterface
     const COLUMN_TYPE_TEXT     = 6;
     const COLUMN_TYPE_DATE     = 7;
     const COLUMN_TYPE_DATETIME = 8;
+    const COLUMN_TYPE_ENUM     = 9;
 
-    const RELATION_TYPE_ONE_TO_MANY  = 0;
-    const RELATION_TYPE_ONE_TO_ONE   = 1;
-    const RELATION_TYPE_MANY_TO_ONE  = 2;
-    const RELATION_TYPE_MANY_TO_MANY = 3;
+    const RELATION_TYPE_ONE_TO_MANY  = 1;
+    const RELATION_TYPE_ONE_TO_ONE   = 2;
+    const RELATION_TYPE_MANY_TO_ONE  = 3;
+    const RELATION_TYPE_MANY_TO_MANY = 4;
 
     /**
      * @var string
@@ -84,9 +85,9 @@ abstract class TableMap implements TableMapInterface
      * @param int      $type
      * @param null|int $size
      * @param int      $scale
-     * @param bool     $isNullable
+     * @param bool     $isRequired
      */
-    public function addColumn($name, $phpName, $type, $size = null, $scale = 0, $isNullable = false)
+    public function addColumn($name, $phpName, $type, $size = null, $scale = 0, $default = null, $isRequired = false)
     {
         $this->columns[$name] = [
             'name'        => $name,
@@ -94,7 +95,8 @@ abstract class TableMap implements TableMapInterface
             'type'        => $type,
             'size'        => $size,
             'scale'       => $scale,
-            'is_nullable' => $isNullable
+            'default'     => $default,
+            'is_required' => $isRequired
         ];
     }
 
@@ -262,6 +264,7 @@ abstract class TableMap implements TableMapInterface
             case 'float':    return self::COLUMN_TYPE_FLOAT;
             case 'date':     return self::COLUMN_TYPE_DATE;
             case 'datetime': return self::COLUMN_TYPE_DATETIME;
+            case 'enum':     return self::COLUMN_TYPE_ENUM;
         }
 
         throw new \InvalidArgumentException('Invalid column type for value "' . $stringType . '"');

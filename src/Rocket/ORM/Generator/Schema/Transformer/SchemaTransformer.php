@@ -12,6 +12,8 @@
 namespace Rocket\ORM\Generator\Schema\Transformer;
 
 use Rocket\ORM\Generator\Utils\String;
+use Rocket\ORM\Model\Map\TableMap;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -83,6 +85,22 @@ class SchemaTransformer implements SchemaTransformerInterface
                 $column['phpName'] = String::camelize($columnName, false);
             }
 
+            if (true === $column['autoincrement']) {
+                $column['primaryKey'] = true;
+            }
+
+            if (true === $column['primaryKey']) {
+                $column['required'] = true;
+            }
+
+            // Check, for enum type, if the default value exists in the values array
+            if (TableMap::COLUMN_TYPE_ENUM === $column['type'] && isset($column['default']) && null != $column['default']
+                && !in_array($column['default'], $column['values'])) {
+                throw new InvalidConfigurationException('Invalid default value ("' . $column['default'] . '") for enum column "' . $column['name'] . '"');
+            }
+
+            // TODO size should be greater than decimal if float/double
+
             $columns[] = $column;
         }
 
@@ -100,8 +118,8 @@ class SchemaTransformer implements SchemaTransformerInterface
         foreach ($columns as $column) {
             if (true === $column['primaryKey']) {
                 $primaryKeys[] = [
-                    'name'              => $column['name'],
-                    'isAutoincremented' => $column['autoincrement']
+                    'name'          => $column['name'],
+                    'autoincrement' => $column['autoincrement']
                 ];
             }
         }
