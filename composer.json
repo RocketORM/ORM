@@ -2,7 +2,7 @@
    "name": "rocketorm/orm",
    "description": "Rocket is a fast ORM for PHP",
    "keywords": ["rocket", "php", "orm", "mysql", "mapping"],
-   "licence": "MIT",
+   "license": "MIT",
    "authors": [
        {
            "name": "Sylvain Lorinet",
