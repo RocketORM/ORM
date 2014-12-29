@@ -31,11 +31,12 @@ class Schema implements SchemaInterface
 
     /**
      * @param array                      $schema
+     * @param string                     $path
      * @param SchemaTransformerInterface $transformer
      */
-    public function __construct(array $schema, SchemaTransformerInterface $transformer)
+    public function __construct(array $schema, $path, SchemaTransformerInterface $transformer)
     {
-        $this->root   = $transformer->transformRoot($schema);
+        $this->root   = $transformer->transformRoot($schema, $path);
         $this->tables = $transformer->transformTables($schema['tables']);
     }
 

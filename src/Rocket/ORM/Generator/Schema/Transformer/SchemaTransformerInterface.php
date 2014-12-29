@@ -17,11 +17,12 @@ namespace Rocket\ORM\Generator\Schema\Transformer;
 interface SchemaTransformerInterface
 {
     /**
-     * @param array $schema
+     * @param array  $schema The schema data
+     * @param string $path   The absolute path to the schema file
      *
      * @return array
      */
-    public function transformRoot(array $schema);
+    public function transformRoot(array $schema, $path);
 
     /**
      * @param array $rawTables

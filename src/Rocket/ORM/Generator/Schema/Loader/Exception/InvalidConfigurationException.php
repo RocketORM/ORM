@@ -25,6 +25,6 @@ class InvalidConfigurationException extends RocketException
      */
     public function __construct($path, ConfigurationException $e)
     {
-        parent::__construct($e->getMessage() . ' for schema : "' . $path . '"', $e->getCode(), $e->getPrevious());
+        parent::__construct($e->getMessage() . ' (schema : "' . $path . '")', $e->getCode(), $e->getPrevious());
     }
 }

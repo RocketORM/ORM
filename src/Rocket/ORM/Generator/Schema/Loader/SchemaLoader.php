@@ -88,14 +88,7 @@ class SchemaLoader
             $schemas[$path] = $this->parseYaml($path);
         }
 
-        $schemasAsArray = $this->validate($schemas);
-        $schemasAsModel = [];
-
-        foreach ($schemasAsArray as $schema) {
-            $schemasAsModel[] = new $this->modelNamespace($schema, $this->schemaTransformer);
-        }
-
-        return $schemasAsModel;
+        return $this->validate($schemas);
     }
 
     /**
@@ -114,7 +107,7 @@ class SchemaLoader
 
         foreach ($schemas as $path => $schema) {
             try {
-                $validSchemas[$path] = $processor->processConfiguration($configuration, [$schema]);
+                $validSchemas[$path] = new $this->modelNamespace($processor->processConfiguration($configuration, [$schema]), $path, $this->schemaTransformer);
             } catch (ConfigurationException $e) {
                 throw new InvalidConfigurationException($path, $e);
             }

@@ -21,18 +21,39 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 class SchemaTransformer implements SchemaTransformerInterface
 {
     /**
-     * @param array $schema
+     * @param array  $schema The schema data
+     * @param string $path   The absolute path to the schema file
      *
      * @return array
      */
-    public function transformRoot(array $schema)
+    public function transformRoot(array $schema, $path)
     {
         $root = $schema;
         unset($root['tables']);
 
         // Escape anti slashes
         $root['namespace'] = str_replace('\\\\', '\\', $root['namespace']);
-        $root['namespace'] = str_replace('\\', '\\\\', $root['namespace']);
+        $root['namespace'] = [
+            'raw'     => $root['namespace'],
+            'escaped' => str_replace('\\', '\\\\', $root['namespace'])
+        ];
+
+        // Add or delete slashes
+        // Add first slash if missing
+        if (0 < strpos(DIRECTORY_SEPARATOR, $root['directory'])) {
+            $root['directory'] = DIRECTORY_SEPARATOR . $root['directory'];
+        }
+
+        // Delete last slash if exists
+        if (DIRECTORY_SEPARATOR === $root['directory'][strlen($root['directory']) - 1]) {
+            $root['directory'] = substr($root['directory'], 0, -1);
+        }
+
+        // Delete the file in the path
+        $pathParams = explode(DIRECTORY_SEPARATOR, $path);
+        unset($pathParams[sizeof($pathParams) - 1]);
+
+        $root['directory'] = join(DIRECTORY_SEPARATOR, $pathParams) . $root['directory'];
 
         return $root;
     }
@@ -55,12 +76,17 @@ class SchemaTransformer implements SchemaTransformerInterface
                 $table['className'] = String::camelize($tableName);
             }
 
+            if (!isset($table['phpName']) || null == $table['phpName']) {
+                $table['phpName'] = String::camelize($tableName);
+            }
+
             $table['columns']     = $this->transformColumns($rawTable['columns']);
             $table['primaryKeys'] = $this->transformPrimaryKeys($table['columns']);
             //$table['relations']   = $this->transformRelations($rawTable['relations']);
             $table['relations']   = [];
 
             $tables[] = $table;
+            unset($table);
         }
 
         return $tables;
@@ -102,6 +128,7 @@ class SchemaTransformer implements SchemaTransformerInterface
             // TODO size should be greater than decimal if float/double
 
             $columns[] = $column;
+            unset($column);
         }
 
         return $columns;
