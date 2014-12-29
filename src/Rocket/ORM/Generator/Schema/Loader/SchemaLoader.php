@@ -142,7 +142,10 @@ class SchemaLoader
             throw new SchemaNotFoundException('Schema not found in path "' . $this->path . '"');
         }
 
-        $schemas = [];
+        $schemas = [
+            'xml' => [],
+            'yml' => []
+        ];
 
         /** @var SplFileInfo $file */
         foreach ($finder as $file) {
