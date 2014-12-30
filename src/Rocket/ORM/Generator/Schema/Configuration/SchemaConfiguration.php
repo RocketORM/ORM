@@ -78,6 +78,7 @@ class SchemaConfiguration implements ConfigurationInterface
             ->useAttributeAsKey('name')
             ->prototype('array')
             ->fixXmlConfig('column')
+            ->fixXmlConfig('relation')
 
             ->children()
                 ->scalarNode('phpName')
@@ -86,6 +87,7 @@ class SchemaConfiguration implements ConfigurationInterface
             ->end()
 
             ->append($this->getTableColumnConfigurationNode())
+            ->append($this->getTableRelationConfigurationNode())
         ;
 
         return $node;
@@ -103,6 +105,7 @@ class SchemaConfiguration implements ConfigurationInterface
             ->isRequired()
             ->useAttributeAsKey('name')
             ->prototype('array')
+                ->fixXmlConfig('value')
                 ->children()
                     ->scalarNode('phpName')
                         ->defaultNull()
@@ -146,6 +149,52 @@ class SchemaConfiguration implements ConfigurationInterface
                     ->end()
                     ->booleanNode('autoincrement')
                         ->defaultFalse()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+
+        return $node;
+    }
+
+    /**
+     * @return ArrayNodeDefinition|NodeDefinition
+     */
+    protected function getTableRelationConfigurationNode()
+    {
+        $onActionBehaviors = ['CASCADE', 'NO ACTION', 'RESTRICT', 'SET NULL', 'SET DEFAULT'];
+
+        $builder = new TreeBuilder();
+        $node = $builder->root('relations');
+        $node
+            ->useAttributeAsKey('with')
+            ->prototype('array')
+                ->children()
+                    ->scalarNode('name')
+                        ->defaultNull()
+                    ->end()
+                    ->scalarNode('phpName')
+                        ->defaultNull()
+                    ->end()
+                    ->scalarNode('local')
+                        ->defaultNull()
+                    ->end()
+                    ->scalarNode('foreign')
+                        ->defaultNull()
+                    ->end()
+                    ->scalarNode('onUpdate')
+                        ->defaultValue('RESTRICT')
+                        ->validate()
+                            ->ifNotInArray($onActionBehaviors)
+                            ->thenInvalid('Invalid "onUpdate" behavior for value "%s", available : ' . join(', ', $onActionBehaviors))
+                        ->end()
+                    ->end()
+                    ->scalarNode('onDelete')
+                        ->defaultValue('RESTRICT')
+                        ->validate()
+                            ->ifNotInArray($onActionBehaviors)
+                            ->thenInvalid('Invalid "onDelete" behavior for value "%s", available : ' . join(', ', $onActionBehaviors))
+                        ->end()
                     ->end()
                 ->end()
             ->end()

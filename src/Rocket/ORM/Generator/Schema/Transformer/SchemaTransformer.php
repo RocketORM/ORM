@@ -40,7 +40,7 @@ class SchemaTransformer implements SchemaTransformerInterface
 
         // Add or delete slashes
         // Add first slash if missing
-        if (0 < strpos(DIRECTORY_SEPARATOR, $root['directory'])) {
+        if (0 < strpos($root['directory'], DIRECTORY_SEPARATOR)) {
             $root['directory'] = DIRECTORY_SEPARATOR . $root['directory'];
         }
 
@@ -82,8 +82,7 @@ class SchemaTransformer implements SchemaTransformerInterface
 
             $table['columns']     = $this->transformColumns($rawTable['columns']);
             $table['primaryKeys'] = $this->transformPrimaryKeys($table['columns']);
-            //$table['relations']   = $this->transformRelations($rawTable['relations']);
-            $table['relations']   = [];
+            $table['relations']   = $this->transformRelations($rawTable['relations'], $table['columns']);
 
             $tables[] = $table;
             unset($table);
@@ -156,14 +155,36 @@ class SchemaTransformer implements SchemaTransformerInterface
 
     /**
      * @param array $rawRelations
+     * @param array $columns
      *
      * @return array
      */
-    public function transformRelations(array $rawRelations)
+    public function transformRelations(array $rawRelations, array $columns)
     {
         $relations = [];
 
-        // TODO not implemented yet
+        foreach ($rawRelations as $with => $relation) {
+            $relation['with'] = $with;
+
+            if (!isset($relation['phpName']) || null == $relation['phpName']) {
+                $relation['phpName'] = String::camelize($relation['with']);
+            }
+
+            // Check if local column value exists
+            $found = false;
+            foreach ($columns as $column) {
+                if ($relation['local'] === $column['name']) {
+                    $found = true;
+                }
+            }
+
+            if (!$found) {
+                throw new InvalidConfigurationException('Invalid local column value "' . $relation['local'] . '" for relation "' . $with . '"');
+            }
+
+            $relations[] = $relation;
+            unset($relation);
+        }
 
         return $relations;
     }
