@@ -27,6 +27,11 @@ if (null == $loader) {
     throw new \RuntimeException('The composer autoload (vendor/autoload.php) is not found');
 }
 
+// For tests only
+if (is_dir(__DIR__ . '/../fixtures')) {
+    $loader->add('Fixture', __DIR__ . '/../fixtures');
+}
+
 use Rocket\ORM\Console\RocketApplication;
 use Symfony\Component\Finder\Finder;
 
