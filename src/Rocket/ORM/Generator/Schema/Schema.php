@@ -11,8 +11,6 @@
 
 namespace Rocket\ORM\Generator\Schema;
 
-use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface;
-
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
@@ -31,13 +29,11 @@ class Schema implements SchemaInterface
 
     /**
      * @param array                      $schema
-     * @param string                     $path
-     * @param SchemaTransformerInterface $transformer
      */
-    public function __construct(array $schema, $path, SchemaTransformerInterface $transformer)
+    public function __construct(array $schema)
     {
-        $this->root   = $transformer->transformRoot($schema, $path);
-        $this->tables = $transformer->transformTables($schema['tables']);
+        $this->root   = $schema['root'];
+        $this->tables = $schema['tables'];
     }
 
     /**

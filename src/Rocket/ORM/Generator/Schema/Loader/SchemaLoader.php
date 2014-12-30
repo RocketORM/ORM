@@ -103,14 +103,36 @@ class SchemaLoader
         $processor = new Processor();
         $configuration = new SchemaConfiguration();
 
-        $validSchemas = [];
+        /** @var SchemaTransformerInterface $transformer */
+        $transformer = new $this->schemaTransformer;
 
+        $normalizedSchemas = [];
         foreach ($schemas as $path => $schema) {
             try {
-                $validSchemas[$path] = new $this->modelNamespace($processor->processConfiguration($configuration, [$schema]), $path, $this->schemaTransformer);
+                $normalizedSchema = $processor->processConfiguration($configuration, [$schema]);
+
+                $normalizedSchemas[$path] = [
+                    'root'   => $transformer->transformRoot($normalizedSchema, $path),
+                    'tables' => $transformer->transformTables($normalizedSchema['tables'])
+                ];
             } catch (ConfigurationException $e) {
                 throw new InvalidConfigurationException($path, $e);
             }
+        }
+
+        $validSchemas = [];
+
+        // All schemas are loaded, now we can validate relations
+        foreach ($normalizedSchemas as $path => $schema) {
+            try {
+                foreach ($schema['tables'] as &$table) {
+                    $table['relations'] = $transformer->transformRelations($table['relations'], $table['columns'], $normalizedSchemas);
+                }
+            } catch (ConfigurationException $e) {
+                throw new InvalidConfigurationException($path, $e);
+            }
+
+            $validSchemas[] = new $this->modelNamespace($schema);
         }
 
         return $validSchemas;
