@@ -53,7 +53,7 @@ class TableMapGenerator implements GeneratorInterface
     public function generate(SchemaInterface $schema)
     {
         $root = $schema->getRoot();
-        $outputDirectory = $root['directory'] . DIRECTORY_SEPARATOR . 'Map';
+        $outputDirectory = $root['directory'] . DIRECTORY_SEPARATOR . 'TableMap';
 
         if (!is_dir($outputDirectory)) {
             mkdir($outputDirectory, 755, true);
@@ -65,7 +65,7 @@ class TableMapGenerator implements GeneratorInterface
                 'model'  => $table
             ]);
 
-            file_put_contents($outputDirectory . DIRECTORY_SEPARATOR . $table['phpName'] . '.php', $template);
+            file_put_contents($outputDirectory . DIRECTORY_SEPARATOR . $table['phpName'] . 'TableMap.php', $template);
         }
     }
 }

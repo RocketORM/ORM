@@ -1,7 +1,7 @@
 <?php
 
 {% block namespace %}
-namespace {{ schema.namespace.raw }}\Map;
+namespace {{ schema.namespace.raw }}\TableMap;
 {% endblock %}
 
 {% block import %}
@@ -65,4 +65,3 @@ class {{ model.className }}TableMap extends {% block extends 'TableMap' %}
     {%- block custom '' %}
 
 }
-
