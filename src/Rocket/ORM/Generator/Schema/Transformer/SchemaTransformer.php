@@ -68,21 +68,17 @@ class SchemaTransformer implements SchemaTransformerInterface
         $tables = [];
 
         foreach ($rawTables as $tableName => $rawTable) {
-            $table['tableName'] = $tableName;
+            $table['name'] = $tableName;
 
             if (null != $rawTable['phpName']) {
-                $table['className'] = $rawTable['phpName'];
+                $table['phpName'] = $rawTable['phpName'];
             } else {
-                $table['className'] = String::camelize($tableName);
-            }
-
-            if (!isset($table['phpName']) || null == $table['phpName']) {
                 $table['phpName'] = String::camelize($tableName);
             }
 
             $table['columns']     = $this->transformColumns($rawTable['columns']);
             $table['primaryKeys'] = $this->transformPrimaryKeys($table['columns']);
-            $table['relations']   = $this->transformRelations($rawTable['relations'], $table['columns']);
+            $table['relations']   = $rawTable['relations']; // relations will be transformed when all schemas will be loaded
 
             $tables[] = $table;
             unset($table);
@@ -119,9 +115,9 @@ class SchemaTransformer implements SchemaTransformerInterface
             }
 
             // Check, for enum type, if the default value exists in the values array
-            if (TableMap::COLUMN_TYPE_ENUM === $column['type'] && isset($column['default']) && null != $column['default']
+            if (TableMap::COLUMN_TYPE_ENUM === $column['type'] && null != $column['default']
                 && !in_array($column['default'], $column['values'])) {
-                throw new InvalidConfigurationException('Invalid default value ("' . $column['default'] . '") for enum column "' . $column['name'] . '"');
+                throw new InvalidConfigurationException('Invalid default value "' . $column['default'] . '" for enum column "' . $column['name'] . '"');
             }
 
             // TODO size should be greater than decimal if float/double
@@ -156,21 +152,18 @@ class SchemaTransformer implements SchemaTransformerInterface
     /**
      * @param array $rawRelations
      * @param array $columns
+     * @param array $schemas
      *
      * @return array
      */
-    public function transformRelations(array $rawRelations, array $columns)
+    public function transformRelations(array $rawRelations, array $columns, array $schemas)
     {
         $relations = [];
 
         foreach ($rawRelations as $with => $relation) {
             $relation['with'] = $with;
 
-            if (!isset($relation['phpName']) || null == $relation['phpName']) {
-                $relation['phpName'] = String::camelize($relation['with']);
-            }
-
-            // Check if local column value exists
+            // Check if local column exists
             $found = false;
             foreach ($columns as $column) {
                 if ($relation['local'] === $column['name']) {
@@ -182,10 +175,137 @@ class SchemaTransformer implements SchemaTransformerInterface
                 throw new InvalidConfigurationException('Invalid local column value "' . $relation['local'] . '" for relation "' . $with . '"');
             }
 
+            // Find the relation in loaded schemas
+            $relatedSchema = $this->guessRelation($with, $schemas);
+            $relation['with'] = $relatedSchema['root']['namespace']['raw'] . '\\' . $relatedSchema['table']['phpName'];
+
+            if (null == $relation['phpName']) {
+                $relation['phpName'] = $relatedSchema['table']['phpName'];
+            }
+
+            // Check if foreign column exists
+            $found = false;
+            foreach ($relatedSchema['table']['columns'] as $column) {
+                if ($relation['foreign'] === $column['name']) {
+                    $found = true;
+                }
+            }
+
+            if (!$found) {
+                throw new InvalidConfigurationException('Invalid foreign column value "' . $relation['foreign'] . '" for relation "' . $with . '"');
+            }
+
             $relations[] = $relation;
             unset($relation);
         }
 
         return $relations;
+    }
+
+    /**
+     * Relations can be named in three ways :
+     *  - my_table
+     *  - database.my_table
+     *  - Example\Model\MyModel
+     *
+     * In some case, there can be more than one relation called with the same name.
+     *
+     * @param string $with    The relation
+     * @param array  $schemas All loaded schemas
+     *
+     * @throws InvalidConfigurationException
+     *
+     * @return array
+     */
+    protected function guessRelation($with, array $schemas)
+    {
+        if (false !== strpos($with, '\\')) {
+            $guessedRelations = $this->getRelationByNamespace($with, $schemas);
+        } else {
+            if (false === strpos($with, '.')) {
+                $guessedRelations = $this->getRelationsByTableName($with, $schemas);
+            } else {
+                $guessedRelations = $this->getRelationsByDatabaseAndTableName($with, $schemas);
+            }
+        }
+
+        if (!isset($guessedRelations[0])) {
+            throw new InvalidConfigurationException('Invalid relation "' . $with . '"');
+        }
+
+        if (1 < sizeof($guessedRelations)) {
+            throw new InvalidConfigurationException('Too much relations for the value "' . $with . '", prefix it with the database or use the object namespace');
+        }
+
+        return $guessedRelations[0];
+    }
+
+    /**
+     * @param string $with    A relation like "Example\Model\MyModel"
+     * @param array  $schemas All loaded schemas
+     *
+     * @return array
+     */
+    protected function getRelationByNamespace($with, array $schemas)
+    {
+        $guessedRelations = [];
+        foreach ($schemas as $schema) {
+            foreach ($schema['tables'] as $table) {
+                if ($with === sprintf('%s\\%s', $schema['root']['namespace']['raw'], $table['phpName'])) {
+                    $guessedRelations[] = [
+                        'root'  => $schema['root'],
+                        'table' => $table
+                    ];
+                }
+            }
+        }
+
+        return $guessedRelations;
+    }
+
+    /**
+     * @param string $with    A relation like "my_table"
+     * @param array  $schemas All loaded schemas
+     *
+     * @return array
+     */
+    protected function getRelationsByTableName($with, array $schemas)
+    {
+        $guessedRelations = [];
+        foreach ($schemas as $schema) {
+            foreach ($schema['tables'] as $table) {
+                if ($with === $table['name']) {
+                    $guessedRelations[] = [
+                        'root'  => $schema['root'],
+                        'table' => $table
+                    ];
+                }
+            }
+        }
+
+        return $guessedRelations;
+    }
+
+    /**
+     * @param string $with    A relation like "database.my_table"
+     * @param array  $schemas All loaded schemas
+     *
+     * @return array
+     */
+    protected function getRelationsByDatabaseAndTableName($with, array $schemas)
+    {
+        $guessedRelations = [];
+        foreach ($schemas as $schema) {
+            foreach ($schema['tables'] as $table) {
+                if ($with === sprintf('%s.%s', $schema['root']['database'], $table['name'])) {
+                    $guessedRelations[] = [
+                        'root'  => $schema['root'],
+                        'table' => $table
+                    ];
+                }
+            }
+        }
+
+        return $guessedRelations;
     }
 }

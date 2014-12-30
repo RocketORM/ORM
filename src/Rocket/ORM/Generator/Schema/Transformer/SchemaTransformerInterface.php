@@ -48,8 +48,9 @@ interface SchemaTransformerInterface
     /**
      * @param array $rawRelations
      * @param array $columns
+     * @param array $schemas
      *
      * @return array
      */
-    public function transformRelations(array $rawRelations, array $columns);
+    public function transformRelations(array $rawRelations, array $columns, array $schemas);
 }

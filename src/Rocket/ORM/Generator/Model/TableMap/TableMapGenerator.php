@@ -61,10 +61,10 @@ class TableMapGenerator implements GeneratorInterface
             }
         }
 
-        foreach ($schema->getTables() as $tableName => $table) {
+        foreach ($schema->getTables() as $table) {
             $template = $this->twig->render('Model/Map/table_map.php.twig', [
                 'schema' => $root,
-                'model'  => $table
+                'table'  => $table
             ]);
 
             file_put_contents($outputDirectory . DIRECTORY_SEPARATOR . $table['phpName'] . 'TableMap.php', $template);
