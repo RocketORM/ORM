@@ -177,7 +177,7 @@ class SchemaTransformer implements SchemaTransformerInterface
 
             // Find the relation in loaded schemas
             $relatedSchema = $this->guessRelation($with, $schemas);
-            $relation['with'] = $relatedSchema['root']['namespace']['raw'] . '\\' . $relatedSchema['table']['phpName'];
+            $relation['with'] = $relatedSchema['root']['namespace']['escaped'] . '\\\\' . $relatedSchema['table']['phpName'];
 
             if (null == $relation['phpName']) {
                 $relation['phpName'] = $relatedSchema['table']['phpName'];
