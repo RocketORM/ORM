@@ -17,35 +17,61 @@ namespace Rocket\ORM\Generator\Schema;
 class Schema implements SchemaInterface
 {
     /**
-     * @var array
+     * @var string
      */
-    protected $root;
+    public $connection;
 
     /**
-     * @var array
+     * @var string
      */
-    protected $tables;
+    public $namespace;
+
+    /**
+     * @var string
+     */
+    public $escapedNamespace;
+
+    /**
+     * @var string
+     */
+    public $relativeDirectory;
+
+    /**
+     * @var string
+     */
+    public $absoluteDirectory;
+
+    /**
+     * @var string
+     */
+    public $database;
+
+    /**
+     * @var Table[]
+     */
+    protected $tables = [];
 
 
     /**
-     * @param array                      $schema
+     * @param array $schema
      */
     public function __construct(array $schema)
     {
-        $this->root   = $schema['root'];
-        $this->tables = $schema['tables'];
+        $this->connection        = $schema['connection'];
+        $this->namespace         = $schema['namespace'];
+        $this->relativeDirectory = $schema['directory'];
+        $this->database          = $schema['database'];
+
+        foreach ($schema['tables'] as $tableName => $data) {
+            $table = new Table($tableName, $data);
+            $table->setSchema($this);
+
+            $this->tables[] = $table;
+        }
     }
 
     /**
-     * @return array
-     */
-    public function getRoot()
-    {
-        return $this->root;
-    }
-
-    /**
-     * @return array
+     * @return Table[]
      */
     public function getTables()
     {

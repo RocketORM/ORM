@@ -147,7 +147,7 @@ class SchemaConfiguration implements ConfigurationInterface
                     ->booleanNode('primaryKey')
                         ->defaultFalse()
                     ->end()
-                    ->booleanNode('autoincrement')
+                    ->booleanNode('autoIncrement')
                         ->defaultFalse()
                     ->end()
                 ->end()

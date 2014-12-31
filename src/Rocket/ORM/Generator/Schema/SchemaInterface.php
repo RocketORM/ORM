@@ -17,12 +17,7 @@ namespace Rocket\ORM\Generator\Schema;
 interface SchemaInterface
 {
     /**
-     * @return array
-     */
-    public function getRoot();
-
-    /**
-     * @return array
+     * @return Table[]
      */
     public function getTables();
 }

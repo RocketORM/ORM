@@ -27,8 +27,8 @@ abstract class TableMap implements TableMapInterface
     const COLUMN_TYPE_ENUM     = 9;
 
     const RELATION_TYPE_ONE_TO_MANY  = 1;
-    const RELATION_TYPE_ONE_TO_ONE   = 2;
-    const RELATION_TYPE_MANY_TO_ONE  = 3;
+    const RELATION_TYPE_MANY_TO_ONE  = 2;
+    const RELATION_TYPE_ONE_TO_ONE   = 3;
     const RELATION_TYPE_MANY_TO_MANY = 4;
 
     /**
