@@ -11,6 +11,10 @@
 
 namespace Rocket\ORM\Generator\Schema\Transformer;
 
+use Rocket\ORM\Generator\Schema\Column;
+use Rocket\ORM\Generator\Schema\Relation;
+use Rocket\ORM\Generator\Schema\Schema;
+use Rocket\ORM\Generator\Schema\Table;
 use Rocket\ORM\Generator\Utils\String;
 use Rocket\ORM\Model\Map\TableMap;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -21,182 +25,182 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 class SchemaTransformer implements SchemaTransformerInterface
 {
     /**
-     * @param array  $schema The schema data
-     * @param string $path   The absolute path to the schema file
-     *
-     * @return array
+     * @var string
      */
-    public function transformRoot(array $schema, $path)
+    protected $modelNamespace;
+
+
+    /**
+     * @param string $modelNamespace
+     */
+    public function __construct($modelNamespace = '\\Rocket\\ORM\\Generator\\Schema\\Schema')
     {
-        $root = $schema;
-        unset($root['tables']);
+        $defaultSchemaNamespace = '\\Rocket\\ORM\\Generator\\Schema\\Schema';
+        if ($modelNamespace != $defaultSchemaNamespace) {
+            $class = new \ReflectionClass($modelNamespace);
+            if (!$class->isSubclassOf($defaultSchemaNamespace)) {
+                throw new \InvalidArgumentException('The schema model must extend Rocket\ORM\Generator\Schema\Schema');
+            }
+        }
+
+        $this->modelNamespace = $modelNamespace;
+    }
+
+    /**
+     * @param array  $schemaData The schema data
+     * @param string $path       The absolute path to the schema file
+     *
+     * @return Schema
+     */
+    public function transform(array $schemaData, $path)
+    {
+        /** @var Schema $schema */
+        $schema = new $this->modelNamespace($schemaData);
 
         // Escape anti slashes
-        $root['namespace'] = str_replace('\\\\', '\\', $root['namespace']);
-        $root['namespace'] = [
-            'raw'     => $root['namespace'],
-            'escaped' => str_replace('\\', '\\\\', $root['namespace'])
-        ];
+        $schema->namespace = str_replace('\\\\', '\\', $schema->namespace);
+        $schema->escapedNamespace = str_replace('\\', '\\\\', $schema->namespace);
 
         // Add or delete slashes
         // Add first slash if missing
-        if (0 < strpos($root['directory'], DIRECTORY_SEPARATOR)) {
-            $root['directory'] = DIRECTORY_SEPARATOR . $root['directory'];
+        if (0 < strpos($schema->relativeDirectory, DIRECTORY_SEPARATOR)) {
+            $schema->relativeDirectory = DIRECTORY_SEPARATOR . $schema->relativeDirectory;
         }
 
         // Delete last slash if exists
-        if (DIRECTORY_SEPARATOR === $root['directory'][strlen($root['directory']) - 1]) {
-            $root['directory'] = substr($root['directory'], 0, -1);
+        if (DIRECTORY_SEPARATOR === $schema->relativeDirectory[strlen($schema->relativeDirectory) - 1]) {
+            $schema->relativeDirectory = substr($schema->relativeDirectory, 0, -1);
         }
 
         // Delete the file in the path
         $pathParams = explode(DIRECTORY_SEPARATOR, $path);
         unset($pathParams[sizeof($pathParams) - 1]);
 
-        $root['directory'] = join(DIRECTORY_SEPARATOR, $pathParams) . $root['directory'];
+        $schema->absoluteDirectory = join(DIRECTORY_SEPARATOR, $pathParams) . $schema->relativeDirectory;
 
-        return $root;
+        $this->transformTables($schema->getTables());
+
+        return $schema;
     }
 
     /**
-     * @param array $rawTables
-     *
-     * @return array
+     * @param array|Table[] $tables
      */
-    public function transformTables(array $rawTables)
+    public function transformTables(array $tables)
     {
-        $tables = [];
-
-        foreach ($rawTables as $tableName => $rawTable) {
-            $table['name'] = $tableName;
-
-            if (null != $rawTable['phpName']) {
-                $table['phpName'] = $rawTable['phpName'];
-            } else {
-                $table['phpName'] = String::camelize($tableName);
+        foreach ($tables as $table) {
+            if (null == $table->phpName) {
+                $table->phpName = String::camelize($table->name);
             }
 
-            $table['columns']     = $this->transformColumns($rawTable['columns']);
-            $table['primaryKeys'] = $this->transformPrimaryKeys($table['columns']);
-            $table['relations']   = $rawTable['relations']; // relations will be transformed when all schemas will be loaded
-
-            $tables[] = $table;
-            unset($table);
+            $this->transformColumns($table->getColumns());
+            $this->transformPrimaryKeys($table->getColumns());
         }
-
-        return $tables;
     }
 
     /**
-     * @param array $rawColumns
-     *
-     * @return array
+     * @param array|Column[] $columns
      */
-    public function transformColumns(array $rawColumns)
+    public function transformColumns(array $columns)
     {
-        $columns = [];
-        foreach ($rawColumns as $columnName => $rawColumn) {
-            $column = array_merge($rawColumn, [
-                'name' => $columnName
-            ]);
-
-            if (null != $rawColumn['phpName']) {
-                $column['phpName'] = $rawColumn['phpName'];
-            } else {
-                $column['phpName'] = String::camelize($columnName, false);
+        foreach ($columns as $column) {
+            if (null == $column->phpName) {
+                $column->phpName = String::camelize($column->name, false);
             }
 
-            if (true === $column['autoincrement']) {
-                $column['primaryKey'] = true;
+            if (true === $column->isAutoIncrement) {
+                $column->isPrimaryKey = true;
             }
 
-            if (true === $column['primaryKey']) {
-                $column['required'] = true;
+            if (true === $column->isPrimaryKey) {
+                $column->isRequired = true;
             }
 
             // Check, for enum type, if the default value exists in the values array
-            if (TableMap::COLUMN_TYPE_ENUM === $column['type'] && null != $column['default']
-                && !in_array($column['default'], $column['values'])) {
-                throw new InvalidConfigurationException('Invalid default value "' . $column['default'] . '" for enum column "' . $column['name'] . '"');
+            if (TableMap::COLUMN_TYPE_ENUM === $column->type && null != $column->default
+                && !in_array($column->default, $column->values)) {
+                throw new InvalidConfigurationException(
+                    'Invalid default value "' . $column->default . '" for enum column "' . $column->name . '" on table "' . $column->getTable()->name . '"'
+                );
             }
 
             // TODO size should be greater than decimal if float/double
-
-            $columns[] = $column;
-            unset($column);
         }
-
-        return $columns;
     }
 
     /**
-     * @param array $columns
-     *
-     * @return array
+     * @param array|Column[] $columns
      */
     public function transformPrimaryKeys(array $columns)
     {
-        $primaryKeys = [];
         foreach ($columns as $column) {
-            if (true === $column['primaryKey']) {
-                $primaryKeys[] = [
-                    'name'          => $column['name'],
-                    'autoincrement' => $column['autoincrement']
-                ];
+            if (true === $column->isPrimaryKey) {
+                $column->getTable()->addPrimaryKey($column);
             }
         }
-
-        return $primaryKeys;
     }
 
     /**
-     * @param array $rawRelations
-     * @param array $columns
+     * @param Table $table
      * @param array $schemas
      *
      * @return array
      */
-    public function transformRelations(array $rawRelations, array $columns, array $schemas)
+    public function transformRelations(Table $table, array $schemas)
     {
-        $relations = [];
-
-        foreach ($rawRelations as $with => $relation) {
-            $relation['with'] = $with;
-
+        $relations = $table->getRelations();
+        foreach ($relations as $relation) {
             // Check if local column exists
-            $found = false;
-            foreach ($columns as $column) {
-                if ($relation['local'] === $column['name']) {
-                    $found = true;
+            $localColumn = null;
+            foreach ($table->getColumns() as $column) {
+                if ($relation->local === $column->name) {
+                    $localColumn = $column;
                 }
             }
 
-            if (!$found) {
-                throw new InvalidConfigurationException('Invalid local column value "' . $relation['local'] . '" for relation "' . $with . '"');
+            if (null == $localColumn) {
+                throw new InvalidConfigurationException('Invalid local column value "' . $relation->local . '" for relation "' . $relation->with . '"');
             }
 
-            // Find the relation in loaded schemas
-            $relatedSchema = $this->guessRelation($with, $schemas);
-            $relation['with'] = $relatedSchema['root']['namespace']['escaped'] . '\\\\' . $relatedSchema['table']['phpName'];
+            // Find the related relation in loaded schemas
+            $relatedTable = $this->guessRelatedTable($relation->with, $schemas);
+            $relation->with = $relatedTable->getSchema()->escapedNamespace . '\\\\' . $relatedTable->phpName;
 
-            if (null == $relation['phpName']) {
-                $relation['phpName'] = $relatedSchema['table']['phpName'];
+            if (null == $relation->phpName) {
+                $relation->phpName = $relatedTable->phpName;
             }
 
             // Check if foreign column exists
-            $found = false;
-            foreach ($relatedSchema['table']['columns'] as $column) {
-                if ($relation['foreign'] === $column['name']) {
-                    $found = true;
+            $foreignColumn = false;
+            foreach ($relatedTable->getColumns() as $column) {
+                if ($relation->foreign === $column->name) {
+                    $foreignColumn = $column;
                 }
             }
 
-            if (!$found) {
-                throw new InvalidConfigurationException('Invalid foreign column value "' . $relation['foreign'] . '" for relation "' . $with . '"');
+            if (null == $foreignColumn) {
+                throw new InvalidConfigurationException('Invalid foreign column value "' . $relation->foreign . '" for relation "' . $relation->with . '"');
             }
 
-            $relations[] = $relation;
-            unset($relation);
+            // Relation type guessing
+            if (!$localColumn->isPrimaryKey) {
+                $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
+            } elseif (!$foreignColumn->isPrimaryKey) {
+                $relation->type = TableMap::RELATION_TYPE_MANY_TO_ONE;
+                $relation->phpName = $this->pluralize($relation->phpName);
+            } else {
+                if (1 < $table->getPrimaryKeyCount()) {
+                    $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
+                } elseif (1 < $relatedTable->getPrimaryKeyCount()) {
+                    $relation->type = TableMap::RELATION_TYPE_MANY_TO_ONE;
+                    $relation->phpName = $this->pluralize($relation->phpName);
+                } else {
+                    $relation->type = TableMap::RELATION_TYPE_ONE_TO_ONE;
+                }
+            }
+
+            // Then, create the relation for the related table if doesn't exist yet
+            $this->createRelatedRelation($relation, $table, $relatedTable);
         }
 
         return $relations;
@@ -215,97 +219,124 @@ class SchemaTransformer implements SchemaTransformerInterface
      *
      * @throws InvalidConfigurationException
      *
-     * @return array
+     * @return Table
      */
-    protected function guessRelation($with, array $schemas)
+    protected function guessRelatedTable($with, array $schemas)
     {
-        if (false !== strpos($with, '\\')) {
-            $guessedRelations = $this->getRelationByNamespace($with, $schemas);
-        } else {
-            if (false === strpos($with, '.')) {
-                $guessedRelations = $this->getRelationsByTableName($with, $schemas);
-            } else {
-                $guessedRelations = $this->getRelationsByDatabaseAndTableName($with, $schemas);
-            }
+        $tables = [];
+        /** @var Schema $schema */
+        foreach ($schemas as $schema) {
+            $tables = array_merge($tables, $schema->findTables($with));
         }
 
-        if (!isset($guessedRelations[0])) {
+        if (!isset($tables[0])) {
             throw new InvalidConfigurationException('Invalid relation "' . $with . '"');
         }
 
-        if (1 < sizeof($guessedRelations)) {
-            throw new InvalidConfigurationException('Too much relations for the value "' . $with . '", prefix it with the database or use the object namespace');
+        if (1 < sizeof($tables)) {
+            throw new InvalidConfigurationException('Too much table for the relation "' . $with . '", prefix it with the database or use the object namespace');
         }
 
-        return $guessedRelations[0];
+        return $tables[0];
     }
 
     /**
-     * @param string $with    A relation like "Example\Model\MyModel"
-     * @param array  $schemas All loaded schemas
-     *
-     * @return array
+     * @param Relation $relation
+     * @param Table    $table
+     * @param Table    $relatedTable
      */
-    protected function getRelationByNamespace($with, array $schemas)
+    protected function createRelatedRelation(Relation $relation, Table $table, Table $relatedTable)
     {
-        $guessedRelations = [];
-        foreach ($schemas as $schema) {
-            foreach ($schema['tables'] as $table) {
-                if ($with === sprintf('%s\\%s', $schema['root']['namespace']['raw'], $table['phpName'])) {
-                    $guessedRelations[] = [
-                        'root'  => $schema['root'],
-                        'table' => $table
-                    ];
-                }
-            }
+        // Inverse relation type
+        $phpName = $table->phpName;
+        if (TableMap::RELATION_TYPE_MANY_TO_ONE == $relation->type) {
+            $relatedType = TableMap::RELATION_TYPE_ONE_TO_MANY;
+        } elseif (TableMap::RELATION_TYPE_ONE_TO_MANY == $relation->type) {
+            $relatedType = TableMap::RELATION_TYPE_MANY_TO_ONE;
+            $phpName = $this->pluralize($table->phpName);
+        } else {
+            $relatedType = TableMap::RELATION_TYPE_ONE_TO_ONE;
         }
 
-        return $guessedRelations;
+        $relatedRelation = new Relation($table->getSchema()->escapedNamespace . '\\\\' . $table->phpName, [
+            'local'    => $relation->foreign,
+            'foreign'  => $relation->local,
+            'type'     => $relatedType,
+            'phpName'  => $phpName,
+            'onUpdate' => $relation->onUpdate,
+            'onDelete' => $relation->onDelete,
+        ]);
+
+        if (!$relatedTable->hasRelation($relatedRelation->with)) {
+            $relatedTable->addRelation($relatedRelation);
+        }
     }
 
     /**
-     * @param string $with    A relation like "my_table"
-     * @param array  $schemas All loaded schemas
+     * Pluralizes English noun.
      *
-     * @return array
+     * @param  string  $word english noun to pluralize
+     *
+     * @return string
+     *
+     * @throws \LogicException
+     *
+     * @see https://github.com/whiteoctober/RestBundle/blob/master/Pluralization/Pluralization.php
      */
-    protected function getRelationsByTableName($with, array $schemas)
+    protected function pluralize($word)
     {
-        $guessedRelations = [];
-        foreach ($schemas as $schema) {
-            foreach ($schema['tables'] as $table) {
-                if ($with === $table['name']) {
-                    $guessedRelations[] = [
-                        'root'  => $schema['root'],
-                        'table' => $table
-                    ];
-                }
+        $plurals = [
+            '/(quiz)$/i'                => '\1zes',
+            '/^(ox)$/i'                 => '\1en',
+            '/([m|l])ouse$/i'           => '\1ice',
+            '/(matr|vert|ind)ix|ex$/i'  => '\1ices',
+            '/(x|ch|ss|sh)$/i'          => '\1es',
+            '/([^aeiouy]|qu)ies$/i'     => '\1y',
+            '/([^aeiouy]|qu)y$/i'       => '\1ies',
+            '/(hive)$/i'                => '\1s',
+            '/(?:([^f])fe|([lr])f)$/i'  => '\1\2ves',
+            '/sis$/i'                   => 'ses',
+            '/([ti])um$/i'              => '\1a',
+            '/(buffal|tomat)o$/i'       => '\1oes',
+            '/(bu)s$/i'                 => '\1ses',
+            '/(alias|status)/i'         => '\1es',
+            '/(octop|vir)us$/i'         => '\1i',
+            '/(ax|test)is$/i'           => '\1es',
+            '/s$/i'                     => 's',
+            '/$/'                       => 's'
+        ];
+
+        $uncountables = [
+            'equipment', 'information', 'rice', 'money', 'species', 'series', 'fish', 'sheep'
+        ];
+
+        $irregulars = [
+            'person'  => 'people',
+            'man'     => 'men',
+            'child'   => 'children',
+            'sex'     => 'sexes',
+            'move'    => 'moves'
+        ];
+
+        $lowerCasedWord = strtolower($word);
+        foreach ($uncountables as $uncountable) {
+            if ($uncountable == substr($lowerCasedWord, (-1 * strlen($uncountable)))) {
+                return $word;
             }
         }
 
-        return $guessedRelations;
-    }
-
-    /**
-     * @param string $with    A relation like "database.my_table"
-     * @param array  $schemas All loaded schemas
-     *
-     * @return array
-     */
-    protected function getRelationsByDatabaseAndTableName($with, array $schemas)
-    {
-        $guessedRelations = [];
-        foreach ($schemas as $schema) {
-            foreach ($schema['tables'] as $table) {
-                if ($with === sprintf('%s.%s', $schema['root']['database'], $table['name'])) {
-                    $guessedRelations[] = [
-                        'root'  => $schema['root'],
-                        'table' => $table
-                    ];
-                }
+        foreach ($irregulars as $plural => $singular) {
+            if (preg_match('/(' . $plural . ')$/i', $word, $arr)) {
+                return preg_replace('/(' . $plural . ')$/i', substr($arr[0], 0, 1) . substr($singular, 1), $word);
             }
         }
 
-        return $guessedRelations;
+        foreach ($plurals as $rule => $replacement) {
+            if (preg_match($rule, $word)) {
+                return preg_replace($rule, $replacement, $word);
+            }
+        }
+
+        throw new \LogicException('Unknown plural for word "' . $word . '"');
     }
 }

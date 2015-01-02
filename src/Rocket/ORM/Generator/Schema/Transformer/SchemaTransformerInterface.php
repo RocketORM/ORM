@@ -11,46 +11,50 @@
 
 namespace Rocket\ORM\Generator\Schema\Transformer;
 
+use Rocket\ORM\Generator\Schema\Schema;
+use Rocket\ORM\Generator\Schema\Table;
+
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
 interface SchemaTransformerInterface
 {
     /**
-     * @param array  $schema The schema data
-     * @param string $path   The absolute path to the schema file
+     * Transform schema data as array into Schema model
      *
-     * @return array
+     * @param array  $schemaData The schema data
+     * @param string $path       The absolute path to the schema file
+     *
+     * @return Schema
      */
-    public function transformRoot(array $schema, $path);
+    public function transform(array $schemaData, $path);
 
     /**
      * @param array $rawTables
      *
-     * @return array
+     * @return void
      */
     public function transformTables(array $rawTables);
 
     /**
      * @param array $rawColumns
      *
-     * @return array
+     * @return void
      */
     public function transformColumns(array $rawColumns);
 
     /**
      * @param array $columns
      *
-     * @return array
+     * @return void
      */
     public function transformPrimaryKeys(array $columns);
 
     /**
-     * @param array $rawRelations
-     * @param array $columns
+     * @param Table $table
      * @param array $schemas
      *
-     * @return array
+     * @return void
      */
-    public function transformRelations(array $rawRelations, array $columns, array $schemas);
+    public function transformRelations(Table $table, array $schemas);
 }
