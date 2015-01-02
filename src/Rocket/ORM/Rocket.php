@@ -13,6 +13,7 @@ namespace Rocket\ORM;
 
 use Rocket\ORM\Connection\ConnectionFactory;
 use Rocket\ORM\Connection\ConnectionInterface;
+use Rocket\ORM\Model\Map\TableMapInterface;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -39,6 +40,11 @@ class Rocket
      * @var array
      */
     protected static $cons    = [];
+
+    /**
+     * @var array
+     */
+    protected static $tableMaps = [];
 
 
     /**
@@ -91,5 +97,34 @@ class Rocket
         self::$configCache[$name] = $config;
 
         return $config;
+    }
+
+    /**
+     * @param string $classNamespace
+     *
+     * @return TableMapInterface
+     *
+     * @throws \RuntimeException
+     */
+    public static function getTableMap($classNamespace)
+    {
+        if (!isset(self::$tableMaps[$classNamespace])) {
+            $namespaceParts = explode('\\', $classNamespace);
+            $size = sizeof($namespaceParts);
+            $className = $namespaceParts[$size - 1];
+
+            unset($namespaceParts[$size - 1]);
+            $tableMapNamespace = join('\\', $namespaceParts) . '\\TableMap\\' . $className . 'TableMap';
+
+            $tableMap = new $tableMapNamespace();
+            if (!$tableMap instanceof TableMapInterface) {
+                throw new \RuntimeException('The "' . $classNamespace . '" table map must be an instance of "\Rocket\Model\TableMap\TableMapInterface"');
+            }
+
+            $tableMap->configure();
+            self::$tableMaps[$classNamespace] = $tableMap;
+        }
+
+        return self::$tableMaps[$classNamespace];
     }
 }
