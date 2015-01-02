@@ -11,12 +11,12 @@
 
 namespace Rocket\ORM\Generator;
 
-use Rocket\ORM\Generator\Schema\SchemaInterface;
+use Rocket\ORM\Generator\Schema\Schema;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
 interface GeneratorInterface
 {
-    public function generate(SchemaInterface $schema);
+    public function generate(Schema $schema);
 }

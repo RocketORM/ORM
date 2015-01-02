@@ -14,7 +14,7 @@ namespace Rocket\ORM\Generator\Schema\Loader;
 use Rocket\ORM\Generator\Schema\Configuration\SchemaConfiguration;
 use Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException;
 use Rocket\ORM\Generator\Schema\Loader\Exception\SchemaNotFoundException;
-use Rocket\ORM\Generator\Schema\SchemaInterface;
+use Rocket\ORM\Generator\Schema\Schema;
 use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException as ConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
@@ -39,11 +39,6 @@ class SchemaLoader
     protected $exclude;
 
     /**
-     * @var string
-     */
-    protected $modelNamespace;
-
-    /**
      * @var SchemaTransformerInterface
      */
     protected $schemaTransformer;
@@ -52,25 +47,17 @@ class SchemaLoader
     /**
      * @param string|array                    $path
      * @param string|array                    $exclude
-     * @param string                          $modelNamespace
      * @param SchemaTransformerInterface|null $schemaTransformer
      */
-    public function __construct($path, $exclude = [], $modelNamespace = '\\Rocket\\ORM\\Generator\\Schema\\Schema', SchemaTransformerInterface $schemaTransformer = null)
+    public function __construct($path, $exclude = [], SchemaTransformerInterface $schemaTransformer = null)
     {
         $this->path              = $path;
         $this->exclude           = $exclude;
         $this->schemaTransformer = $schemaTransformer;
-
-        $class = new \ReflectionClass($modelNamespace);
-        if (!$class->implementsInterface('\\Rocket\\ORM\\Generator\\Schema\\SchemaInterface')) {
-            throw new \InvalidArgumentException('The schema model must implement Rocket\ORM\Generator\Schema\SchemaInterface');
-        }
-
-        $this->modelNamespace = $modelNamespace;
     }
 
     /**
-     * @return SchemaInterface[]
+     * @return Schema[]
      *
      * @throws InvalidConfigurationException
      * @throws SchemaNotFoundException
@@ -103,18 +90,10 @@ class SchemaLoader
         $processor = new Processor();
         $configuration = new SchemaConfiguration();
 
-        /** @var SchemaTransformerInterface $transformer */
-        $transformer = new $this->schemaTransformer;
-
         $normalizedSchemas = [];
         foreach ($schemas as $path => $schema) {
             try {
-                $normalizedSchema = $processor->processConfiguration($configuration, [$schema]);
-
-                $normalizedSchemas[$path] = [
-                    'root'   => $transformer->transformRoot($normalizedSchema, $path),
-                    'tables' => $transformer->transformTables($normalizedSchema['tables'])
-                ];
+                $normalizedSchemas[$path] = $this->schemaTransformer->transform($processor->processConfiguration($configuration, [$schema]), $path);
             } catch (ConfigurationException $e) {
                 throw new InvalidConfigurationException($path, $e);
             }
@@ -123,16 +102,17 @@ class SchemaLoader
         $validSchemas = [];
 
         // All schemas are loaded, now we can validate relations
+        /** @var Schema $schema */
         foreach ($normalizedSchemas as $path => $schema) {
             try {
-                foreach ($schema['tables'] as &$table) {
-                    $table['relations'] = $transformer->transformRelations($table['relations'], $table['columns'], $normalizedSchemas);
+                foreach ($schema->getTables() as $table) {
+                    $this->schemaTransformer->transformRelations($table, $normalizedSchemas);
                 }
             } catch (ConfigurationException $e) {
                 throw new InvalidConfigurationException($path, $e);
             }
 
-            $validSchemas[] = new $this->modelNamespace($schema);
+            $validSchemas[] = $schema;
         }
 
         return $validSchemas;

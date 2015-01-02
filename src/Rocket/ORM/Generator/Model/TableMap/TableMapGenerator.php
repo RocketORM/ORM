@@ -12,7 +12,7 @@
 namespace Rocket\ORM\Generator\Model\TableMap;
 
 use Rocket\ORM\Generator\GeneratorInterface;
-use Rocket\ORM\Generator\Schema\SchemaInterface;
+use Rocket\ORM\Generator\Schema\Schema;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -48,13 +48,11 @@ class TableMapGenerator implements GeneratorInterface
     }
 
     /**
-     * @param SchemaInterface $schema
+     * @param Schema $schema
      */
-    public function generate(SchemaInterface $schema)
+    public function generate(Schema $schema)
     {
-        $root = $schema->getRoot();
-        $outputDirectory = $root['directory'] . DIRECTORY_SEPARATOR . 'TableMap';
-
+        $outputDirectory = $schema->absoluteDirectory . DIRECTORY_SEPARATOR . 'TableMap';
         if (!is_dir($outputDirectory)) {
             if (!@mkdir($outputDirectory, 755, true)) {
                 throw new \RuntimeException('Cannot create model directory for table map, error message : ' . error_get_last()['message']);
@@ -63,11 +61,10 @@ class TableMapGenerator implements GeneratorInterface
 
         foreach ($schema->getTables() as $table) {
             $template = $this->twig->render('Model/Map/table_map.php.twig', [
-                'schema' => $root,
                 'table'  => $table
             ]);
 
-            file_put_contents($outputDirectory . DIRECTORY_SEPARATOR . $table['phpName'] . 'TableMap.php', $template);
+            file_put_contents($outputDirectory . DIRECTORY_SEPARATOR . $table->phpName . 'TableMap.php', $template);
         }
     }
 }
