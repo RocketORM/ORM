@@ -11,6 +11,8 @@
 
 namespace Rocket\ORM\Generator\Schema;
 
+use Rocket\ORM\Model\Map\TableMap;
+
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
@@ -104,5 +106,20 @@ class Column
     public function setTable(Table $table)
     {
         $this->table = $table;
+    }
+
+    /**
+     * @return string
+     */
+    public function typeAsString()
+    {
+        $reflection = new \ReflectionClass('\\Rocket\\ORM\\Model\\Map\\TableMap');
+        foreach ($reflection->getConstants() as $name => $value) {
+            if ($this->type == $value) {
+                return $name;
+            }
+        }
+
+        throw new \LogicException('Unknown value "' . $this->type . '" for constant TableMap::COLUMN_TYPE_*');
     }
 }

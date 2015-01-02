@@ -32,14 +32,19 @@ class Table
     public $phpName;
 
     /**
-     * @var Column[]
+     * @var array|Column[]
      */
     protected $columns = [];
 
     /**
-     * @var Relation[]
+     * @var array|Relation[]
      */
     protected $relations = [];
+
+    /**
+     * @var array|Column[]
+     */
+    protected $primaryKeys = [];
 
 
     /**
@@ -100,5 +105,70 @@ class Table
         }
 
         $this->columns = $columns;
+    }
+
+    /**
+     * @return array|Relation[]
+     */
+    public function getRelations()
+    {
+        return $this->relations;
+    }
+
+    /**
+     * @param Column $column
+     */
+    public function addPrimaryKey(Column $column)
+    {
+        $this->primaryKeys[$column->name] = $column;
+    }
+
+    /**
+     * @return array|Column[]
+     */
+    public function getPrimaryKeys()
+    {
+        return $this->primaryKeys;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPrimaryKeyCount()
+    {
+        $count = 0;
+        foreach ($this->columns as $column) {
+            if ($column->isPrimaryKey) {
+                ++$count;
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * @param Relation $relation
+     */
+    public function addRelation(Relation $relation)
+    {
+        $this->relations[] = $relation;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function hasRelation($name)
+    {
+        foreach ($this->relations as $relation) {
+            if (false !== strpos($name, '\\') && $name == $relation->with
+                || false === strpos($name, '.') && $name == $this->name
+                || false !== strpos($name, '.') && $name == $this->schema->database . '.' . $this->name) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

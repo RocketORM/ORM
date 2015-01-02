@@ -14,7 +14,7 @@ namespace Rocket\ORM\Generator\Schema;
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-class Schema implements SchemaInterface
+class Schema
 {
     /**
      * @var string
@@ -47,7 +47,7 @@ class Schema implements SchemaInterface
     public $database;
 
     /**
-     * @var Table[]
+     * @var array|Table[]
      */
     protected $tables = [];
 
@@ -76,5 +76,78 @@ class Schema implements SchemaInterface
     public function getTables()
     {
         return $this->tables;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return array|Table[]
+     */
+    public function findTables($name)
+    {
+        if (false !== strpos($name, '\\')) {
+            $tables = $this->getTablesByNamespace($name);
+        } else {
+            if (false === strpos($name, '.')) {
+                $tables = $this->getTablesByTableName($name);
+            } else {
+                $tables = $this->getTablesByDatabaseAndTableName($name);
+            }
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param string $namespace A table namespace like "Example\Model\MyModel"
+     *
+     * @return array|Table[]
+     */
+    protected function getTablesByNamespace($namespace)
+    {
+        $namespace = str_replace('\\\\', '\\', $namespace);
+        $tables = [];
+
+        foreach ($this->tables as $table) {
+            if ($namespace === sprintf('%s\\%s', $this->namespace, $table->phpName)) {
+                $tables[] = $table;
+            }
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param string $name A table name like "my_table"
+     *
+     * @return array|Table[]
+     */
+    protected function getTablesByTableName($name)
+    {
+        $tables = [];
+        foreach ($this->tables as $table) {
+            if ($name === $table->name) {
+                $tables[] = $table;
+            }
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param string $prefixedName A table name like "database.my_table"
+     *
+     * @return array|Table[]
+     */
+    protected function getTablesByDatabaseAndTableName($prefixedName)
+    {
+        $tables = [];
+        foreach ($this->tables as $table) {
+            if ($prefixedName === sprintf('%s.%s', $this->database, $table->name)) {
+                $tables[] = $table;
+            }
+        }
+
+        return $tables;
     }
 }
