@@ -26,10 +26,10 @@ abstract class TableMap implements TableMapInterface
     const COLUMN_TYPE_DATETIME = 8;
     const COLUMN_TYPE_ENUM     = 9;
 
-    const RELATION_TYPE_ONE_TO_MANY  = 1;
-    const RELATION_TYPE_MANY_TO_ONE  = 2;
-    const RELATION_TYPE_ONE_TO_ONE   = 3;
-    const RELATION_TYPE_MANY_TO_MANY = 4;
+    const RELATION_TYPE_ONE_TO_MANY  = 100;
+    const RELATION_TYPE_MANY_TO_ONE  = 101;
+    const RELATION_TYPE_ONE_TO_ONE   = 102;
+    const RELATION_TYPE_MANY_TO_MANY = 103;
 
     /**
      * @var string
@@ -85,14 +85,16 @@ abstract class TableMap implements TableMapInterface
     }
 
     /**
-     * @param string   $name
-     * @param string   $phpName
-     * @param int      $type
-     * @param null|int $size
-     * @param int      $scale
-     * @param bool     $isRequired
+     * @param string     $name
+     * @param string     $phpName
+     * @param int        $type
+     * @param null|int   $size
+     * @param int        $scale
+     * @param null|array $values
+     * @param null|bool  $default
+     * @param bool       $isRequired
      */
-    public function addColumn($name, $phpName, $type, $size = null, $scale = 0, $default = null, $isRequired = false)
+    public function addColumn($name, $phpName, $type, $size = null, $scale = 0, array $values = null, $default = null, $isRequired = false)
     {
         $this->columns[$name] = [
             'name'        => $name,
@@ -100,6 +102,7 @@ abstract class TableMap implements TableMapInterface
             'type'        => $type,
             'size'        => $size,
             'scale'       => $scale,
+            'values'      => $values,
             'default'     => $default,
             'is_required' => $isRequired
         ];
