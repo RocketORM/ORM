@@ -124,7 +124,7 @@ class SchemaTransformer implements SchemaTransformerInterface
                 );
             }
 
-            if (TableMap::COLUMN_TYPE_DOUBLE == $column->type || TableMap::COLUMN_TYPE_FLOAT == $column->type
+            if ((TableMap::COLUMN_TYPE_DOUBLE == $column->type || TableMap::COLUMN_TYPE_FLOAT == $column->type)
                 && $column->decimal >= $column->size) {
                 throw new InvalidConfigurationException(
                     'Invalid size value "' . $column->size . '" for column "' . $column->name . '" on table "'
