@@ -45,11 +45,11 @@ class SchemaLoader
 
 
     /**
-     * @param string|array                    $path
-     * @param string|array                    $exclude
-     * @param SchemaTransformerInterface|null $schemaTransformer
+     * @param string|array               $path
+     * @param string|array               $exclude
+     * @param SchemaTransformerInterface $schemaTransformer
      */
-    public function __construct($path, $exclude = [], SchemaTransformerInterface $schemaTransformer = null)
+    public function __construct($path, $exclude = [], SchemaTransformerInterface $schemaTransformer)
     {
         $this->path              = $path;
         $this->exclude           = $exclude;
