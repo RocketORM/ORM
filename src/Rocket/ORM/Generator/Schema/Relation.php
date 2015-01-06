@@ -11,18 +11,11 @@
 
 namespace Rocket\ORM\Generator\Schema;
 
-use Rocket\ORM\Model\Map\TableMap;
-
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
 class Relation
 {
-    /**
-     * @var Table
-     */
-    protected $table;
-
     /**
      * @var string
      */
@@ -57,6 +50,11 @@ class Relation
      * @var int
      */
     public $type;
+
+    /**
+     * @var Table
+     */
+    protected $table;
 
 
     /**

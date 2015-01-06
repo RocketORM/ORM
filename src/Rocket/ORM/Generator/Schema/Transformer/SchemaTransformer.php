@@ -155,6 +155,8 @@ class SchemaTransformer implements SchemaTransformerInterface
     public function transformRelations(Table $table, array $schemas)
     {
         $relations = $table->getRelations();
+        $relatedTables = [];
+
         foreach ($relations as $relation) {
             // Check if local column exists
             $localColumn = null;
@@ -206,8 +208,13 @@ class SchemaTransformer implements SchemaTransformerInterface
                 }
             }
 
-            // Then, create the relation for the related table if doesn't exist yet
-            $this->createRelatedRelation($relation, $table, $relatedTable);
+            // Then, save the related table for check if the related relation has been created
+            $relatedTables[] = &$relatedTable;
+        }
+
+        // Create all related relations is not already created
+        foreach ($table->getRelations() as $i => $relation) {
+            $this->createRelatedRelation($relation, $table, $relatedTables[$i]);
         }
 
         return $relations;
@@ -273,6 +280,7 @@ class SchemaTransformer implements SchemaTransformerInterface
             'onUpdate' => $relation->onUpdate,
             'onDelete' => $relation->onDelete,
         ]);
+        $relatedRelation->setTable($table);
 
         if (!$relatedTable->hasRelation($relatedRelation->with)) {
             $relatedTable->addRelation($relatedRelation);

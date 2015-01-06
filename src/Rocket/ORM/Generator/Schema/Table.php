@@ -162,9 +162,7 @@ class Table
     public function hasRelation($name)
     {
         foreach ($this->relations as $relation) {
-            if (false !== strpos($name, '\\') && $name == $relation->with
-                || false === strpos($name, '.') && $name == $this->name
-                || false !== strpos($name, '.') && $name == $this->schema->database . '.' . $this->name) {
+            if ($name == $relation->with) {
                 return true;
             }
         }

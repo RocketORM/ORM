@@ -11,6 +11,8 @@
 
 namespace Rocket\ORM\Model\Map;
 
+use Rocket\ORM\Model\Map\Exception\RelationAlreadyExistsException;
+
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
@@ -114,16 +116,22 @@ abstract class TableMap implements TableMapInterface
      * @param int    $type
      * @param string $local
      * @param string $foreign
+     *
+     * @throws RelationAlreadyExistsException
      */
     public function addRelation($classNamespace, $phpName, $type, $local, $foreign)
     {
-        $this->relations[$phpName] = [
+        if (isset($this->relations[$classNamespace])) {
+            throw new RelationAlreadyExistsException('The relation between ' . str_replace(['TableMap\\', 'TableMap'], '', get_called_class()) . ' and "' . $classNamespace . '" already exists');
+        }
+
+        $this->relations[$classNamespace] = [
             'namespace' => $classNamespace,
             'phpName' => $phpName,
             'type' => $type,
             'local' => $local,
             'foreign' => $foreign,
-            'table_map_namespace' => constant($classNamespace . 'Query::TABLE_MAP_NAMESPACE')
+            //'table_map_namespace' => constant($classNamespace . 'Query::TABLE_MAP_NAMESPACE')
         ];
     }
 
@@ -223,20 +231,28 @@ abstract class TableMap implements TableMapInterface
     /**
      * @param string $name
      *
-     * @return mixed
+     * @return array
      */
     public function getRelation($name)
     {
+        if (!isset($this->relations[$name])) {
+            throw new \InvalidArgumentException('The relation with name "' . $name . '" is not found for table "' . $this->getTableName() . '"');
+        }
+
         return $this->relations[$name];
     }
 
     /**
      * @param string $name
      *
-     * @return mixed
+     * @return array
      */
     public function getColumn($name)
     {
+        if (!isset($this->columns[$name])) {
+            throw new \InvalidArgumentException('The column with name "' . $name . '" is not found for table "' . $this->getTableName() . '"');
+        }
+
         return $this->columns[$name];
     }
 
