@@ -9,8 +9,15 @@
  * file that was distributed with this source code.
  */
 
-$loader = require __DIR__ . '/../vendor/autoload.php';
+namespace Rocket\ORM\Test\Helper;
 
-/** @var \Composer\Autoload\ClassLoader $loader */
-$loader->add('Rocket', __DIR__ . '/framework');
-$loader->add('Fixture', __DIR__ . '/resources/fixtures');
+/**
+ * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
+ */
+interface TestHelper
+{
+    /**
+     * @return string
+     */
+    public function getHelperName();
+}

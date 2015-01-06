@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema namespace="Fixture\Bookstore\Model" connection="xml" database="my_database">
+<schema namespace="Fixture\Bookstore\Model" connection="xml" database="my_database" directory="../fixtures/Fixture/Bookstore/Model">
     <table name="book">
         <column name="id" type="integer" primaryKey="true" autoIncrement="true" />
         <column name="author_id" type="integer" size="11" required="true" />

@@ -44,7 +44,11 @@ class InlineSchemaLoader extends SchemaLoader
     {
         $schemas = [];
         foreach ($this->schemas as $i => $schema) {
-            $schemas['inline_' . $i] = $schema;
+            if (is_int($i)) {
+                $schemas['inline_' . $i] = $schema;
+            } else {
+                $schemas[$i] = $schema;
+            }
         }
 
         return $this->validate($schemas);

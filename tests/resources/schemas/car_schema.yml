@@ -1,6 +1,7 @@
 connection: default
 database: car_db
 namespace: Fixture\Car\Model
+directory: '../fixtures/Fixture/Car/Model'
 tables:
     car:
         columns:
@@ -25,6 +26,7 @@ tables:
                 decimal: 2
                 required: true
         relations:
+            # TODO many to many
             car_db.wheel:
                 local: wheel_unique_name
                 foreign: unique_name
