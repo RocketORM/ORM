@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema namespace="Fixture\Bookstore\Model" connection="xml" database="my_database">
+    <table name="book">
+        <column name="id" type="integer" primaryKey="true" autoIncrement="true" />
+        <column name="author_id" type="integer" size="11" required="true" />
+        <column name="name" type="varchar" size="255" required="true" />
+        <column name="price" type="double" size="4" decimal="2" required="false" />
+        <column name="released_at" type="datetime" required="false" />
+
+        <relation with="author" local="author_id" foreign="id" onUpdate="CASCADE" onDelete="CASCADE" />
+    </table>
+
+    <table name="author">
+        <column name="id" type="integer" primaryKey="true" autoIncrement="true" />
+        <column name="first_name" type="varchar" size="100" required="true" />
+        <column name="last_name" type="varchar" size="100" required="true" />
+        <column name="email" type="varchar" size="255" required="true" />
+        <column name="is_locked" type="boolean" required="true" default="false" />
+        <column name="gender" type="enum" required="true" default="M">
+            <value>M</value>
+            <value>F</value>
+            <value>NA</value>
+        </column>
+    </table>
+</schema>

@@ -1,0 +1,128 @@
+connection: default
+database: car_db
+namespace: Fixture\Car\Model
+tables:
+    car:
+        columns:
+            id:
+                type: integer
+                primaryKey: true
+                autoIncrement: true
+            door_count:
+                type: enum
+                values:
+                    - 3
+                    - 5
+                default: 3
+                required: true
+            wheel_unique_name:
+                type: varchar
+                size: 255
+                required: true
+            price:
+                type: double
+                size: 4
+                decimal: 2
+                required: true
+        relations:
+            car_db.wheel:
+                local: wheel_unique_name
+                foreign: unique_name
+                onUpdate: CASCADE
+
+    wheel:
+        columns:
+            unique_name:
+                type: varchar
+                primaryKey: true
+                size: 255
+            score:
+                type: integer
+                size: 2
+                required: true
+            company_id:
+                type: integer
+                size: 11
+                required: true
+        relations:
+            car_db.company:
+                local: company_id
+                foreign: id
+                onUpdate: CASCADE
+                onDelete: CASCADE
+
+    company:
+        columns:
+            id:
+                type: integer
+                primaryKey: true
+                autoIncrement: true
+            name:
+                type: varchar
+                size: 100
+                required: true
+
+    validator:
+        columns:
+            company_id:
+                type: integer
+                size: 11
+                primaryKey: true
+            firstname:
+                type: varchar
+                size: 100
+                required: true
+            lastname:
+                type: varchar
+                size: 100
+                required: true
+        relations:
+            car_db.company:
+                local: company_id
+                foreign: id
+                onUpdate: RESTRICT
+                onDelete: RESTRICT
+
+    certificate:
+        columns:
+            validator_company_id:
+                type: integer
+                size: 11
+                primaryKey: true
+            car_id:
+                type: integer
+                size: 11
+                primaryKey: true
+            created_at:
+                type: datetime
+                required: true
+            is_valid:
+                type: boolean
+                required: true
+                default: false
+        relations:
+            car_db.validator:
+                local: validator_company_id
+                foreign: company_id
+            car_db.car:
+                local: car_id
+                foreign: id
+
+    approval:
+        columns:
+            certicate_car_id:
+                type: integer
+                size: 11
+                primaryKey: true
+            comment:
+                type: text
+                required: false
+            created_at:
+                type: datetime
+                required: true
+        relations:
+            car_db.certificate:
+                local: certicate_car_id
+                foreign: car_id
+
+

@@ -170,6 +170,7 @@ class SchemaTransformer implements SchemaTransformerInterface
 
             // Find the related relation in loaded schemas
             $relatedTable = $this->guessRelatedTable($relation->with, $schemas);
+            $oldWith = $relation->with;
             $relation->with = $relatedTable->getSchema()->escapedNamespace . '\\\\' . $relatedTable->phpName;
 
             if (null == $relation->phpName) {
@@ -185,7 +186,7 @@ class SchemaTransformer implements SchemaTransformerInterface
             }
 
             if (null == $foreignColumn) {
-                throw new InvalidConfigurationException('Invalid foreign column value "' . $relation->foreign . '" for relation "' . $relation->with . '"');
+                throw new InvalidConfigurationException('Invalid foreign column value "' . $relation->foreign . '" for relation "' . $oldWith . '"');
             }
 
             // Relation type guessing
@@ -288,6 +289,7 @@ class SchemaTransformer implements SchemaTransformerInterface
      * @throws \LogicException
      *
      * @see https://github.com/whiteoctober/RestBundle/blob/master/Pluralization/Pluralization.php
+     * @codeCoverageIgnore
      */
     protected function pluralize($word)
     {
