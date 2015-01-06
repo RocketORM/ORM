@@ -169,4 +169,20 @@ class Table
 
         return false;
     }
+
+    /**
+     * @param string $name
+     *
+     * @return Column
+     */
+    public function getColumn($name)
+    {
+        foreach ($this->columns as $column) {
+            if ($name == $column->name) {
+                return $column;
+            }
+        }
+
+        return null;
+    }
 }

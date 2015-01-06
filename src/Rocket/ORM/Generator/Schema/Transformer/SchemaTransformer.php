@@ -35,10 +35,10 @@ class SchemaTransformer implements SchemaTransformerInterface
      */
     public function __construct($modelNamespace = '\\Rocket\\ORM\\Generator\\Schema\\Schema')
     {
-        $defaultSchemaNamespace = '\\Rocket\\ORM\\Generator\\Schema\\Schema';
-        if ($modelNamespace != $defaultSchemaNamespace) {
+        $defaultNamespace = '\\Rocket\\ORM\\Generator\\Schema\\Schema';
+        if ($modelNamespace != $defaultNamespace) {
             $class = new \ReflectionClass($modelNamespace);
-            if (!$class->isSubclassOf($defaultSchemaNamespace)) {
+            if (!$class->isSubclassOf($defaultNamespace)) {
                 throw new \InvalidArgumentException('The schema model must extend Rocket\ORM\Generator\Schema\Schema');
             }
         }
@@ -61,16 +61,7 @@ class SchemaTransformer implements SchemaTransformerInterface
         $schema->namespace = str_replace('\\\\', '\\', $schema->namespace);
         $schema->escapedNamespace = str_replace('\\', '\\\\', $schema->namespace);
 
-        // Add or delete slashes
-        // Add first slash if missing
-        if (0 < strpos($schema->relativeDirectory, DIRECTORY_SEPARATOR)) {
-            $schema->relativeDirectory = DIRECTORY_SEPARATOR . $schema->relativeDirectory;
-        }
-
-        // Delete last slash if exists
-        if (DIRECTORY_SEPARATOR === $schema->relativeDirectory[strlen($schema->relativeDirectory) - 1]) {
-            $schema->relativeDirectory = substr($schema->relativeDirectory, 0, -1);
-        }
+        $this->formatDirectory($schema);
 
         // Delete the file in the path
         $pathParams = explode(DIRECTORY_SEPARATOR, $path);
@@ -159,13 +150,7 @@ class SchemaTransformer implements SchemaTransformerInterface
 
         foreach ($relations as $relation) {
             // Check if local column exists
-            $localColumn = null;
-            foreach ($table->getColumns() as $column) {
-                if ($relation->local === $column->name) {
-                    $localColumn = $column;
-                }
-            }
-
+            $localColumn = $table->getColumn($relation->local);
             if (null == $localColumn) {
                 throw new InvalidConfigurationException('Invalid local column value "' . $relation->local . '" for relation "' . $relation->with . '"');
             }
@@ -180,33 +165,13 @@ class SchemaTransformer implements SchemaTransformerInterface
             }
 
             // Check if foreign column exists
-            $foreignColumn = false;
-            foreach ($relatedTable->getColumns() as $column) {
-                if ($relation->foreign === $column->name) {
-                    $foreignColumn = $column;
-                }
-            }
-
+            $foreignColumn = $relatedTable->getColumn($relation->foreign);
             if (null == $foreignColumn) {
                 throw new InvalidConfigurationException('Invalid foreign column value "' . $relation->foreign . '" for relation "' . $oldWith . '"');
             }
 
             // Relation type guessing
-            if (!$localColumn->isPrimaryKey) {
-                $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
-            } elseif (!$foreignColumn->isPrimaryKey) {
-                $relation->type = TableMap::RELATION_TYPE_MANY_TO_ONE;
-                $relation->phpName = $this->pluralize($relation->phpName);
-            } else {
-                if (1 < $table->getPrimaryKeyCount()) {
-                    $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
-                } elseif (1 < $relatedTable->getPrimaryKeyCount()) {
-                    $relation->type = TableMap::RELATION_TYPE_MANY_TO_ONE;
-                    $relation->phpName = $this->pluralize($relation->phpName);
-                } else {
-                    $relation->type = TableMap::RELATION_TYPE_ONE_TO_ONE;
-                }
-            }
+            $this->guessRelationType($localColumn, $foreignColumn, $table, $relatedTable, $relation);
 
             // Then, save the related table for check if the related relation has been created
             $relatedTables[] = &$relatedTable;
@@ -301,7 +266,7 @@ class SchemaTransformer implements SchemaTransformerInterface
      */
     protected function pluralize($word)
     {
-        $plurals = [
+        static $plurals = [
             '/(quiz)$/i'                => '\1zes',
             '/^(ox)$/i'                 => '\1en',
             '/([m|l])ouse$/i'           => '\1ice',
@@ -322,11 +287,11 @@ class SchemaTransformer implements SchemaTransformerInterface
             '/$/'                       => 's'
         ];
 
-        $uncountables = [
+        static $uncountables = [
             'equipment', 'information', 'rice', 'money', 'species', 'series', 'fish', 'sheep'
         ];
 
-        $irregulars = [
+        static $irregulars = [
             'person'  => 'people',
             'man'     => 'men',
             'child'   => 'children',
@@ -354,5 +319,48 @@ class SchemaTransformer implements SchemaTransformerInterface
         }
 
         throw new \LogicException('Unknown plural for word "' . $word . '"');
+    }
+
+    /**
+     * @param Schema $schema
+     */
+    protected function formatDirectory(Schema $schema)
+    {
+        // Add or delete slashes
+        // Add first slash if missing
+        if (0 < strpos($schema->relativeDirectory, DIRECTORY_SEPARATOR)) {
+            $schema->relativeDirectory = DIRECTORY_SEPARATOR . $schema->relativeDirectory;
+        }
+
+        // Delete last slash if exists
+        if (DIRECTORY_SEPARATOR === $schema->relativeDirectory[strlen($schema->relativeDirectory) - 1]) {
+            $schema->relativeDirectory = substr($schema->relativeDirectory, 0, -1);
+        }
+    }
+
+    /**
+     * @param Column   $local
+     * @param Column   $foreign
+     * @param Table    $table
+     * @param Table    $relatedTable
+     * @param Relation $relation
+     */
+    protected function guessRelationType(Column $local, Column $foreign, Table $table, Table $relatedTable, Relation $relation)
+    {
+        if (!$local->isPrimaryKey) {
+            $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
+        } elseif (!$foreign->isPrimaryKey) {
+            $relation->type = TableMap::RELATION_TYPE_MANY_TO_ONE;
+            $relation->phpName = $this->pluralize($relation->phpName);
+        } else {
+            if (1 < $table->getPrimaryKeyCount()) {
+                $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
+            } elseif (1 < $relatedTable->getPrimaryKeyCount()) {
+                $relation->type = TableMap::RELATION_TYPE_MANY_TO_ONE;
+                $relation->phpName = $this->pluralize($relation->phpName);
+            } else {
+                $relation->type = TableMap::RELATION_TYPE_ONE_TO_ONE;
+            }
+        }
     }
 }
