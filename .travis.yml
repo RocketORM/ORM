@@ -13,6 +13,9 @@ before_script:
 script:
   - ./vendor/bin/phpunit
 
+after_script:
+  - ./vendor/bin/test-reporter --coverage-report=tests/build/logs/clover.xml
+
 matrix:
   allow_failures:
     - php: hhvm
