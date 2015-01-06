@@ -71,8 +71,8 @@ class SchemaConfiguration implements ConfigurationInterface
     protected function getTableConfigurationNode()
     {
         $builder = new TreeBuilder();
-        $node = $builder->root('tables');
-        $node
+        $tablesNode = $builder->root('tables');
+        $tablesNode
             ->requiresAtLeastOneElement()
             ->isRequired()
             ->useAttributeAsKey('name')
@@ -90,7 +90,7 @@ class SchemaConfiguration implements ConfigurationInterface
             ->append($this->getTableRelationConfigurationNode())
         ;
 
-        return $node;
+        return $tablesNode;
     }
 
     /**
@@ -99,8 +99,8 @@ class SchemaConfiguration implements ConfigurationInterface
     protected function getTableColumnConfigurationNode()
     {
         $builder = new TreeBuilder();
-        $node = $builder->root('columns');
-        $node
+        $columnsNode = $builder->root('columns');
+        $columnsNode
             ->requiresAtLeastOneElement()
             ->isRequired()
             ->useAttributeAsKey('name')
@@ -154,7 +154,7 @@ class SchemaConfiguration implements ConfigurationInterface
             ->end()
         ;
 
-        return $node;
+        return $columnsNode;
     }
 
     /**
@@ -165,8 +165,8 @@ class SchemaConfiguration implements ConfigurationInterface
         $onActionBehaviors = ['CASCADE', 'NO ACTION', 'RESTRICT', 'SET NULL', 'SET DEFAULT'];
 
         $builder = new TreeBuilder();
-        $node = $builder->root('relations');
-        $node
+        $relationsNode = $builder->root('relations');
+        $relationsNode
             ->useAttributeAsKey('with')
             ->prototype('array')
                 ->children()
@@ -200,6 +200,6 @@ class SchemaConfiguration implements ConfigurationInterface
             ->end()
         ;
 
-        return $node;
+        return $relationsNode;
     }
 }

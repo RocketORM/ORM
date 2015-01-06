@@ -16,3 +16,8 @@ script:
 matrix:
   allow_failures:
     - php: hhvm
+
+addons:
+    code_climate:
+        repo_token:
+            secure: "dx8HKHvruf10bh7FrhRfCUqdqxjbL4Rn/dOS7Hvhw9IkYY7iHxADckLTIrQMqVC0al7ukvCsQpFwB6iVEhUvcHKtvFATnwmv1yvpatgvHjNtKEXCuDaLxVTuhUgP71teFYXKi6CK42cVdq1UJAEdFyAdTLBs+KDCtqtzucRf3Tk="
