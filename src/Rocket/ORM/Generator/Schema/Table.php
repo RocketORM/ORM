@@ -96,18 +96,6 @@ class Table
     }
 
     /**
-     * @param Column[] $columns
-     */
-    public function setColumns(array $columns)
-    {
-        if (isset($columns[0]) && !$columns[0] instanceof Column) {
-            throw new \InvalidArgumentException('The table columns array items must extends \\Rocket\\ORM\\Generator\\Schema\\Column');
-        }
-
-        $this->columns = $columns;
-    }
-
-    /**
      * @return array|Relation[]
      */
     public function getRelations()

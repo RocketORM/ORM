@@ -17,6 +17,7 @@ tables:
                 default: 3
                 required: true
             wheel_unique_name:
+                phpName: wheelName
                 type: varchar
                 size: 255
                 required: true
@@ -24,7 +25,10 @@ tables:
                 type: double
                 size: 4
                 decimal: 2
-                required: true
+                required: false
+            released_at:
+                type: date
+                required: false
         relations:
             # TODO many to many
             car_db.wheel:
@@ -102,6 +106,10 @@ tables:
                 type: boolean
                 required: true
                 default: false
+            precision:
+                type: float
+                required: false
+                default: 10.5
         relations:
             car_db.validator:
                 local: validator_company_id
@@ -119,6 +127,7 @@ tables:
             comment:
                 type: text
                 required: false
+                default: "Put a comment about the certificate"
             created_at:
                 type: datetime
                 required: true

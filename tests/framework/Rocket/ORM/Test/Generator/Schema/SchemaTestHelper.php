@@ -36,7 +36,7 @@ class SchemaTestHelper extends \PHPUnit_Framework_TestCase implements TestHelper
             $error = $e->getMessage();
         }
 
-        $this->assertTrue($error == $assertion, $assertionMessage);
+        $this->assertEquals($error, $assertion, $assertionMessage);
     }
 
     /**

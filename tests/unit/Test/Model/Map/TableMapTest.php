@@ -140,16 +140,138 @@ class TableMapTest extends RocketTestCase
         $this->assertTrue('company' == $tableMap->getTableName(), 'Table map table name');
         $this->assertTrue('Fixture\\Car\\Model' == $tableMap->getClassNamespace(), 'Table map table namespace');
 
-        // Assert columns
-        try {
-            $this->assertTrue($tableMap->hasColumn('id'), 'Table map column');
-            $this->assertTrue($tableMap->hasColumn('name'), 'Table map column');
-            $this->assertNotNull($tableMap->getColumn('id'), 'Table map column');
-            $this->assertNotNull($tableMap->getColumn('name'), 'Table map column');
-        } catch (\InvalidArgumentException $e) {
-            $this->assertTrue(false, 'Missing column');
-        }
+        // Assert counts
+        $this->assertCount(2, $tableMap->getColumns(), 'Wrong column count');
+        $this->assertCount(1, $tableMap->getPrimaryKeys(), 'Wrong primary key count');
+        $this->assertCount(2, $tableMap->getRelations(), 'Wrong relation count');
 
+        // Assert columns
+        $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Car');
+
+        // car.id
+        $this->assertTrue($tableMap->hasColumn('id'));
+        $column = $tableMap->getColumn('id');
+        $this->assertNotNull($column);
+        $this->assertEquals('id', $column['name']);
+        $this->assertEquals('id', $column['phpName']);
+        $this->assertEquals(TableMap::COLUMN_TYPE_INTEGER, $column['type']);
+        $this->assertNull($column['size']);
+        $this->assertNull($column['decimal']);
+        $this->assertNull($column['values']);
+        $this->assertNull($column['default']);
+        $this->assertTrue($column['required']);
+
+        // car.door_count
+        $this->assertTrue($tableMap->hasColumn('door_count'));
+        $column = $tableMap->getColumn('door_count');
+        $this->assertNotNull($column);
+        $this->assertEquals('door_count', $column['name']);
+        $this->assertEquals('doorCount', $column['phpName']);
+        $this->assertEquals(TableMap::COLUMN_TYPE_ENUM, $column['type']);
+        $this->assertNull($column['size']);
+        $this->assertNull($column['decimal']);
+        $this->assertNotNull($column['values']);
+        $this->assertEquals(3, $column['values'][0]);
+        $this->assertEquals(5, $column['values'][1]);
+        $this->assertEquals(0, $column['default']); // by key
+        $this->assertTrue($column['required']);
+
+        // car.wheel_unique_name
+        $this->assertTrue($tableMap->hasColumn('wheel_unique_name'));
+        $column = $tableMap->getColumn('wheel_unique_name');
+        $this->assertNotNull($column);
+        $this->assertEquals('wheel_unique_name', $column['name']);
+        $this->assertEquals('wheelName', $column['phpName']); // custom
+        $this->assertEquals(TableMap::COLUMN_TYPE_STRING, $column['type']);
+        $this->assertEquals(255, $column['size']);
+        $this->assertNull($column['decimal']);
+        $this->assertNull($column['values']);
+        $this->assertNull($column['default']);
+        $this->assertTrue($column['required']);
+
+        // car.price
+        $this->assertTrue($tableMap->hasColumn('price'));
+        $column = $tableMap->getColumn('price');
+        $this->assertNotNull($column);
+        $this->assertEquals('price', $column['name']);
+        $this->assertEquals('price', $column['phpName']);
+        $this->assertEquals(TableMap::COLUMN_TYPE_DOUBLE, $column['type']);
+        $this->assertEquals(4, $column['size']);
+        $this->assertEquals(2, $column['decimal']);
+        $this->assertNull($column['values']);
+        $this->assertNull($column['default']);
+        $this->assertFalse($column['required']);
+
+        // car.released_at
+        $this->assertTrue($tableMap->hasColumn('released_at'));
+        $column = $tableMap->getColumn('released_at');
+        $this->assertNotNull($column);
+        $this->assertEquals('released_at', $column['name']);
+        $this->assertEquals('releasedAt', $column['phpName']);
+        $this->assertEquals(TableMap::COLUMN_TYPE_DATE, $column['type']);
+        $this->assertNull($column['size']);
+        $this->assertNull($column['decimal']);
+        $this->assertNull($column['values']);
+        $this->assertNull($column['default']);
+        $this->assertFalse($column['required']);
+
+        $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Certificate');
+
+        // certificate.created_at
+        $this->assertTrue($tableMap->hasColumn('created_at'));
+        $column = $tableMap->getColumn('created_at');
+        $this->assertNotNull($column);
+        $this->assertEquals('created_at', $column['name']);
+        $this->assertEquals('createdAt', $column['phpName']);
+        $this->assertEquals(TableMap::COLUMN_TYPE_DATETIME, $column['type']);
+        $this->assertNull($column['size']);
+        $this->assertNull($column['decimal']);
+        $this->assertNull($column['values']);
+        $this->assertNull($column['default']);
+        $this->assertTrue($column['required']);
+
+        // certificate.is_valid
+        $this->assertTrue($tableMap->hasColumn('is_valid'));
+        $column = $tableMap->getColumn('is_valid');
+        $this->assertNotNull($column);
+        $this->assertEquals('is_valid', $column['name']);
+        $this->assertEquals('isValid', $column['phpName']);
+        $this->assertEquals(TableMap::COLUMN_TYPE_BOOLEAN, $column['type']);
+        $this->assertNull($column['size']);
+        $this->assertNull($column['decimal']);
+        $this->assertNull($column['values']);
+        $this->assertFalse($column['default']);
+        $this->assertTrue($column['required']);
+
+        // certificate.precision
+        $this->assertTrue($tableMap->hasColumn('precision'));
+        $column = $tableMap->getColumn('precision');
+        $this->assertNotNull($column);
+        $this->assertEquals('precision', $column['name']);
+        $this->assertEquals('precision', $column['phpName']);
+        $this->assertEquals(TableMap::COLUMN_TYPE_FLOAT, $column['type']);
+        $this->assertNull($column['size']);
+        $this->assertNull($column['decimal']);
+        $this->assertNull($column['values']);
+        $this->assertEquals('10.5', $column['default']);
+        $this->assertFalse($column['required']);
+
+        $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Approval');
+
+        // approval.comment
+        $this->assertTrue($tableMap->hasColumn('comment'));
+        $column = $tableMap->getColumn('comment');
+        $this->assertNotNull($column);
+        $this->assertEquals('comment', $column['name']);
+        $this->assertEquals('comment', $column['phpName']);
+        $this->assertEquals(TableMap::COLUMN_TYPE_TEXT, $column['type']);
+        $this->assertNull($column['size']);
+        $this->assertNull($column['decimal']);
+        $this->assertNull($column['values']);
+        $this->assertEquals('Put a comment about the certificate', $column['default']);
+        $this->assertFalse($column['required']);
+
+        // Wrong column
         $error = false;
         try {
             $tableMap->getColumn('notfound');
@@ -159,30 +281,5 @@ class TableMapTest extends RocketTestCase
 
         $this->assertTrue($error, 'Wrong column name');
         $this->assertFalse($tableMap->hasColumn('notfound'), 'Wrong column name');
-        $this->assertCount(2, $tableMap->getColumns(), 'Wrong column count');
-
-        // Assert relations
-        try {
-            $this->assertNotNull($tableMap->hasRelation('Fixture\\Car\\Model\\Wheel'), 'Table map relation');
-            $this->assertNotNull($tableMap->hasRelation('Fixture\\Car\\Model\\Validator'), 'Table map relation');
-            $this->assertNotNull($tableMap->getRelation('Fixture\\Car\\Model\\Wheel'), 'Table map relation');
-            $this->assertNotNull($tableMap->getRelation('Fixture\\Car\\Model\\Validator'), 'Table map relation');
-        } catch (\InvalidArgumentException $e) {
-            $this->assertTrue(false, 'Missing relation');
-        }
-
-        $error = false;
-        try {
-            $tableMap->getRelation('notfound');
-        } catch (\InvalidArgumentException $e) {
-            $error = true;
-        }
-
-        $this->assertTrue($error, 'Wrong relation name');
-        $this->assertFalse($tableMap->hasRelation('notfound'), 'Wrong relation name');
-        $this->assertCount(2, $tableMap->getRelations(), 'Wrong relation count');
-
-        // Assert primary keys
-        $this->assertCount(1, $tableMap->getPrimaryKeys(), 'Wrong primary key count');
     }
 }

@@ -143,6 +143,16 @@ class SchemaLoaderTest extends RocketTestCase
             ,
             'Wrong size or decimal value'
         );
+
+        // Wrong default value for boolean
+        $wrongSchema = $this->validSchema;
+        $wrongSchema['tables']['certificate']['columns']['is_valid']['default'] = 'not_a_boolean';
+
+        $this->schemaHelper->assertSchemaLoadingException(
+            new InlineSchemaLoader([$wrongSchema]),
+            'The default value "not_a_boolean" for boolean column "is_valid" on table "certificate" should be a boolean (schema : "inline_0")',
+            'Wrong default value on boolean type'
+        );
     }
 
     /**
