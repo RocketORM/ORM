@@ -122,12 +122,16 @@ class SchemaTransformer implements SchemaTransformerInterface
                 );
             }
 
-            if ((TableMap::COLUMN_TYPE_DOUBLE == $column->type || TableMap::COLUMN_TYPE_FLOAT == $column->type)
-                && $column->decimal >= $column->size) {
-                throw new InvalidConfigurationException(
-                    'Invalid size value "' . $column->size . '" for column "' . $column->name . '" on table "'
-                    . $column->getTable()->name . '", the size should be greater than the decimal value "' . $column->decimal . '"'
-                );
+            if ((TableMap::COLUMN_TYPE_DOUBLE == $column->type || TableMap::COLUMN_TYPE_FLOAT == $column->type)) {
+                if (null === $column->size || null === $column->decimal) {
+                    $column->size = null;
+                    $column->decimal = null;
+                } elseif ($column->decimal >= $column->size) {
+                    throw new InvalidConfigurationException(
+                        'Invalid size value "' . $column->size . '" for column "' . $column->name . '" on table "'
+                        . $column->getTable()->name . '", the size should be greater than the decimal value "' . $column->decimal . '"'
+                    );
+                }
             }
         }
     }

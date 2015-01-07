@@ -91,22 +91,22 @@ abstract class TableMap implements TableMapInterface
      * @param string     $phpName
      * @param int        $type
      * @param null|int   $size
-     * @param int        $scale
+     * @param int        $decimal
      * @param null|array $values
      * @param null|bool  $default
      * @param bool       $isRequired
      */
-    public function addColumn($name, $phpName, $type, $size = null, $scale = 0, array $values = null, $default = null, $isRequired = false)
+    public function addColumn($name, $phpName, $type, $size = null, $decimal = 0, array $values = null, $default = null, $isRequired = false)
     {
         $this->columns[$name] = [
-            'name'        => $name,
-            'phpName'     => $phpName,
-            'type'        => $type,
-            'size'        => $size,
-            'scale'       => $scale,
-            'values'      => $values,
-            'default'     => $default,
-            'is_required' => $isRequired
+            'name'     => $name,
+            'phpName'  => $phpName,
+            'type'     => $type,
+            'size'     => $size,
+            'decimal'  => $decimal,
+            'values'   => $values,
+            'default'  => $default,
+            'required' => $isRequired
         ];
     }
 
