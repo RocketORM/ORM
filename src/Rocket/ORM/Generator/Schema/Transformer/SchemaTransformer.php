@@ -108,10 +108,10 @@ class SchemaTransformer implements SchemaTransformerInterface
             }
 
             // Check, for enum type, if the default value exists in the values array
-            if (TableMap::COLUMN_TYPE_ENUM === $column->type && null != $column->default
-                && !in_array($column->default, $column->values)) {
+            if (TableMap::COLUMN_TYPE_ENUM === $column->type && null != $column->getDefault(true)
+                && !in_array($column->getDefault(true), $column->values)) {
                 throw new InvalidConfigurationException(
-                    'Invalid default value "' . $column->default . '" for enum column "' . $column->name . '" on table "' . $column->getTable()->name . '"'
+                    'Invalid default value "' . $column->getDefault(true) . '" for enum column "' . $column->name . '" on table "' . $column->getTable()->name . '"'
                 );
             }
 

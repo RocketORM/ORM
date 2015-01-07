@@ -51,7 +51,7 @@ class Column
     /**
      * @var mixed
      */
-    public $default;
+    protected $default;
 
     /**
      * @var bool
@@ -121,5 +121,29 @@ class Column
         }
 
         throw new \LogicException('Unknown value "' . $this->type . '" for constant TableMap::COLUMN_TYPE_*');
+    }
+
+    /**
+     * @param bool $raw
+     *
+     * @return int|mixed
+     */
+    public function getDefault($raw = false)
+    {
+        if ($raw) {
+            return $this->default;
+        }
+
+        if (TableMap::COLUMN_TYPE_ENUM == $this->type) {
+            foreach ($this->values as $i => $value) {
+                if ($value == $this->default) {
+                    return $i;
+                }
+            }
+
+            throw new \LogicException('The default value for column "' . $this->name . '" is not found');
+        }
+
+        return $this->default;
     }
 }
