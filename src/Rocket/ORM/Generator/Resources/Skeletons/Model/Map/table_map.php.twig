@@ -43,7 +43,7 @@ class {{ table.phpName }}TableMap extends {% block extends 'TableMap' %}
                 {{- column.name }}', '{{ column.phpName }}', self::{{ column.typeAsString }}, {{ null == column.size ? 'null' : column.size }},
                 {{- null == column.decimal ? ' null' : ' ' ~ column.decimal }},
                 {%- if null == column.values %} null{% else %} ['{{ column.values|join("', '")|raw }}']{% endif %},
-                {%- if null == column.default %} null{% else %} '{{ column.default }}'{% endif %},
+                {%- if column.default is sameas(false) %} false{% elseif column.default is sameas(true) %} true{% elseif column.default is sameas(null) %} null{% else %} '{{ column.default }}'{% endif %},
                 {{- column.isRequired ? ' true' : ' false' -}}
             );
         {% endfor %}

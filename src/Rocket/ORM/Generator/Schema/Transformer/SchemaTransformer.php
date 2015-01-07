@@ -107,6 +107,13 @@ class SchemaTransformer implements SchemaTransformerInterface
                 $column->isRequired = true;
             }
 
+            // Check if default value is valid if the type is boolean
+            if (TableMap::COLUMN_TYPE_BOOLEAN == $column->type && true !== $column->getDefault() && false !== $column->getDefault()) {
+                throw new InvalidConfigurationException(
+                    'The default value "' . $column->getDefault(true) . '" for boolean column "' . $column->name . '" on table "' . $column->getTable()->name . '" should be a boolean'
+                );
+            }
+
             // Check, for enum type, if the default value exists in the values array
             if (TableMap::COLUMN_TYPE_ENUM === $column->type && null != $column->getDefault(true)
                 && !in_array($column->getDefault(true), $column->values)) {
