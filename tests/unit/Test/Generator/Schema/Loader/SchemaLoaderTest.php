@@ -117,7 +117,7 @@ class SchemaLoaderTest extends RocketTestCase
 
         $this->schemaHelper->assertSchemaLoadingException(
             new InlineSchemaLoader([$wrongSchema]),
-            'Unrecognized options "primaryKey_notfound" under "schema.tables.car.columns.id" (schema : "inline_0")',
+            'Unrecognized option "primaryKey_notfound" under "schema.tables.car.columns.id" (schema : "inline_0")',
             'Wrong property for column'
         );
 
