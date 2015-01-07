@@ -12,7 +12,10 @@
 namespace Rocket\ORM\Test\Generator\Schema;
 
 use Rocket\ORM\Generator\Schema\Loader\SchemaLoader;
+use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer;
+use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface;
 use Rocket\ORM\Test\Helper\TestHelper;
+use Symfony\Component\Finder\Finder;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -34,6 +37,38 @@ class SchemaTestHelper extends \PHPUnit_Framework_TestCase implements TestHelper
         }
 
         $this->assertTrue($error == $assertion, $assertionMessage);
+    }
+
+    /**
+     * @param string|null                $schemasDir
+     * @param SchemaTransformerInterface $schemaTransformer
+     * @param string                     $schemaModelNamespace
+     *
+     * @return array|\Rocket\ORM\Generator\Schema\Schema[]
+     */
+    public function getSchemas($schemasDir = null, SchemaTransformerInterface $schemaTransformer = null,
+                               $schemaModelNamespace = '\\Rocket\\ORM\\Generator\\Schema\\Schema')
+    {
+        if (null == $schemasDir) {
+            $schemasDir = __DIR__ . '/../../../../../../resources/schemas';
+        }
+
+        if (null == $schemaTransformer) {
+            $schemaTransformer = new SchemaTransformer($schemaModelNamespace);
+        }
+
+        $schemaLoader = new SchemaLoader($schemasDir, [], $schemaTransformer);
+        $schemas = $schemaLoader->load();
+
+        $finder = new Finder();
+        $finder
+            ->files()
+            ->in($schemasDir)
+        ;
+
+        $this->assertCount($finder->count(), $schemas, 'Schemas count');
+
+        return $schemas;
     }
 
     /**

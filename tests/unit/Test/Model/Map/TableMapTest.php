@@ -17,6 +17,7 @@ use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer;
 use Rocket\ORM\Model\Map\Exception\RelationAlreadyExistsException;
 use Rocket\ORM\Model\Map\TableMap;
 use Rocket\ORM\Rocket;
+use Rocket\ORM\Test\Generator\Model\TableMapTestHelper;
 use Rocket\ORM\Test\Generator\Schema\Loader\InlineSchemaLoader;
 use Rocket\ORM\Test\Generator\Schema\SchemaTestHelper;
 use Rocket\ORM\Test\RocketTestCase;
@@ -31,6 +32,11 @@ class TableMapTest extends RocketTestCase
      * @var SchemaTestHelper
      */
     protected $schemaHelper;
+
+    /**
+     * @var TableMapTestHelper
+     */
+    protected $tableMapHelper;
 
     /**
      * @var array
@@ -51,6 +57,8 @@ class TableMapTest extends RocketTestCase
         parent::setUp();
 
         $this->schemaHelper = $this->getHelper('schema');
+        $this->tableMapHelper = $this->getHelper('table_map');
+
         $this->schemaDirPath = $this->rootDir . 'resources/schemas';
         $this->validSchema = Yaml::parse($this->schemaDirPath . '/car_schema.yml');
     }
@@ -113,6 +121,17 @@ class TableMapTest extends RocketTestCase
         }
 
         $this->assertTrue($error, 'Column type constant exception');
+    }
+
+    /**
+     * @test
+     */
+    public function valuesValidation()
+    {
+        $this->tableMapHelper->generate($this->schemaHelper->getSchemas());
+
+        /** @var TableMap $tableMap */
+        $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Company');
 
         // Assert values
         $this->assertTrue('car_db' == $tableMap->getDatabase(), 'Table map database');

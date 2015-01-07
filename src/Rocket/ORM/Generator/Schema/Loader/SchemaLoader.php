@@ -57,7 +57,7 @@ class SchemaLoader
     }
 
     /**
-     * @return Schema[]
+     * @return array|Schema[]
      *
      * @throws InvalidConfigurationException
      * @throws SchemaNotFoundException
