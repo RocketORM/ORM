@@ -182,7 +182,7 @@ class SchemaTransformer implements SchemaTransformerInterface
             }
 
             // Relation type guessing
-            $this->guessRelationType($localColumn, $foreignColumn, $table, $relatedTable, $relation);
+            $this->guessRelationType($localColumn, $foreignColumn, $relatedTable, $relation);
 
             // Then, save the related table for check if the related relation has been created
             $relatedTables[] = &$relatedTable;
@@ -352,11 +352,10 @@ class SchemaTransformer implements SchemaTransformerInterface
     /**
      * @param Column   $local
      * @param Column   $foreign
-     * @param Table    $table
      * @param Table    $relatedTable
      * @param Relation $relation
      */
-    protected function guessRelationType(Column $local, Column $foreign, Table $table, Table $relatedTable, Relation $relation)
+    protected function guessRelationType(Column $local, Column $foreign, Table $relatedTable, Relation $relation)
     {
         if (!$local->isPrimaryKey) {
             $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
@@ -364,7 +363,7 @@ class SchemaTransformer implements SchemaTransformerInterface
             $relation->type = TableMap::RELATION_TYPE_MANY_TO_ONE;
             $relation->phpName = $this->pluralize($relation->phpName);
         } else {
-            if (1 < $table->getPrimaryKeyCount()) {
+            if (1 < $relation->getTable()->getPrimaryKeyCount()) {
                 $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
             } elseif (1 < $relatedTable->getPrimaryKeyCount()) {
                 $relation->type = TableMap::RELATION_TYPE_MANY_TO_ONE;

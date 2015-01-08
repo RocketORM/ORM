@@ -63,15 +63,11 @@ class Relation
      */
     public function __construct($with, array $data)
     {
-        if (false !== strpos('\\', $with)) {
-            $with = str_replace('\\', '\\\\', $with);
-        }
-
-        $this->with      = $with;
-        $this->phpName   = $data['phpName'];
-        $this->local     = $data['local'];
-        $this->foreign   = $data['foreign'];
-        $this->onDelete  = $data['onDelete'];
+        $this->with     = $with;
+        $this->phpName  = $data['phpName'];
+        $this->local    = $data['local'];
+        $this->foreign  = $data['foreign'];
+        $this->onDelete = $data['onDelete'];
         $this->onUpdate =  $data['onUpdate'];
 
         if (isset($data['type'])) {
@@ -98,6 +94,8 @@ class Relation
 
     /**
      * @return string
+     *
+     * @codeCoverageIgnore LogicException cannot be reached by a test
      */
     public function typeAsString()
     {

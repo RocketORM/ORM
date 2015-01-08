@@ -24,6 +24,26 @@ interface TableMapInterface
     public function configure();
 
     /**
+     * @return string
+     */
+    public function getConnectionName();
+
+    /**
+     * @return string
+     */
+    public function getClassNamespace();
+
+    /**
+     * @return array
+     */
+    public function getPrimaryKeys();
+
+    /**
+     * @return array
+     */
+    public function getRelations();
+
+    /**
      * @param string $columnName
      *
      * @return array

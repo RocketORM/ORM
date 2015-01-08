@@ -110,6 +110,8 @@ class Column
 
     /**
      * @return string
+     *
+     * @codeCoverageIgnore LogicException cannot be reached by a test
      */
     public function typeAsString()
     {
@@ -127,6 +129,8 @@ class Column
      * @param bool $raw
      *
      * @return int|mixed
+     *
+     * @codeCoverageIgnore LogicException cannot be reached by a test
      */
     public function getDefault($raw = false)
     {
