@@ -152,13 +152,11 @@ class SchemaTransformer implements SchemaTransformerInterface
      * @param Table $table
      * @param array $schemas
      *
-     * @return array
+     * @return void
      */
     public function transformRelations(Table $table, array $schemas)
     {
         $relations = $table->getRelations();
-        $relatedTables = [];
-
         foreach ($relations as $relation) {
             // Check if local column exists
             $localColumn = $table->getColumn($relation->local);
@@ -185,15 +183,22 @@ class SchemaTransformer implements SchemaTransformerInterface
             $this->guessRelationType($localColumn, $foreignColumn, $relatedTable, $relation);
 
             // Then, save the related table for check if the related relation has been created
-            $relatedTables[] = &$relatedTable;
+            $relation->setRelatedTable($relatedTable);
         }
+    }
 
-        // Create all related relations is not already created
+    /**
+     * @param Table $table
+     * @param array $schemas
+     */
+    public function transformRelatedRelations(Table $table, array $schemas)
+    {
+        // Create all related relations that are not already created
         foreach ($table->getRelations() as $i => $relation) {
-            $this->createRelatedRelation($relation, $table, $relatedTables[$i]);
+            if (null != $relation->getRelatedTable()) {
+                $this->createRelatedRelation($relation, $table, $relation->getRelatedTable());
+            }
         }
-
-        return $relations;
     }
 
     /**

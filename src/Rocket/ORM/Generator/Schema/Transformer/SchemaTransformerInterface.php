@@ -57,4 +57,12 @@ interface SchemaTransformerInterface
      * @return void
      */
     public function transformRelations(Table $table, array $schemas);
+
+    /**
+     * @param Table $table
+     * @param array $schemas
+     *
+     * @return void
+     */
+    public function transformRelatedRelations(Table $table, array $schemas);
 }

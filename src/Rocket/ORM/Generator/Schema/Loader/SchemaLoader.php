@@ -108,6 +108,11 @@ class SchemaLoader
                 foreach ($schema->getTables() as $table) {
                     $this->schemaTransformer->transformRelations($table, $normalizedSchemas);
                 }
+
+                // Must wait for the relation transformations above ($relation->with)
+                foreach ($schema->getTables() as $table) {
+                    $this->schemaTransformer->transformRelatedRelations($table, $normalizedSchemas);
+                }
             } catch (ConfigurationException $e) {
                 throw new InvalidConfigurationException($path, $e);
             }

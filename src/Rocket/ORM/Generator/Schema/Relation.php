@@ -56,6 +56,11 @@ class Relation
      */
     protected $table;
 
+    /**
+     * @var Table
+     */
+    protected $relatedTable;
+
 
     /**
      * @param string $with
@@ -107,5 +112,21 @@ class Relation
         }
 
         throw new \LogicException('Unknown value "' . $this->type . '" for constant TableMap::RELATION_TYPE_*');
+    }
+
+    /**
+     * @return Table
+     */
+    public function getRelatedTable()
+    {
+        return $this->relatedTable;
+    }
+
+    /**
+     * @param Table $relatedTable
+     */
+    public function setRelatedTable($relatedTable)
+    {
+        $this->relatedTable = $relatedTable;
     }
 }

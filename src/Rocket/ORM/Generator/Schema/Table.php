@@ -17,11 +17,6 @@ namespace Rocket\ORM\Generator\Schema;
 class Table
 {
     /**
-     * @var Schema
-     */
-    protected $schema;
-
-    /**
      * @var string
      */
     public $name;
@@ -45,6 +40,11 @@ class Table
      * @var array|Column[]
      */
     protected $primaryKeys = [];
+
+    /**
+     * @var Schema
+     */
+    protected $schema;
 
 
     /**

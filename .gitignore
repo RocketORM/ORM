@@ -8,3 +8,4 @@ fixtures/
 
 tests/build
 tests/resources/fixtures
+phpunit.xml.*
