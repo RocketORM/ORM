@@ -67,7 +67,7 @@ class TableMapTest extends RocketTestCase
     /**
      * @test
      */
-    public function generate()
+    public function generationValidation()
     {
         $tableMapGenerator = new TableMapGenerator();
 
@@ -126,11 +126,10 @@ class TableMapTest extends RocketTestCase
     /**
      * @test
      */
-    public function valuesValidation()
+    public function commonValidation()
     {
         $this->tableMapHelper->generate($this->schemaHelper->getSchemas());
 
-        /** @var TableMap $tableMap */
         $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Company');
 
         // Assert values
@@ -144,6 +143,14 @@ class TableMapTest extends RocketTestCase
         $this->assertCount(2, $tableMap->getColumns(), 'Wrong column count');
         $this->assertCount(1, $tableMap->getPrimaryKeys(), 'Wrong primary key count');
         $this->assertCount(2, $tableMap->getRelations(), 'Wrong relation count');
+    }
+
+    /**
+     * @test
+     */
+    public function columnsValidation()
+    {
+        $this->tableMapHelper->generate($this->schemaHelper->getSchemas());
 
         // Assert columns
         $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Car');
@@ -281,5 +288,44 @@ class TableMapTest extends RocketTestCase
 
         $this->assertTrue($error, 'Wrong column name');
         $this->assertFalse($tableMap->hasColumn('notfound'), 'Wrong column name');
+    }
+
+    /**
+     * @test
+     */
+    public function relationsValidation()
+    {
+        $this->tableMapHelper->generate($this->schemaHelper->getSchemas());
+
+        $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Wheel');
+
+        // Assert specified relation (one to many)
+        $this->assertTrue($tableMap->hasRelation('Fixture\\Car\\Model\\Company'));
+        $relation = $tableMap->getRelation('Fixture\\Car\\Model\\Company');
+        $this->assertEquals('Fixture\\Car\\Model\\Company', $relation['namespace']);
+        $this->assertEquals('Company', $relation['phpName']);
+        $this->assertEquals(TableMap::RELATION_TYPE_ONE_TO_MANY, $relation['type']);
+        $this->assertEquals('company_id', $relation['local']);
+        $this->assertEquals('id', $relation['foreign']);
+
+        $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Company');
+
+        // Assert non specified relation (many to one)
+        $this->assertTrue($tableMap->hasRelation('Fixture\\Car\\Model\\Wheel'));
+        $relation = $tableMap->getRelation('Fixture\\Car\\Model\\Wheel');
+        $this->assertEquals('Fixture\\Car\\Model\\Wheel', $relation['namespace']);
+        $this->assertEquals('Wheels', $relation['phpName']);
+        $this->assertEquals(TableMap::RELATION_TYPE_MANY_TO_ONE, $relation['type']);
+        $this->assertEquals('id', $relation['local']);
+        $this->assertEquals('company_id', $relation['foreign']);
+
+        // Assert specified relation (one to one)
+        $this->assertTrue($tableMap->hasRelation('Fixture\\Car\\Model\\Validator'));
+        $relation = $tableMap->getRelation('Fixture\\Car\\Model\\Validator');
+        $this->assertEquals('Fixture\\Car\\Model\\Validator', $relation['namespace']);
+        $this->assertEquals('Validator', $relation['phpName']);
+        $this->assertEquals(TableMap::RELATION_TYPE_ONE_TO_ONE, $relation['type']);
+        $this->assertEquals('id', $relation['local']);
+        $this->assertEquals('company_id', $relation['foreign']);
     }
 }
