@@ -11,7 +11,9 @@
 
 namespace Rocket\ORM\Connection;
 
+use Rocket\ORM\Connection\Exception\ConnectionModeException;
 use Rocket\ORM\Connection\Exception\ConnectionNotFoundException;
+use Rocket\ORM\Rocket;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -20,10 +22,24 @@ class ConnectionFactory
 {
     const WRAPPER_DEFAULT_CLASS = '\\Rocket\\ORM\\Connection\\Pdo\\Pdo';
 
-    public static function create(array $config, $name)
+    /**
+     * @param array  $config
+     * @param string $name
+     * @param int    $mode
+     *
+     * @return ConnectionInterface
+     *
+     * @throws ConnectionNotFoundException
+     * @throws ConnectionModeException
+     */
+    public static function create(array $config, $name, $mode)
     {
         if (!isset($config['connections'][$name])) {
             throw new ConnectionNotFoundException('The connection with name "' . $name . '" is not found in the configuration');
+        } elseif (isset($config['connections'][$name]['mode']) && null != $config['connections'][$name]['mode'] && $mode != $config['connections'][$name]) {
+            throw new ConnectionModeException('Trying to use connection named "' . $name . '" with the mode "'
+                . (Rocket::CONNECTION_MODE_WRITE == $mode ? 'write' : 'read') . '", but got "' . $config['connections'][$name]['mode'] . '"')
+            ;
         }
 
         if (isset($config['connections'][$name]['class']) && null != $config['connections'][$name]['class']) {
@@ -34,7 +50,7 @@ class ConnectionFactory
             $class = self::WRAPPER_DEFAULT_CLASS;
         }
 
-        /** @var ConnectionInterface $connection */
+        /** @var ConnectionInterface $class */
         $connection = $class::create($config['connections'][$name]['params']);
 
         return $connection;

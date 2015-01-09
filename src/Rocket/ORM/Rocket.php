@@ -49,15 +49,20 @@ class Rocket
 
     /**
      * @param string $name The connection name
+     * @param int    $mode The connection mode, a Rocket class constant
      *
      * @return ConnectionInterface
      *
      * @throws Connection\Exception\ConnectionNotFoundException
      */
-    public static function getConnection($name)
+    public static function getConnection($name = null, $mode = self::CONNECTION_MODE_WRITE)
     {
+        if (null == $name) {
+            $name = self::getConfiguration('default_connection');
+        }
+
         if (!isset(self::$cons[$name])) {
-            self::$cons[$name] = ConnectionFactory::create(self::$config, $name);
+            self::$cons[$name] = ConnectionFactory::create(self::$config, $name, $mode);
         }
 
         return self::$cons[$name];
@@ -72,29 +77,29 @@ class Rocket
     }
 
     /**
-     * @param string $name
+     * @param string $key
      *
      * @return mixed
      */
-    public static function getConfiguration($name)
+    public static function getConfiguration($key)
     {
-        if (isset(self::$configCache[$name])) {
-            return self::$configCache[$name];
+        if (isset(self::$configCache[$key])) {
+            return self::$configCache[$key];
         }
 
-        $parts = explode('.', $name);
+        $parts = explode('.', $key);
         $config = self::$config;
 
         foreach ($parts as $part) {
             if (!array_key_exists($part, $config)) {
-                throw new \InvalidArgumentException('No configuration found for the key "' . $name . '"');
+                throw new \InvalidArgumentException('No configuration found for the key "' . $key . '"');
             }
 
             $config = $config[$part];
         }
 
         // Save to avoid next iteration
-        self::$configCache[$name] = $config;
+        self::$configCache[$key] = $config;
 
         return $config;
     }
