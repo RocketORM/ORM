@@ -12,6 +12,7 @@
 namespace Rocket\ORM\Command;
 
 use Rocket\ORM\Console\Command\AbstractCommand;
+use Rocket\ORM\Generator\Model\Object\ObjectGenerator;
 use Rocket\ORM\Generator\Model\TableMap\TableMapGenerator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -31,10 +32,12 @@ class RocketGenerateCommand extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $schemas = $this->getSchemas($this->getSchemaPath());
-        $mapGenerator = new TableMapGenerator();
+        $tableMapGenerator = new TableMapGenerator();
+        $objectGenerator = new ObjectGenerator();
 
         foreach ($schemas as $schema) {
-            $mapGenerator->generate($schema);
+            $tableMapGenerator->generate($schema);
+            $objectGenerator->generate($schema);
         }
     }
 

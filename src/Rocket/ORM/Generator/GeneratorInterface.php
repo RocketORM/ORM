@@ -18,5 +18,10 @@ use Rocket\ORM\Generator\Schema\Schema;
  */
 interface GeneratorInterface
 {
+    /**
+     * @param Schema $schema
+     *
+     * @return void
+     */
     public function generate(Schema $schema);
 }

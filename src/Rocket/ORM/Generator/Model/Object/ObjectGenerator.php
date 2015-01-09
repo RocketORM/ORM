@@ -9,15 +9,16 @@
  * file that was distributed with this source code.
  */
 
-namespace Rocket\ORM\Generator\Model\TableMap;
+namespace Rocket\ORM\Generator\Model\Object;
 
 use Rocket\ORM\Generator\GeneratorInterface;
+use Rocket\ORM\Generator\Schema\Loader\SchemaLoader;
 use Rocket\ORM\Generator\Schema\Schema;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-class TableMapGenerator implements GeneratorInterface
+class ObjectGenerator implements GeneratorInterface
 {
     /**
      * @var string
@@ -25,22 +26,17 @@ class TableMapGenerator implements GeneratorInterface
     protected $modelNamespace;
 
     /**
-     * @var \Twig_Loader_Filesystem
+     * @var array
      */
-    protected $twig;
+    protected $templateDirs;
 
 
     /**
      * @param string $modelNamespace
      * @param array  $templateDirs
      */
-    public function __construct($modelNamespace = '\\Rocket\\ORM\\Model\\Map\\TableMap', array $templateDirs = [])
+    public function __construct($modelNamespace = '', array $templateDirs = [])
     {
-        $class = new \ReflectionClass($modelNamespace);
-        if (!$class->implementsInterface('\\Rocket\\ORM\\Model\\Map\\TableMapInterface')) {
-            throw new \InvalidArgumentException('The table map model must implement Rocket\ORM\Model\Map\TableMapInterface');
-        }
-
         $this->modelNamespace = $modelNamespace;
         $this->twig           = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templateDirs, [__DIR__ . '/../../Resources/Skeletons'])), [
             'cache' => false
@@ -49,22 +45,33 @@ class TableMapGenerator implements GeneratorInterface
 
     /**
      * @param Schema $schema
+     *
+     * @return void
      */
     public function generate(Schema $schema)
     {
-        $outputDirectory = $schema->absoluteDirectory . DIRECTORY_SEPARATOR . 'TableMap';
+        // First generate base
+        $this->generateBase($schema);
+    }
+
+    /**
+     * @param Schema $schema
+     */
+    protected function generateBase(Schema $schema)
+    {
+        $outputDirectory = $schema->absoluteDirectory . DIRECTORY_SEPARATOR . 'Base';
         if (!is_dir($outputDirectory)) {
             if (!@mkdir($outputDirectory, 755, true)) {
-                throw new \RuntimeException('Cannot create table map model directory, error message : ' . error_get_last()['message']);
+                throw new \RuntimeException('Cannot create model directory, error message : ' . error_get_last()['message']);
             }
         }
 
         foreach ($schema->getTables() as $table) {
-            $template = $this->twig->render('Model/Map/table_map.php.twig', [
+            $template = $this->twig->render('Model/Object/object.php.twig', [
                 'table'  => $table
             ]);
 
-            file_put_contents($outputDirectory . DIRECTORY_SEPARATOR . $table->phpName . 'TableMap.php', $template);
+            file_put_contents($outputDirectory . DIRECTORY_SEPARATOR . 'Base' . $table->phpName . '.php', $template);
         }
     }
 }

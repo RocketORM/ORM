@@ -150,6 +150,9 @@ class SchemaConfiguration implements ConfigurationInterface
                     ->booleanNode('autoIncrement')
                         ->defaultFalse()
                     ->end()
+                    ->scalarNode('description')
+                        ->defaultNull()
+                    ->end()
                 ->end()
             ->end()
         ;

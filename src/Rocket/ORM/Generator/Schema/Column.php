@@ -73,6 +73,11 @@ class Column
      */
     public $values;
 
+    /**
+     * @var string
+     */
+    public $description;
+
 
     /**
      * @param string $name
@@ -90,6 +95,7 @@ class Column
         $this->isPrimaryKey    = $data['primaryKey'];
         $this->isAutoIncrement = $data['autoIncrement'];
         $this->values          = $data['values'];
+        $this->description     = $data['description'];
     }
 
     /**
@@ -149,5 +155,48 @@ class Column
         }
 
         return $this->default;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAttributePhpDoc()
+    {
+        $doc = "/**" . PHP_EOL;
+
+        $startDoc = '     * ';
+        if (null != $this->description) {
+            $doc .= $startDoc . str_replace('*', '', $this->description) . PHP_EOL . $startDoc . PHP_EOL;
+        }
+
+        return $doc . $startDoc . '@var ' . $this->getColumnTypePhpDoc() . PHP_EOL . '     */';
+    }
+
+    /**
+     * @return string
+     */
+    public function getColumnTypePhpDoc()
+    {
+        switch ($this->type) {
+            case TableMap::COLUMN_TYPE_BOOLEAN:  return 'bool';
+            case TableMap::COLUMN_TYPE_DATE:
+            case TableMap::COLUMN_TYPE_DATETIME: return '\DateTime';
+            case TableMap::COLUMN_TYPE_DOUBLE:   return 'double';
+            case TableMap::COLUMN_TYPE_ENUM:
+            case TableMap::COLUMN_TYPE_INTEGER:  return 'int';
+            case TableMap::COLUMN_TYPE_FLOAT:    return 'float';
+            case TableMap::COLUMN_TYPE_STRING:
+            case TableMap::COLUMN_TYPE_TEXT:     return 'string';
+        }
+
+        return 'mixed';
+    }
+
+    /**
+     * @return string
+     */
+    public function getMethodName()
+    {
+        return ucfirst($this->phpName);
     }
 }

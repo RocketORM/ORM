@@ -107,6 +107,8 @@ class SchemaTransformer implements SchemaTransformerInterface
                 $column->isRequired = true;
             }
 
+            // TODO check for more than one autoIncrement PK
+
             // Check if default value is valid if the type is boolean
             if (TableMap::COLUMN_TYPE_BOOLEAN == $column->type && true !== $column->getDefault() && false !== $column->getDefault()) {
                 throw new InvalidConfigurationException(
