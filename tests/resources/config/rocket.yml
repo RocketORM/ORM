@@ -1,0 +1,19 @@
+rocket:
+    default_connection: default
+    connection_class:   ~
+    connections:
+        default:
+            class: ~
+            params:
+                dsn:        'sqlite::memory:'
+                username:   ~
+                password:   ~
+                attributes: ~
+    model:
+        table_map: \Rocket\ORM\Model\Map\TableMap
+
+    generator:
+        schema:
+            class: \Rocket\ORM\Generator\Schema\Schema
+            transformer:
+                class: \Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer

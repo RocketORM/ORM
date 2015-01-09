@@ -55,7 +55,7 @@ class TableMapGenerator implements GeneratorInterface
         $outputDirectory = $schema->absoluteDirectory . DIRECTORY_SEPARATOR . 'TableMap';
         if (!is_dir($outputDirectory)) {
             if (!@mkdir($outputDirectory, 755, true)) {
-                throw new \RuntimeException('Cannot create model directory for table map, error message : ' . error_get_last()['message']);
+                throw new \RuntimeException('Cannot create table map model directory, error message : ' . error_get_last()['message']);
             }
         }
 

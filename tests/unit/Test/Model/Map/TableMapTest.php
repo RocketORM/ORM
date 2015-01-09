@@ -59,7 +59,7 @@ class TableMapTest extends RocketTestCase
         $this->schemaHelper = $this->getHelper('schema');
         $this->tableMapHelper = $this->getHelper('table_map');
 
-        $this->schemaDirPath = $this->rootDir . 'resources/schemas';
+        $this->schemaDirPath = $this->rootDir . '/resources/schemas';
         $this->validSchema = Yaml::parse($this->schemaDirPath . '/car_schema.yml');
     }
 
@@ -78,7 +78,7 @@ class TableMapTest extends RocketTestCase
             'foreign' => 'company_id'
         ];
 
-        $schemaLoader = new InlineSchemaLoader([$this->rootDir . 'resources/schemas/car_schema.yml' => $wrongSchema]);
+        $schemaLoader = new InlineSchemaLoader([$this->rootDir . '/resources/schemas/car_schema.yml' => $wrongSchema]);
         $schemas = $schemaLoader->load();
 
         $this->assertCount(1, $schemas, 'Schema count');
@@ -121,6 +121,16 @@ class TableMapTest extends RocketTestCase
         }
 
         $this->assertTrue($error, 'Column type constant exception');
+
+        // Wrong table map model namespace
+        $error = null;
+        try {
+            new TableMapGenerator('\\Rocket\\ORM\\Rocket');
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        $this->assertEquals('The table map model must implement Rocket\ORM\Model\Map\TableMapInterface', $error);
     }
 
     /**
@@ -327,5 +337,16 @@ class TableMapTest extends RocketTestCase
         $this->assertEquals(TableMap::RELATION_TYPE_ONE_TO_ONE, $relation['type']);
         $this->assertEquals('id', $relation['local']);
         $this->assertEquals('company_id', $relation['foreign']);
+
+        $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Validator');
+
+        // Assert non specified relation (one to one)
+        $this->assertTrue($tableMap->hasRelation('Fixture\\Car\\Model\\Company'));
+        $relation = $tableMap->getRelation('Fixture\\Car\\Model\\Company');
+        $this->assertEquals('Fixture\\Car\\Model\\Company', $relation['namespace']);
+        $this->assertEquals('Company', $relation['phpName']);
+        $this->assertEquals(TableMap::RELATION_TYPE_ONE_TO_ONE, $relation['type']);
+        $this->assertEquals('company_id', $relation['local']);
+        $this->assertEquals('id', $relation['foreign']);
     }
 }
