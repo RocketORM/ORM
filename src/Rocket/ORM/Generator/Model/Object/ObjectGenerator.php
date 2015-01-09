@@ -52,6 +52,28 @@ class ObjectGenerator implements GeneratorInterface
     {
         // First generate base
         $this->generateBase($schema);
+
+        $outputDirectory = $schema->absoluteDirectory;
+        if (!is_dir($outputDirectory)) {
+            if (!@mkdir($outputDirectory, 755, true)) {
+                throw new \RuntimeException('Cannot create model directory, error message : ' . error_get_last()['message']);
+            }
+        }
+
+        foreach ($schema->getTables() as $table) {
+            $outputFile = $outputDirectory . DIRECTORY_SEPARATOR . $table->phpName . '.php';
+
+            // Check if file already exists, do not override the file
+            if (is_file($outputFile)) {
+                continue;
+            }
+
+            $template = $this->twig->render('Model/Object/object.php.twig', [
+                'table'  => $table
+            ]);
+
+            file_put_contents($outputFile, $template);
+        }
     }
 
     /**
@@ -67,7 +89,7 @@ class ObjectGenerator implements GeneratorInterface
         }
 
         foreach ($schema->getTables() as $table) {
-            $template = $this->twig->render('Model/Object/object.php.twig', [
+            $template = $this->twig->render('Model/Object/base_object.php.twig', [
                 'table'  => $table
             ]);
 

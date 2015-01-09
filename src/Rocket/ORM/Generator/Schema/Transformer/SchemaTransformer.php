@@ -84,6 +84,8 @@ class SchemaTransformer implements SchemaTransformerInterface
                 $table->phpName = String::camelize($table->name);
             }
 
+            // TODO check if table phpName is named "RocketBaseModel"
+
             $this->transformColumns($table->getColumns());
             $this->transformPrimaryKeys($table->getColumns());
         }
