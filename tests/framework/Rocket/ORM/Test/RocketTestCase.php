@@ -11,7 +11,7 @@
 
 namespace Rocket\ORM\Test;
 
-use Rocket\ORM\Generator\Config\ConfigLoader;
+use \Rocket\ORM\Config\ConfigLoader;
 use Rocket\ORM\Rocket;
 use Rocket\ORM\Test\Helper\TestHelper;
 use Symfony\Component\Finder\Finder;
@@ -38,7 +38,7 @@ class RocketTestCase extends \PHPUnit_Framework_TestCase
      */
     public function __construct()
     {
-        $this->rootDir = __DIR__ . '/../../../../';
+        $this->rootDir = __DIR__ . '/../../../..';
     }
 
     /**

@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Rocket\ORM\Generator\Config;
+namespace Rocket\ORM\Config;
 
-use Rocket\ORM\Generator\Config\Exception\ConfigurationFileNotFoundException;
+use Rocket\ORM\Config\Exception\ConfigurationFileNotFoundException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Yaml\Yaml;

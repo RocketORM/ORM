@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Rocket\ORM\Generator\Config\Exception;
+namespace Rocket\ORM\Config\Exception;
 
 use Rocket\ORM\Exception\RocketException;
 

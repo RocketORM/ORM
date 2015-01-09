@@ -47,7 +47,7 @@ class SchemaLoaderTest extends RocketTestCase
     {
         parent::setUp();
 
-        $this->schemaDirPath = $this->rootDir . 'resources/schemas';
+        $this->schemaDirPath = $this->rootDir . '/resources/schemas';
         $this->validSchema = Yaml::parse($this->schemaDirPath . '/car_schema.yml');
         $this->schemaHelper = $this->getHelper('schema');
     }
