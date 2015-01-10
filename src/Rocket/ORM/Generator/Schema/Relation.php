@@ -102,7 +102,7 @@ class Relation
      *
      * @codeCoverageIgnore LogicException cannot be reached by a test
      */
-    public function typeAsString()
+    public function getTypeConstantName()
     {
         $reflection = new \ReflectionClass('\\Rocket\\ORM\\Model\\Map\\TableMap');
         foreach ($reflection->getConstants() as $name => $value) {
