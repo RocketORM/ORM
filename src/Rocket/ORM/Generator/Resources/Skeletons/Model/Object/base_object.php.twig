@@ -76,7 +76,7 @@ class Base{{ table.phpName }} extends {{ baseModel }}
 
     {%- for column in table.columns -%}
         {{ "\n\n    " }}/**
-     * @return {{ column.columnTypePhpDoc }}
+     * @return {{ column.typeAsPhpDoc }}
      */
     public function get{{ column.methodName }}()
     {
@@ -84,7 +84,7 @@ class Base{{ table.phpName }} extends {{ baseModel }}
     }
 
     /**
-     * @param {{ column.columnTypePhpDoc }} ${{ column.phpName }}
+     * @param {{ column.typeAsPhpDoc }} ${{ column.phpName }}
      *
      * @return $this
      */

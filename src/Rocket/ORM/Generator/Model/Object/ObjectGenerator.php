@@ -12,7 +12,6 @@
 namespace Rocket\ORM\Generator\Model\Object;
 
 use Rocket\ORM\Generator\GeneratorInterface;
-use Rocket\ORM\Generator\Schema\Loader\SchemaLoader;
 use Rocket\ORM\Generator\Schema\Schema;
 
 /**
@@ -26,9 +25,9 @@ class ObjectGenerator implements GeneratorInterface
     protected $modelNamespace;
 
     /**
-     * @var array
+     * @var \Twig_Environment
      */
-    protected $templateDirs;
+    protected $twig;
 
 
     /**
@@ -38,7 +37,7 @@ class ObjectGenerator implements GeneratorInterface
     public function __construct($modelNamespace = '', array $templateDirs = [])
     {
         $this->modelNamespace = $modelNamespace;
-        $this->twig           = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templateDirs, [__DIR__ . '/../../Resources/Skeletons'])), [
+        $this->twig           = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templateDirs, [__DIR__ . '/../../Resources/Skeletons/Model/Object'])), [
             'cache' => false
         ]);
     }
@@ -68,7 +67,7 @@ class ObjectGenerator implements GeneratorInterface
                 continue;
             }
 
-            $template = $this->twig->render('Model/Object/object.php.twig', [
+            $template = $this->twig->render('object.php.twig', [
                 'table'  => $table
             ]);
 
@@ -89,7 +88,7 @@ class ObjectGenerator implements GeneratorInterface
         }
 
         foreach ($schema->getTables() as $table) {
-            $template = $this->twig->render('Model/Object/base_object.php.twig', [
+            $template = $this->twig->render('base_object.php.twig', [
                 'table'  => $table
             ]);
 

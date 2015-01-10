@@ -40,7 +40,7 @@ class {{ table.phpName }}TableMap extends {% block extends 'TableMap' %}
         {% block columns -%}
         {% for column in table.columns -%}
             $this->addColumn('
-                {{- column.name }}', '{{ column.phpName }}', self::{{ column.typeAsString }}, {{ null == column.size ? 'null' : column.size }},
+                {{- column.name }}', '{{ column.phpName }}', self::{{ column.typeConstantName }}, {{ null == column.size ? 'null' : column.size }},
                 {{- null == column.decimal ? ' null' : ' ' ~ column.decimal }},
                 {%- if null == column.values %} null{% else %} ['{{ column.values|join("', '")|raw }}']{% endif %},
                 {%- if column.default is sameas(false) %} false{% elseif column.default is sameas(true) %} true{% elseif column.default is sameas(null) %} null{% else %} '{{ column.default }}'{% endif %},
@@ -57,7 +57,7 @@ class {{ table.phpName }}TableMap extends {% block extends 'TableMap' %}
 
         {% block relations -%}
         {% for relation in table.relations -%}
-            $this->addRelation('{{ relation.with }}', '{{ relation.phpName }}', self::{{ relation.typeAsString }}, '{{ relation.local }}', '{{ relation.foreign }}');
+            $this->addRelation('{{ relation.with }}', '{{ relation.phpName }}', self::{{ relation.typeConstantName }}, '{{ relation.local }}', '{{ relation.foreign }}');
         {% endfor %}
         {%- endblock %}
 

@@ -119,7 +119,7 @@ class Column
      *
      * @codeCoverageIgnore LogicException cannot be reached by a test
      */
-    public function typeAsString()
+    public function getTypeConstantName()
     {
         $reflection = new \ReflectionClass('\\Rocket\\ORM\\Model\\Map\\TableMap');
         foreach ($reflection->getConstants() as $name => $value) {
@@ -169,13 +169,13 @@ class Column
             $doc .= $startDoc . str_replace('*', '', $this->description) . PHP_EOL . $startDoc . PHP_EOL;
         }
 
-        return $doc . $startDoc . '@var ' . $this->getColumnTypePhpDoc() . PHP_EOL . '     */';
+        return $doc . $startDoc . '@var ' . $this->getTypeAsPhpDoc() . PHP_EOL . '     */';
     }
 
     /**
      * @return string
      */
-    public function getColumnTypePhpDoc()
+    public function getTypeAsPhpDoc()
     {
         switch ($this->type) {
             case TableMap::COLUMN_TYPE_BOOLEAN:  return 'bool';
@@ -198,5 +198,16 @@ class Column
     public function getMethodName()
     {
         return ucfirst($this->phpName);
+    }
+
+    /**
+     * @return string
+     */
+    public function getTypeAsString()
+    {
+        $constant = $this->getTypeConstantName();
+        $parts = explode('_', $constant);
+
+        return strtolower($parts[sizeof($parts) - 1]);
     }
 }

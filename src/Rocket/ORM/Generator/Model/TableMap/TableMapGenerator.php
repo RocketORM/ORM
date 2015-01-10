@@ -25,7 +25,7 @@ class TableMapGenerator implements GeneratorInterface
     protected $modelNamespace;
 
     /**
-     * @var \Twig_Loader_Filesystem
+     * @var \Twig_Environment
      */
     protected $twig;
 
@@ -42,7 +42,7 @@ class TableMapGenerator implements GeneratorInterface
         }
 
         $this->modelNamespace = $modelNamespace;
-        $this->twig           = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templateDirs, [__DIR__ . '/../../Resources/Skeletons'])), [
+        $this->twig           = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templateDirs, [__DIR__ . '/../../Resources/Skeletons/Model/Map'])), [
             'cache' => false
         ]);
     }
@@ -60,7 +60,7 @@ class TableMapGenerator implements GeneratorInterface
         }
 
         foreach ($schema->getTables() as $table) {
-            $template = $this->twig->render('Model/Map/table_map.php.twig', [
+            $template = $this->twig->render('table_map.php.twig', [
                 'table'  => $table
             ]);
 
