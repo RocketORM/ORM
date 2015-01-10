@@ -12,10 +12,13 @@
 namespace Rocket\ORM\Test\Generator\Schema;
 
 use Rocket\ORM\Generator\Schema\Loader\SchemaLoader;
+use Rocket\ORM\Generator\Schema\Schema;
 use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer;
 use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface;
+use Rocket\ORM\Test\Generator\Schema\Loader\InlineSchemaLoader;
 use Rocket\ORM\Test\Helper\TestHelper;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -69,6 +72,33 @@ class SchemaTestHelper extends \PHPUnit_Framework_TestCase implements TestHelper
         $this->assertCount($finder->count(), $schemas, 'Schemas count');
 
         return $schemas;
+    }
+
+    /**
+     * @param string      $schemaName
+     * @param null|string $schemaDir
+     *
+     * @return Schema
+     */
+    public function getSchemaByName($schemaName, $schemaDir = null)
+    {
+        if (null == $schemaDir) {
+            $schemaDir = __DIR__ . '/../../../../../../resources/schemas';
+        }
+
+        $schemaPath = $schemaDir . DIRECTORY_SEPARATOR . $schemaName;
+        if (!is_file($schemaPath)) {
+            throw new \InvalidArgumentException('The schema ' . $schemaPath . ' is not found');
+        }
+
+        $schemaLoader = new InlineSchemaLoader([
+            $schemaPath => Yaml::parse(file_get_contents($schemaPath))
+        ]);
+
+        $schemas = $schemaLoader->load();
+        $this->assertCount(1, $schemas);
+
+        return $schemas[0];
     }
 
     /**
