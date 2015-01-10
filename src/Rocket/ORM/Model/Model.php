@@ -17,7 +17,7 @@ use Rocket\ORM\Rocket;
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-abstract class Model
+abstract class Model implements ModelInterface
 {
     /**
      * @var bool

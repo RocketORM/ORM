@@ -50,10 +50,6 @@ class Base{{ table.phpName }} extends {{ baseModel }}
      */
     public function doInsert(\PDO $con)
     {
-        if (true === $this->_isNew) {
-            throw new \RuntimeException('Cannot insert an already saved object');
-        }
-
         $stmt = $con->prepare('INSERT INTO `{{ table.schema.database }}.{{ table.name }}` (
             {%- for column in table.columns -%}
                 `{{ column.name }}`
