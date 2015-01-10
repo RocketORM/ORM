@@ -1,0 +1,11 @@
+{% extends 'Column/float.sql.twig' %}
+
+{% block type -%}
+    {% spaceless %}
+        {% if null != size %}
+            double({{ column.size }},{{ column.decimal }})
+        {% else %}
+            double
+        {% endif %}
+    {% endspaceless %}
+{%- endblock %}

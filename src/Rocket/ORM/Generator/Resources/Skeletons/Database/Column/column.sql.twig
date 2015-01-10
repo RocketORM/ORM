@@ -1,0 +1,22 @@
+{% block space "\n    " %}
+{% spaceless %}
+    {% block name -%}
+    `{{ column.name }}`
+    {%- endblock -%}
+    {{ ' ' }}
+    {%- block type -%}
+        varchar({{ null == column.size ? 255 : column.size }})
+    {%- endblock -%}
+    {{ ' ' }}
+    {%- block required -%}
+        {{ column.isRequired ? 'NOT NULL' : 'NULL' }}
+    {%- endblock -%}
+    {% if null != column.default -%}
+        {{ ' ' }}
+    {%- endif %}
+    {%- block default -%}
+        {% if null != column.default -%}
+            DEFAULT "{{ column.default }}"
+        {%- endif %}
+    {%- endblock -%}
+{% endspaceless %}

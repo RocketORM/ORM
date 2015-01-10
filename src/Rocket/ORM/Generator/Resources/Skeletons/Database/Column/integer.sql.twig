@@ -1,0 +1,17 @@
+{% extends 'Column/column.sql.twig' %}
+
+{% block type %}
+    {%- spaceless %}
+        {% if column.size == null %}
+            int
+        {% else %}
+            int({{ column.size }})
+        {% endif %}
+    {% endspaceless -%}
+{% endblock %}
+
+{% block default %}
+    {%- if null != column.default -%}
+        DEFAULT {{ column.default }}
+    {%- endif -%}
+{% endblock %}

@@ -1,0 +1,14 @@
+
+-- -------------------------------------------------------
+-- {{ schema.database }} database
+-- -------------------------------------------------------
+
+{% for table in schema.tables -%}
+    CREATE TABLE `{{ table.name }}` (
+        {%- for column in table.columns -%}
+            {% include ['Column/' ~ column.typeAsString ~ '.sql.twig', 'Column/column.sql.twig'] %}
+        {%- endfor %}
+
+);
+
+{% endfor %}
