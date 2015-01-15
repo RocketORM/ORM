@@ -85,6 +85,11 @@ class SchemaConfiguration implements ConfigurationInterface
                     ->defaultNull()
                 ->end()
             ->end()
+            ->children()
+                ->scalarNode('type')
+                    ->defaultValue('InnoDB')
+                ->end()
+            ->end()
 
             ->append($this->getTableColumnConfigurationNode())
             ->append($this->getTableRelationConfigurationNode())
