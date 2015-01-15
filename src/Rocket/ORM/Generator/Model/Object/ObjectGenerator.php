@@ -11,13 +11,13 @@
 
 namespace Rocket\ORM\Generator\Model\Object;
 
-use Rocket\ORM\Generator\GeneratorInterface;
+use Rocket\ORM\Generator\Generator;
 use Rocket\ORM\Generator\Schema\Schema;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-class ObjectGenerator implements GeneratorInterface
+class ObjectGenerator extends Generator
 {
     /**
      * @var string
@@ -53,11 +53,7 @@ class ObjectGenerator implements GeneratorInterface
         $this->generateBase($schema);
 
         $outputDirectory = $schema->absoluteDirectory;
-        if (!is_dir($outputDirectory)) {
-            if (!@mkdir($outputDirectory, 755, true)) {
-                throw new \RuntimeException('Cannot create model directory, error message : ' . error_get_last()['message']);
-            }
-        }
+        $this->createDirectory($outputDirectory);
 
         foreach ($schema->getTables() as $table) {
             $outputFile = $outputDirectory . DIRECTORY_SEPARATOR . $table->phpName . '.php';
@@ -81,11 +77,7 @@ class ObjectGenerator implements GeneratorInterface
     protected function generateBase(Schema $schema)
     {
         $outputDirectory = $schema->absoluteDirectory . DIRECTORY_SEPARATOR . 'Base';
-        if (!is_dir($outputDirectory)) {
-            if (!@mkdir($outputDirectory, 755, true)) {
-                throw new \RuntimeException('Cannot create model directory, error message : ' . error_get_last()['message']);
-            }
-        }
+        $this->createDirectory($outputDirectory);
 
         foreach ($schema->getTables() as $table) {
             $template = $this->twig->render('base_object.php.twig', [

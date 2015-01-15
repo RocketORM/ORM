@@ -11,13 +11,13 @@
 
 namespace Rocket\ORM\Generator\Model\TableMap;
 
-use Rocket\ORM\Generator\GeneratorInterface;
+use Rocket\ORM\Generator\Generator;
 use Rocket\ORM\Generator\Schema\Schema;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-class TableMapGenerator implements GeneratorInterface
+class TableMapGenerator extends Generator
 {
     /**
      * @var string
@@ -53,11 +53,7 @@ class TableMapGenerator implements GeneratorInterface
     public function generate(Schema $schema)
     {
         $outputDirectory = $schema->absoluteDirectory . DIRECTORY_SEPARATOR . 'TableMap';
-        if (!is_dir($outputDirectory)) {
-            if (!@mkdir($outputDirectory, 755, true)) {
-                throw new \RuntimeException('Cannot create table map model directory, error message : ' . error_get_last()['message']);
-            }
-        }
+        $this->createDirectory($outputDirectory);
 
         foreach ($schema->getTables() as $table) {
             $template = $this->twig->render('table_map.php.twig', [
