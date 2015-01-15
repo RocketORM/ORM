@@ -11,14 +11,19 @@
 
 namespace Rocket\ORM\Generator\Database;
 
-use Rocket\ORM\Generator\GeneratorInterface;
+use Rocket\ORM\Generator\Generator;
 use Rocket\ORM\Generator\Schema\Schema;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-class DatabaseGenerator implements GeneratorInterface
+class DatabaseGenerator extends Generator
 {
+    /**
+     * @var string
+     */
+    protected $outputPath;
+
     /**
      * @var \Twig_Environment
      */
@@ -26,11 +31,13 @@ class DatabaseGenerator implements GeneratorInterface
 
 
     /**
-     * @param array $templateDirs
+     * @param string $outputPath
+     * @param array  $templateDirs
      */
-    public function __construct(array $templateDirs = [])
+    public function __construct($outputPath, array $templateDirs = [])
     {
-        $this->twig = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templateDirs, [__DIR__ . '/../Resources/Skeletons/Database'])), [
+        $this->outputPath = $outputPath;
+        $this->twig       = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templateDirs, [__DIR__ . '/../Resources/Skeletons/Database'])), [
             'cache' => false
         ]);
     }
@@ -42,27 +49,12 @@ class DatabaseGenerator implements GeneratorInterface
      */
     public function generate(Schema $schema)
     {
-        $this->generateDatabase($schema);
-        $this->generateSql($schema);
-    }
+        $this->createDirectory($this->outputPath);
 
-    /**
-     * @param Schema $schema
-     */
-    public function generateDatabase(Schema $schema)
-    {
-        // TODO implement this method
-    }
-
-    /**
-     * @param Schema $schema
-     */
-    public function generateSql(Schema $schema)
-    {
         $template = $this->twig->render('schema.sql.twig', [
             'schema'  => $schema
         ]);
 
-        // TODO save or execute output
+        file_put_contents($this->outputPath . DIRECTORY_SEPARATOR . $schema->database . '.sql', $template);
     }
 }

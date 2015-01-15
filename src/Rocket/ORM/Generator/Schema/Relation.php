@@ -57,6 +57,9 @@ class Relation
     protected $table;
 
     /**
+     * A related table is the table where the relation is explicitly mentioned in the schema configuration,
+     * so it can be NULL for related relations
+     *
      * @var Table
      */
     protected $relatedTable;
@@ -128,5 +131,13 @@ class Relation
     public function setRelatedTable($relatedTable)
     {
         $this->relatedTable = $relatedTable;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isForeignKey()
+    {
+        return null != $this->relatedTable;
     }
 }

@@ -27,6 +27,11 @@ class Table
     public $phpName;
 
     /**
+     * @var string
+     */
+    public $type;
+
+    /**
      * @var array|Column[]
      */
     protected $columns = [];
@@ -55,6 +60,7 @@ class Table
     {
         $this->name    = $name;
         $this->phpName = $data['phpName'];
+        $this->type    = $data['type'];
 
         foreach ($data['columns'] as $columnName => $columnData) {
             $column = new Column($columnName, $columnData);
@@ -172,5 +178,47 @@ class Table
         }
 
         return null;
+    }
+
+    /**
+     * @return array
+     */
+    public function getRelationsByTable()
+    {
+        $relations = [];
+        foreach ($this->relations as $relation) {
+            $relations[$relation->getTable()->name][] = $relation;
+        }
+
+        return $relations;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasForeignKey()
+    {
+        foreach ($this->relations as $relation) {
+            if ($relation->isForeignKey()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return array
+     */
+    public function getForeignKeys()
+    {
+        $foreignKeys = [];
+        foreach ($this->relations as $relation) {
+            if ($relation->isForeignKey()) {
+                $foreignKeys[$relation->getRelatedTable()->name][] = $relation;
+            }
+        }
+
+        return $foreignKeys;
     }
 }

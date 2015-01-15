@@ -3,12 +3,38 @@
 -- {{ schema.database }} database
 -- -------------------------------------------------------
 
+SET FOREIGN_KEY_CHECKS = 0;
+
 {% for table in schema.tables -%}
-    CREATE TABLE `{{ table.name }}` (
+    CREATE TABLE IF NOT EXISTS `{{ table.name }}` (
         {%- for column in table.columns -%}
             {% include ['Column/' ~ column.typeAsString ~ '.sql.twig', 'Column/column.sql.twig'] %}
+            {{- loop.last ? '' : ',' }}
         {%- endfor %}
+        {%- set primaryKeys = table.primaryKeys %}
+        {%- if 0 < primaryKeys|length -%}
+            ,{{ "\n\n    " -}}
+            PRIMARY KEY (
+                {%- for primaryKey in primaryKeys -%}
+                    `{{ primaryKey.name }}`
+                    {{- loop.last ? '' : ', ' }}
+                {%- endfor -%}
+            )
+        {%- endif %}
+        {%- if table.hasForeignKey -%}
+            ,{{ "\n    " -}}
+            {% for relations in table.foreignKeys -%}
+                FOREIGN KEY (
+                    {%- for relation in relations -%}
+                        `{{ relation.local }}`
+                        {{- loop.last ? '' : ', ' }}
+                    {%- endfor -%}
+                ) REFERENCES `{{ relations[0].relatedTable.schema.database }}`.`{{ relations[0].relatedTable.name }}` (`{{ relations[0].foreign }}`) ON UPDATE {{ relations[0].onUpdate }} ON DELETE {{ relations[0].onDelete }}
+                {{- loop.last ? '' : ",\n    " }}
+            {%- endfor %}
+        {%- endif %}
 
-);
+) ENGINE=`{{ table.type }}`;
 
 {% endfor %}
+SET FOREIGN_KEY_CHECKS = 1;
