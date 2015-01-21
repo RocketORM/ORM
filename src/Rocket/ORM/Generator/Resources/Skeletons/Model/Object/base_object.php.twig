@@ -29,19 +29,9 @@ class Base{{ table.phpName }} extends {{ baseModel }}
 
     {% endfor %}
 
-    /**
-     * @param array $values
-     *
-     * @return void
-     */
-    public function hydrate(array $values)
-    { {% for column in table.columns %}
-
-        if (isset($values['{{ column.name }}'])) {
-            $this->{{ column.phpName }} = $values['{{ column.name }}'];
-        }
-    {% endfor -%}
-    }
+    {%- block hydrate %}
+        {%- include 'Method/hydrate.php.twig' -%}
+    {% endblock hydrate %}
 
     /**
      * @param \PDO $con
