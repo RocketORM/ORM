@@ -67,4 +67,20 @@ class AbstractCommand extends Command
 
         return $schemaLoader->load();
     }
+
+    /**
+     * @return string
+     */
+    protected function getSchemaPath()
+    {
+        return __DIR__ . '/../../../../../fixtures/schemas';
+    }
+
+    /**
+     * @return string
+     */
+    protected function getSqlOutputPath()
+    {
+        return __DIR__ . '/../../../../../fixtures/sql';
+    }
 }

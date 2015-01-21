@@ -43,20 +43,4 @@ class RocketGenerateCommand extends AbstractCommand
             $databaseGenerator->generate($schema);
         }
     }
-
-    /**
-     * @return string
-     */
-    protected function getSchemaPath()
-    {
-        return __DIR__ . '/../../../../fixtures/schemas';
-    }
-
-    /**
-     * @return string
-     */
-    protected function getSqlOutputPath()
-    {
-        return __DIR__ . '/../../../../fixtures/sql';
-    }
 }
