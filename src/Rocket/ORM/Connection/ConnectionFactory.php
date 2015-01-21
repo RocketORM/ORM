@@ -20,7 +20,8 @@ use Rocket\ORM\Rocket;
  */
 class ConnectionFactory
 {
-    const WRAPPER_DEFAULT_CLASS = '\\Rocket\\ORM\\Connection\\Pdo\\Pdo';
+    const WRAPPER_DEFAULT_CLASS        = '\\Rocket\\ORM\\Connection\\PDO\\PDO';
+    const WRAPPER_DEFAULT_SQLITE_CLASS = '\\Rocket\\ORM\\Connection\\PDO\\SQLitePDO';
 
     /**
      * @param array  $config
@@ -48,6 +49,12 @@ class ConnectionFactory
             $class = $config['connection_class'];
         } else {
             $class = self::WRAPPER_DEFAULT_CLASS;
+            $dsn = $config['connections'][$name]['params']['dsn'];
+            $driver = substr($dsn, 0, strpos($dsn, ':'));
+
+            if ('sqlite' == $driver) {
+                $class = self::WRAPPER_DEFAULT_SQLITE_CLASS;
+            }
         }
 
         /** @var ConnectionInterface $class */

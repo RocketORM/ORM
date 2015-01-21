@@ -9,31 +9,32 @@
  * file that was distributed with this source code.
  */
 
-namespace Rocket\ORM\Connection;
+namespace Rocket\ORM\Connection\PDO;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-interface ConnectionInterface
+class SQLitePDO extends PDO
 {
-    /**
-     * @param array $config
-     *
-     * @return ConnectionInterface
-     */
-    public static function create(array $config);
-
     /**
      * @param string $databaseName
      *
      * @return bool
      */
-    public function isDatabaseCreated($databaseName);
+    public function isDatabaseCreated($databaseName)
+    {
+        // No need to create database in SQLite
+
+        return true;
+    }
 
     /**
      * @param string $databaseName
      *
      * @return void
      */
-    public function createDatabase($databaseName);
+    public function createDatabase($databaseName)
+    {
+        // No need to create database in SQLite
+    }
 }

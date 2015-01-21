@@ -48,6 +48,30 @@ class PDO extends \PDO implements ConnectionInterface, LoggerAwareInterface
     }
 
     /**
+     * @param string $databaseName
+     *
+     * @return bool
+     */
+    public function isDatabaseCreated($databaseName)
+    {
+        $stmt = $this->query("SHOW DATABASES LIKE '" . $databaseName . "'");
+        $stmt->execute();
+
+        return 0 < $stmt->rowCount();
+    }
+
+    /**
+     * @param string $databaseName
+     *
+     * @return void
+     */
+    public function createDatabase($databaseName)
+    {
+        $stmt = $this->prepare('CREATE DATABASE IF NOT EXISTS ' . $databaseName);
+        $stmt->execute();
+    }
+
+    /**
      * Sets a logger instance on the object
      *
      * @param LoggerInterface $logger
