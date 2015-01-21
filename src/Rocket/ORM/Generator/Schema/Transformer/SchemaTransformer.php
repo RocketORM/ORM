@@ -67,6 +67,8 @@ class SchemaTransformer implements SchemaTransformerInterface
         $pathParams = explode(DIRECTORY_SEPARATOR, $path);
         unset($pathParams[sizeof($pathParams) - 1]);
 
+        // TODO check if the connection name exists
+
         $schema->absoluteDirectory = join(DIRECTORY_SEPARATOR, $pathParams) . $schema->relativeDirectory;
 
         $this->transformTables($schema->getTables());

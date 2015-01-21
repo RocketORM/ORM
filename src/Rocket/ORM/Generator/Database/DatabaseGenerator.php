@@ -13,6 +13,7 @@ namespace Rocket\ORM\Generator\Database;
 
 use Rocket\ORM\Generator\Generator;
 use Rocket\ORM\Generator\Schema\Schema;
+use Rocket\ORM\Rocket;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -51,7 +52,11 @@ class DatabaseGenerator extends Generator
     {
         $this->createDirectory($this->outputPath);
 
-        $template = $this->twig->render('schema.sql.twig', [
+        // Allow overriding template for a given driver
+        $dsn = Rocket::getConfiguration('connections.' . $schema->connection)['params']['dsn'];
+        $driver = substr($dsn, 0, strpos($dsn, ':'));
+
+        $template = $this->twig->resolveTemplate([$driver . '.sql.twig', 'schema.sql.twig'])->render([
             'schema'  => $schema
         ]);
 

@@ -16,5 +16,10 @@ namespace Rocket\ORM\Connection;
  */
 interface ConnectionInterface
 {
+    /**
+     * @param array $config
+     *
+     * @return ConnectionInterface
+     */
     public static function create(array $config);
 }
