@@ -14,19 +14,12 @@ namespace Rocket\ORM\Connection;
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-interface ConnectionInterface
+interface ConnectionFactoryInterface
 {
     /**
-     * @param string $databaseName
+     * @param array $config
      *
-     * @return bool
+     * @return ConnectionInterface
      */
-    public function isDatabaseCreated($databaseName);
-
-    /**
-     * @param string $databaseName
-     *
-     * @return void
-     */
-    public function createDatabase($databaseName);
+    public static function create(array $config);
 }

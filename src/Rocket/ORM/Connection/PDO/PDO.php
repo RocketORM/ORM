@@ -13,12 +13,13 @@ namespace Rocket\ORM\Connection\PDO;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
+use Rocket\ORM\Connection\ConnectionFactoryInterface;
 use Rocket\ORM\Connection\ConnectionInterface;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-class PDO extends \PDO implements ConnectionInterface, LoggerAwareInterface
+class PDO extends \PDO implements ConnectionFactoryInterface, ConnectionInterface, LoggerAwareInterface
 {
     /**
      * @var LoggerInterface
