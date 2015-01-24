@@ -12,7 +12,6 @@
 SET FOREIGN_KEY_CHECKS = 0;
 {{ "\n" }}
 {%- endblock header %}
-
 {% for table in schema.tables -%}
     {% block create_table -%}
         CREATE TABLE IF NOT EXISTS `{{ table.name }}` (
@@ -55,7 +54,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 ) {% block engine %}ENGINE=`{{ table.type }}`{% endblock engine %};
 {{ "\n" }}
-{% endfor %}
-{% block footer -%}
+{%- endfor %}
+{%- block footer -%}
     SET FOREIGN_KEY_CHECKS = 1;
 {%- endblock footer %}
