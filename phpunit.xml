@@ -13,6 +13,12 @@
         </testsuite>
     </testsuites>
 
+    <groups>
+        <exclude>
+            <group>pending</group>
+        </exclude>
+    </groups>
+
     <filter>
         <whitelist>
             <directory>src</directory>
