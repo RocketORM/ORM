@@ -69,6 +69,42 @@ class AbstractCommand extends Command
     }
 
     /**
+     * @param OutputInterface $output
+     * @param string          $message
+     * @param bool            $newLine
+     * @param int             $verbosity
+     */
+    private function write(OutputInterface $output, $message, $newLine = true, $verbosity = OutputInterface::VERBOSITY_VERBOSE)
+    {
+        if ($verbosity == $output->getVerbosity()) {
+            $output->write($message);
+            if ($newLine) {
+                $output->writeln('');
+            }
+        }
+    }
+
+    /**
+     * @param OutputInterface $output
+     * @param string          $message
+     * @param bool            $newLine
+     */
+    protected function debug(OutputInterface $output, $message, $newLine = true)
+    {
+        $this->write($output, $message, $newLine, OutputInterface::VERBOSITY_DEBUG);
+    }
+
+    /**
+     * @param OutputInterface $output
+     * @param string          $message
+     * @param bool            $newLine
+     */
+    protected function verbose(OutputInterface $output, $message, $newLine = true)
+    {
+        $this->write($output, $message, $newLine, OutputInterface::VERBOSITY_VERBOSE);
+    }
+
+    /**
      * @return string
      */
     protected function getSchemaPath()
