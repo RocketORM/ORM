@@ -72,12 +72,12 @@ class RocketDatabaseCreateCommand extends AbstractCommand
                 }
             }
         } catch (\Exception $e) {
-            $output->writeln('<fg=red;options=bold>FAIL</fg=red;options=bold>.');
+            $output->writeln('<fg=red;options=bold>FAIL</fg=red;options=bold>');
 
             throw $e;
         }
 
-        $output->writeln('<info>Success</info>.');
+        $output->writeln('<info>Success</info>');
 
         return 0;
     }

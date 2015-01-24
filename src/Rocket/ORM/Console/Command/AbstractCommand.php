@@ -76,7 +76,7 @@ class AbstractCommand extends Command
      */
     private function write(OutputInterface $output, $message, $newLine = true, $verbosity = OutputInterface::VERBOSITY_VERBOSE)
     {
-        if ($verbosity == $output->getVerbosity()) {
+        if ($verbosity <= $output->getVerbosity()) {
             $output->write($message);
             if ($newLine) {
                 $output->writeln('');

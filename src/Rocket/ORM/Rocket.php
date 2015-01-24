@@ -51,7 +51,7 @@ class Rocket
      * @param string $name The connection name
      * @param int    $mode The connection mode, a Rocket class constant
      *
-     * @return ConnectionInterface
+     * @return ConnectionInterface|\PDO
      *
      * @throws Connection\Exception\ConnectionNotFoundException
      */
