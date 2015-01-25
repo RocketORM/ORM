@@ -127,7 +127,6 @@ tables:
             comment:
                 type: text
                 required: false
-                default: "Put a comment about the certificate"
             created_at:
                 type: datetime
                 required: true

@@ -285,7 +285,6 @@ class TableMapTest extends RocketTestCase
         $this->assertNull($column['size']);
         $this->assertNull($column['decimal']);
         $this->assertNull($column['values']);
-        $this->assertEquals('Put a comment about the certificate', $column['default']);
         $this->assertFalse($column['required']);
 
         // Wrong column
