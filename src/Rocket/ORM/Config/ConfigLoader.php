@@ -83,7 +83,11 @@ class ConfigLoader
 
         }
 
-        $this->config = array_merge(Yaml::parse($path), $options)['rocket'];
+        // Replace "__DIR__" string to the absolute path where the file is loaded
+        $__DIR__ = join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, $path), 0, -1));
+        $yamlString = str_replace('__DIR__', $__DIR__, file_get_contents($path));
+
+        $this->config = array_merge(Yaml::parse($yamlString), $options)['rocket'];
     }
 
     /**
