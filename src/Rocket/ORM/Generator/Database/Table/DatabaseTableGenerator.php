@@ -11,6 +11,7 @@
 
 namespace Rocket\ORM\Generator\Database\Table;
 
+use Rocket\ORM\Connection\PDO\SQLitePDO;
 use Rocket\ORM\Generator\Generator;
 use Rocket\ORM\Generator\Schema\Schema;
 use Rocket\ORM\Rocket;
@@ -46,7 +47,9 @@ class DatabaseTableGenerator extends Generator
         }
 
         $con = Rocket::getConnection($schema->connection);
-        $con->exec('use ' . $schema->database);
+        if (!$con instanceof SQLitePDO) {
+            $con->exec('use ' . $schema->database);
+        }
 
         $file = file_get_contents($this->inputPath . DIRECTORY_SEPARATOR . $schema->database . '.sql');
         $file = preg_replace('/(-- ?(.)*)*/', '', $file); // delete comments

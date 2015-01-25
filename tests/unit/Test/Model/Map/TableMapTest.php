@@ -143,11 +143,11 @@ class TableMapTest extends RocketTestCase
         $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Company');
 
         // Assert values
-        $this->assertTrue('car_db' == $tableMap->getDatabase(), 'Table map database');
-        $this->assertTrue('default' == $tableMap->getConnectionName(), 'Table map connection');
-        $this->assertTrue('Company' == $tableMap->getClassName(), 'Table map class name');
-        $this->assertTrue('company' == $tableMap->getTableName(), 'Table map table name');
-        $this->assertTrue('Fixture\\Car\\Model' == $tableMap->getClassNamespace(), 'Table map table namespace');
+        $this->assertEquals('car_db', $tableMap->getDatabase(), 'Table map database');
+        $this->assertEquals('car', $tableMap->getConnectionName(), 'Table map connection');
+        $this->assertEquals('Company', $tableMap->getClassName(), 'Table map class name');
+        $this->assertEquals('company', $tableMap->getTableName(), 'Table map table name');
+        $this->assertEquals('Fixture\\Car\\Model', $tableMap->getClassNamespace(), 'Table map table namespace');
 
         // Assert counts
         $this->assertCount(2, $tableMap->getColumns(), 'Wrong column count');

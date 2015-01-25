@@ -2,10 +2,17 @@ rocket:
     default_connection: default
     connection_class:   ~
     connections:
-        default:
+        car:
             class: ~
             params:
-                dsn:        'sqlite::memory:'
+                dsn:        'sqlite:__DIR__/../fixtures/databases/car.sq3'
+                username:   ~
+                password:   ~
+                attributes: ~
+        bookstore:
+            class: ~
+            params:
+                dsn:        'sqlite:__DIR__/../fixtures/databases/bookstore.sq3'
                 username:   ~
                 password:   ~
                 attributes: ~
