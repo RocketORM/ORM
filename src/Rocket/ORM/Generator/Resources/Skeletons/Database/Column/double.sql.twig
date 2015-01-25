@@ -2,7 +2,7 @@
 
 {% block type -%}
     {% spaceless %}
-        {% if null != size %}
+        {% if null != column.size %}
             double({{ column.size }},{{ column.decimal }})
         {% else %}
             double

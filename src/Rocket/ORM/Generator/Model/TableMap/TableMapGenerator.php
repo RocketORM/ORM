@@ -43,7 +43,8 @@ class TableMapGenerator extends Generator
 
         $this->modelNamespace = $modelNamespace;
         $this->twig           = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templateDirs, [__DIR__ . '/../../Resources/Skeletons/Model/Map'])), [
-            'cache' => false
+            'cache'            => false,
+            'strict_variables' => true
         ]);
     }
 

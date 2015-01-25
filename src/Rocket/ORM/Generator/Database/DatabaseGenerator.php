@@ -39,7 +39,8 @@ class DatabaseGenerator extends Generator
     {
         $this->outputPath = $outputPath;
         $this->twig       = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templateDirs, [__DIR__ . '/../Resources/Skeletons/Database'])), [
-            'cache' => false
+            'cache'            => false,
+            'strict_variables' => true
         ]);
     }
 
