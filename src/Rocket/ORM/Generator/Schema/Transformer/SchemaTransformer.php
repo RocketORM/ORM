@@ -103,10 +103,6 @@ class SchemaTransformer implements SchemaTransformerInterface
                 $column->phpName = String::camelize($column->name, false);
             }
 
-            if (true === $column->isAutoIncrement) {
-                $column->isPrimaryKey = true;
-            }
-
             if (true === $column->isPrimaryKey) {
                 $column->isRequired = true;
             }

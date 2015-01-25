@@ -19,4 +19,7 @@
             DEFAULT "{{ column.default }}"
         {%- endif %}
     {%- endblock -%}
+    {%- block auto_increment -%}
+        {{ column.isAutoIncrement ? ' AUTO_INCREMENT' : '' }}
+    {%- endblock auto_increment -%}
 {% endspaceless %}
