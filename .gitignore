@@ -8,4 +8,5 @@ fixtures/
 
 tests/build
 tests/resources/fixtures
+!tests/resources/fixtures/databases/.gitkeep
 phpunit.xml.*
