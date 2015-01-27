@@ -80,7 +80,7 @@ class RocketDatabaseInsertCommand extends AbstractCommand
             $this->verbose($output, '<info>OK</info>');
         }
 
-        $output->writeln('<info>All tables has been inserted</info>');
+        $output->writeln('<info>All tables has been inserted.</info>');
 
         return 0;
     }
