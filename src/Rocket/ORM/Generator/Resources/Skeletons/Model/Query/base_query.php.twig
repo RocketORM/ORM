@@ -3,6 +3,7 @@
 namespace {{ table.schema.namespace }}\Base;
 
 use Rocket\ORM\Rocket;
+use Rocket\ORM\Model\Object\RocketObject;
 use Rocket\ORM\Model\Query\Query;
 
 /**
@@ -98,8 +99,7 @@ class Base{{ table.phpName }}Query extends Query
                 unset($tmpRow);
             }
 
-            //$objects[] = new RocketObject($row, self::MODEL_NAMESPACE);
-            $objects[] = $row;
+            $objects[] = new RocketObject($row, self::MODEL_NAMESPACE);
         }
 
         $stmt->closeCursor();
