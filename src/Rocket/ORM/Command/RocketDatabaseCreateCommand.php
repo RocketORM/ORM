@@ -25,7 +25,7 @@ class RocketDatabaseCreateCommand extends AbstractCommand
     protected function configure()
     {
         $this
-            ->setName('rocket:database:create')
+            ->setName('database:create')
             ->setDescription('Create the database, but not the tables')
         ;
     }

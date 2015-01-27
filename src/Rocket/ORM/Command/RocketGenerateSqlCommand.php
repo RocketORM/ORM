@@ -28,7 +28,7 @@ class RocketGenerateSqlCommand extends AbstractCommand
     protected function configure()
     {
         $this
-            ->setName('rocket:generate:sql')
+            ->setName('generate:sql')
             ->setDescription('Generate SQL file for all schemas')
         ;
     }

@@ -31,7 +31,7 @@ class RocketDatabaseInsertCommand extends AbstractCommand
     protected function configure()
     {
         $this
-            ->setName('rocket:database:insert')
+            ->setName('database:insert')
             ->setDescription('Insert all tables in databases. Databases should be created first.')
         ;
     }
