@@ -294,6 +294,90 @@ abstract class Query implements QueryInterface
     }
 
     /**
+     * @return string
+     */
+    protected function buildRelationWith()
+    {
+        $query = '';
+        foreach ($this->with as $with) {
+            /** @var TableMapInterface $relationTableMap */
+            $relationTableMap = Rocket::getTableMap($this->joins[$with['alias']]['relation']['table_map_namespace']);
+            foreach ($relationTableMap->getColumns() as $column) {
+                $query .= ', ' . $with['alias'] . '.' . $column['name'] . ' AS "' . $with['alias'] . '.' . $column['name'] . '"';
+            }
+
+            unset($relationTableMap);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @return string
+     */
+    protected function buildRelationClauses()
+    {
+        $query = '';
+        foreach ($this->joins as $alias => $join) {
+            /** @var TableMapInterface $relationTableMap */
+            $tableMap = Rocket::getTableMap($join['relation']['table_map_namespace']);
+            $query .= ' ' . $join['type'] . ' JOIN ' . $tableMap->getTableName() . ' ' . $alias .
+                ' ON ' . $join['from'] . '.' . $join['relation']['local'] . ' = ' . $alias . '.' . $join['relation']['foreign']
+            ;
+
+            unset($tableMap);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @return string
+     */
+    protected function buildClauses()
+    {
+        $query = ' WHERE ';
+        $i = 0;
+
+        foreach ($this->clauses as $clauseParams) {
+            if (0 == $i) {
+                if (null != $clauseParams['value']) {
+                    $query .= sprintf('%s :param_%d', trim(substr($clauseParams['clause'], 0, -1)), $i);
+                } else {
+                    $query .= $clauseParams['clause'];
+                }
+            } else {
+                if (null != $clauseParams['value']) {
+                    $query .= sprintf(' %s %s :param_%d', $clauseParams['operator'], trim(substr($clauseParams['clause'], 0, -1)), $i);
+                } else {
+                    $query .= $clauseParams['operator'] . ' ' . $clauseParams['clause'];
+                }
+            }
+
+            ++$i;
+        }
+
+        return $query;
+    }
+
+    /**
+     * @return string
+     */
+    protected function buildLimit()
+    {
+        $query = '';
+        if (null != $this->limit) {
+            $query .= ' LIMIT ' . $this->limit;
+
+            if (null != $this->offset) {
+                $query .= ',' . $this->offset;
+            }
+        }
+
+        return $query;
+    }
+
+    /**
      * Clear all values
      */
     protected function clear()

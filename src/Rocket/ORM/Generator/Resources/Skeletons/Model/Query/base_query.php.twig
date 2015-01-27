@@ -25,8 +25,16 @@ class Base{{ table.phpName }}Query extends Query
         return new self($alias, self::MODEL_NAMESPACE);
     }
 
+    /**
+     * @param \PDO $con
+     *
+     * @return array
+     *
+     * @throws \Exception
+     */
     public function find(\PDO $con = null)
     {
+        // Building query
         $query = 'SELECT '
             {% for i,column in table.columns -%}
             {%- if loop.last -%}
@@ -37,65 +45,25 @@ class Base{{ table.phpName }}Query extends Query
         {%- endfor -%}
         {{ "\n        " }};
 
-        $hasWith = 0 < count($this->with);
-        if ($hasWith) {
-            foreach ($this->with as $with) {
-                /** @var \Rocket\ORM\Model\Map\TableMapInterface $relationTableMap */
-                $relationTableMap = Rocket::getTableMap($this->joins[$with['alias']]['relation']['table_map_namespace']);
-                foreach ($relationTableMap->getColumns() as $column) {
-                    $query .= ', ' . $with['alias'] . '.' . $column['name'] . ' AS "' . $with['alias'] . '.' . $column['name'] . '"';
-                }
-
-                unset($relationTableMap);
-            }
+        $hasRelationWith = 0 < sizeof($this->with);
+        if ($hasRelationWith) {
+            $query .= $this->buildRelationWith();
         }
 
         $query .= ' FROM `{{ table.schema.database }}`.`{{ table.name }}` AS ' . $this->alias;
 
-        if (0 < count($this->joins)) {
-            foreach ($this->joins as $alias => $join) {
-                /** @var \Rocket\ORM\Model\Map\TableMapInterface $relationTableMap */
-                $tableMap = Rocket::getTableMap($join['relation']['table_map_namespace']);
-                $query .= ' ' . $join['type'] . ' JOIN ' . $tableMap->getTableName() . ' ' . $alias .
-                ' ON ' . $join['from'] . '.' . $join['relation']['local'] . ' = ' . $alias . '.' . $join['relation']['foreign'];
-
-                unset($tableMap);
-            }
+        if (0 < sizeof($this->joins)) {
+            $query .= $this->buildRelationClauses();
         }
 
-        $hasClauses = 0 < count($this->clauses);
+        $hasClauses = 0 < sizeof($this->clauses);
         if ($hasClauses) {
-            $query .= ' WHERE ';
-
-            $i = 0;
-            foreach ($this->clauses as $clauseParams) {
-                if (0 == $i) {
-                    if (null != $clauseParams['value']) {
-                        $query .= sprintf('%s :param_%d', trim(substr($clauseParams['clause'], 0, -1)), $i);
-                    } else {
-                        $query .= $clauseParams['clause'];
-                    }
-                }
-                else {
-                    if (null != $clauseParams['value']) {
-                        $query .= sprintf(' %s %s :param_%d', $clauseParams['operator'], trim(substr($clauseParams['clause'], 0, -1)), $i);
-                    } else {
-                        $query .= $clauseParams['operator'] . ' ' . $clauseParams['clause'];
-                    }
-                }
-
-                ++$i;
-            }
+            $query .= $this->buildClauses();
         }
 
-        if (null != $this->limit) {
-            $query .= ' LIMIT ' . $this->limit;
+        $query .= $this->buildLimit();
 
-            if (null != $this->offset) {
-                $query .= ',' . $this->offset;
-            }
-        }
-
+        // Processing
         try {
             if (null == $con) {
                 $con = Rocket::getConnection($this->getTableMap()->getConnectionName());
@@ -115,7 +83,7 @@ class Base{{ table.phpName }}Query extends Query
 
         $objects = [];
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-            if ($hasWith) {
+            if ($hasRelationWith) {
                 $tmpRow = [];
                 foreach ($row as $columnName => $value) {
                     if (false !== strpos($columnName, '.')) {
