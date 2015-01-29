@@ -23,15 +23,27 @@ namespace {{ table.schema.namespace }}\Base;
 {% endblock %}
 class Base{{ table.phpName }} extends {{ baseModel }}
 {
-    {% for column in table.columns -%}
-        {{ column.attributePhpDoc }}
-    protected ${{ column.phpName }};
+    {%- block attributes -%}
+        {% for column in table.columns -%}
+            {{ "\n    " -}}
+            {{ column.attributePhpDoc }}
+            {{- "\n    " -}}
+            protected ${{ column.phpName }};
+            {{- "\n" -}}
+        {% endfor %}
+        {{- "\n" -}}
+    {%- endblock %}
 
-    {% endfor %}
+    {%- block hydrateDefaults -%}
+        {% if table.hasDefaultColumn -%}
+            {%- include 'Method/hydrate_defaults.php.twig' -%}
+        {% endif %}
+        {{- "\n" -}}
+    {%- endblock hydrateDefaults -%}
 
-    {%- block hydrate %}
+    {%- block hydrate -%}
         {%- include 'Method/hydrate.php.twig' -%}
-    {% endblock hydrate %}
+    {%- endblock hydrate %}
 
     /**
      * @param \PDO $con

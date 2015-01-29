@@ -108,7 +108,8 @@ class SchemaTransformer implements SchemaTransformerInterface
             }
 
             // TODO check for more than one autoIncrement PK
-            // TODO column TEXT can has a default value
+            // TODO column TEXT can't have a default value
+            // TODO column DATETIME can't have a default value
 
             // Check if default value is valid if the type is boolean
             if (TableMap::COLUMN_TYPE_BOOLEAN == $column->type && true !== $column->getDefault() && false !== $column->getDefault()) {

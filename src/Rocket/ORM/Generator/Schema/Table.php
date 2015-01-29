@@ -221,4 +221,18 @@ class Table
 
         return $foreignKeys;
     }
+
+    /**
+     * @return bool
+     */
+    public function hasDefaultColumn()
+    {
+        foreach ($this->columns as $column) {
+            if (null != $column->getDefault(true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

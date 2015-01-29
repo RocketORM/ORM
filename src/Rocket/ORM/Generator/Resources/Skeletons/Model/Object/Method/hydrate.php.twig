@@ -4,7 +4,14 @@
      * @return void
      */
     public function hydrate(array $values)
-    { {%- for column in table.columns %}
+    {
+        {%- if table.hasDefaultColumn -%}
+            {{- "\n        " -}}
+            // Hydrate default columns first
+        $this->hydrateDefaults();
+            {{- "\n" }}
+        {%- endif %}
+        {%- for column in table.columns %}
 
         {% if not column.isRequired -%}
             if (isset($values['{{ column.name }}'])) {
