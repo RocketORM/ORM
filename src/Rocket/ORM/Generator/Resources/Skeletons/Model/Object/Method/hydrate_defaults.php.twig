@@ -7,12 +7,17 @@
             {% if null != column.default(true) %}
                 {{- "\n        " -}}
                 {%- set default = column.default(true) -%}
-                {% if constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_STRING') == column.type -%}
-                    $this->{{ column.phpName }} = '{{ column.default(true) }}';
+                if (!isset($this->{{ column.phpName }})) {
+                    {{- "\n            " -}}
+                {%- if constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_STRING') == column.type -%}
+                    $this->set{{ column.methodName }}('{{ column.default(true) }}');
                 {%- else -%}
-                    $this->{{ column.phpName }} = {{ column.default(true) }};
+                    $this->set{{ column.methodName }}({{ column.default(true) }});
                 {%- endif -%}
-            {% endif %}
+                {{ "\n        " -}}
+                }
+                {{- "\n" }}
+            {%- endif -%}
         {%- endfor -%}
-        {{ "\n    " -}}
+        {{ "    " -}}
     }

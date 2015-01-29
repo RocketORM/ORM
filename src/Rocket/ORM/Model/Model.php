@@ -25,6 +25,11 @@ abstract class Model implements ModelInterface
     protected $_isNew = true;
 
     /**
+     * @var array
+     */
+    protected $_modifiedColumns = [];
+
+    /**
      * @var TableMapInterface
      */
     protected $tableMap;
@@ -41,6 +46,10 @@ abstract class Model implements ModelInterface
     {
         if (!$this->_isNew) {
             throw new \Exception('Cannot save a non new object');
+        }
+
+        if (0 === sizeof($this->_modifiedColumns)) {
+            throw new \Exception('Cannot save an empty object');
         }
 
         if (null == $con) {
@@ -63,6 +72,7 @@ abstract class Model implements ModelInterface
         // $con->commit();
 
         $this->_isNew = false;
+        $this->clearModifiedColumns();
 
         return true;
     }
@@ -97,6 +107,22 @@ abstract class Model implements ModelInterface
         }
 
         return $this->tableMap;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getModifiedColumns()
+    {
+        return array_keys($this->_modifiedColumns);
+    }
+
+    /**
+     * Delete all modified column flags
+     */
+    protected function clearModifiedColumns()
+    {
+        $this->_modifiedColumns = [];
     }
 
     /**
