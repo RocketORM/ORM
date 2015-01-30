@@ -41,6 +41,14 @@ class ObjectGenerator extends Generator
             'cache'            => false,
             'strict_variables' => true
         ]);
+
+        $this->twig->addFilter(new \Twig_SimpleFilter('type', function ($variable, $type) {
+            switch ($type) {
+                case 'string': return is_string($variable);
+            }
+
+            throw new \LogicException('Unknown type "' . $type . '" for the Twig filter "type"');
+        }));
     }
 
     /**

@@ -1,0 +1,7 @@
+    {%- for column in table.columns -%}
+        {{ "\n    " -}}
+        {{ column.attributePhpDoc }}
+        {{- "\n    " -}}
+        protected ${{ column.phpName }};
+        {{- "\n" -}}
+    {% endfor %}

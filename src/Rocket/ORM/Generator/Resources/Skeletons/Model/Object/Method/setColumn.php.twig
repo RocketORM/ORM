@@ -1,0 +1,11 @@
+    /**
+     * @param {{ column.typeAsPhpDoc }} ${{ column.phpName }}
+     *
+     * @return $this
+     */
+    public function set{{ column.methodName }}(${{ column.phpName }})
+    {
+        $this->{{ column.phpName }} = ${{ column.phpName }};
+
+        return $this;
+    }

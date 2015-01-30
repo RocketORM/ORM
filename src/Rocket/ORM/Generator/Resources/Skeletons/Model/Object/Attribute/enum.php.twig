@@ -1,0 +1,13 @@
+
+    /**
+     * The enum key value for the "{{ column.name }}" column
+     *
+     * @var array
+     */
+    protected static $enum{{ column.methodName }} = [
+        {%- for value in column.values -%}
+            {{ "\n        " -}}
+            {{ value|type('string') ? "'" ~ value ~ "'" : value }}{{ not loop.last ? ',' : '' }}
+        {%- endfor -%}
+        {{ "\n    " -}}
+    ];

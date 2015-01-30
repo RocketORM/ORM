@@ -1,0 +1,13 @@
+    {% block phpDoc -%}
+    /**
+     * @return {{ column.typeAsPhpDoc }}
+     */
+    {% endblock -%}
+    {% block body -%}
+    public function get{{ column.methodName }}()
+    {
+        {% block inner -%}
+            return $this->{{ column.phpName }};
+        {%- endblock %}
+
+    }{% endblock %}

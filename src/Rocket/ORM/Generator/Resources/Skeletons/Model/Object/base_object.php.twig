@@ -24,12 +24,12 @@ namespace {{ table.schema.namespace }}\Base;
 class Base{{ table.phpName }} extends {{ baseModel }}
 {
     {%- block attributes -%}
-        {% for column in table.columns -%}
-            {{ "\n    " -}}
-            {{ column.attributePhpDoc }}
-            {{- "\n    " -}}
-            protected ${{ column.phpName }};
-            {{- "\n" -}}
+        {%- include 'Attribute/attribute.php.twig' -%}
+    {%- endblock %}
+
+    {%- block type_attributes -%}
+        {% for column in table.columns %}
+            {%- include 'Attribute/' ~ column.typeAsString ~ '.php.twig' ignore missing -%}
         {% endfor %}
         {{- "\n" -}}
     {%- endblock %}
@@ -146,25 +146,12 @@ class Base{{ table.phpName }} extends {{ baseModel }}
     }
 
     {%- for column in table.columns -%}
-        {{ "\n\n    " }}/**
-     * @return {{ column.typeAsPhpDoc }}
-     */
-    public function get{{ column.methodName }}()
-    {
-        return $this->{{ column.phpName }};
-    }
-
-    /**
-     * @param {{ column.typeAsPhpDoc }} ${{ column.phpName }}
-     *
-     * @return $this
-     */
-    public function set{{ column.methodName }}(${{ column.phpName }})
-    {
-        $this->{{ column.phpName }} = ${{ column.phpName }};
-
-        return $this;
-    }
-    {%- endfor %}
-
+        {%- include ['Method/getColumn/' ~ column.typeAsString ~ '.php.twig', 'Method/getColumn.php.twig'] -%}
+        {{ "\n\n" }}
+        {%- include 'Method/setColumn.php.twig' -%}
+        {% if not loop.last -%}
+            {{ "\n\n" }}
+        {%- endif %}
+    {%- endfor -%}
+    {{ "\n" -}}
 }

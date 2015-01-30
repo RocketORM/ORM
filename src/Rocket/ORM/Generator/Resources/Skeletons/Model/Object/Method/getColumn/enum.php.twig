@@ -1,0 +1,19 @@
+    /**
+     * @param bool $key True if you want to get the enum key value (int), false to get the enum value (default: false)
+     *
+     * @return {{ column.typeAsPhpDoc }}
+     */
+    public function get{{ column.methodName }}($key = false)
+    {
+        if ($key) {
+            foreach (self::$enum{{ column.methodName }} as $i => $value) {
+                if ($value == $this->{{ column.phpName }}) {
+                    return $i;
+                }
+
+                throw new \LogicException('The value "' . $value . '" for the enum "{{ column.name }}" is not found');
+            }
+        }
+
+        return $this->{{ column.phpName }};
+    }
