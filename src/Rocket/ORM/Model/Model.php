@@ -44,10 +44,9 @@ abstract class Model implements ModelInterface
         }
 
         if (null == $con) {
-            $con = Rocket::getConnection(null, Rocket::CONNECTION_MODE_WRITE);
+            $con = Rocket::getConnection($this->getTableMap()->getConnectionName(), Rocket::CONNECTION_MODE_WRITE);
         }
 
-        // $con->beginTransaction();
         try {
             if ($this->preSave($con)) {
                 $this->doInsert($con);
@@ -55,12 +54,12 @@ abstract class Model implements ModelInterface
 
             $this->postSave($con);
         } catch (\Exception $e) {
-            // $con->rollBack();
+            if ($con->inTransaction()) {
+                $con->rollBack();
+            }
 
             throw $e;
         }
-
-        // $con->commit();
 
         $this->_isNew = false;
 

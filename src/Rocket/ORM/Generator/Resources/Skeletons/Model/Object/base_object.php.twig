@@ -57,7 +57,9 @@ class Base{{ table.phpName }} extends {{ baseModel }}
      */
     public function doInsert(\PDO $con)
     {
-        $stmt = $con->prepare('INSERT INTO `{{ table.schema.database }}.{{ table.name }}` (
+        $con->beginTransaction();
+
+        $stmt = $con->prepare('INSERT INTO `{{ table.schema.database }}`.`{{ table.name }}` (
             {%- for column in table.columns -%}
                 `{{ column.name }}`
                 {%- if not loop.last %}, {% endif %}
@@ -71,14 +73,17 @@ class Base{{ table.phpName }} extends {{ baseModel }}
 
         {%- for column in table.columns -%}
             {{ "\n        " }}$stmt->bindValue(':{{ column.name }}', $this->{{ column.phpName }}, \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
-        {%- endfor %}
+        {%- endfor -%}
+        {{ "\n" }}
+        $stmt->execute();
 
         {%- for primaryKey in table.primaryKeys -%}
             {% if primaryKey.isAutoIncrement -%}
                 {{ "\n\n        " }}$this->{{ primaryKey.phpName }} = $con->lastInsertId();
             {%- endif -%}
-        {%- endfor %}
-
+        {%- endfor -%}
+        {{ "\n" }}
+        $con->commit();
     }
 
     {%- for column in table.columns -%}
