@@ -17,9 +17,10 @@ namespace Rocket\ORM\Model;
 interface ModelInterface
 {
     /**
-     * @param array $values
+     * @param array $values The model values, required values must be provided
+     * @param bool  $isNew  In case of the model is new, and will be inserted, pass the "true"
      *
      * @return void
      */
-    public function hydrate(array $values);
+    public function hydrate(array $values, $isNew = false);
 }
