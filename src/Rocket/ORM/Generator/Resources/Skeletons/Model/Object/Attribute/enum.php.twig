@@ -5,9 +5,9 @@
      * @var array
      */
     protected static $enum{{ column.methodName }} = [
-        {%- for value in column.values -%}
+        {%- for i,value in column.values -%}
             {{ "\n        " -}}
-            {{ value|type('string') ? "'" ~ value ~ "'" : value }}{{ not loop.last ? ',' : '' }}
+            {{ i }} => {{ value|type('string') ? "'" ~ value ~ "'" : value }}{{ not loop.last ? ',' : '' }}
         {%- endfor -%}
         {{ "\n    " -}}
     ];

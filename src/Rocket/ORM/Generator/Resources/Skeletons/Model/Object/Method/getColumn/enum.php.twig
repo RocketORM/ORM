@@ -10,9 +10,9 @@
                 if ($value == $this->{{ column.phpName }}) {
                     return $i;
                 }
-
-                throw new \LogicException('The value "' . $value . '" for the enum "{{ column.name }}" is not found');
             }
+
+            throw new \LogicException('The value "' . $value . '" for the enum "{{ column.name }}" is not found');
         }
 
         return $this->{{ column.phpName }};

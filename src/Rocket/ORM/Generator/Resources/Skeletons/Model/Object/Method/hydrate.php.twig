@@ -16,6 +16,8 @@
               constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_DATE') == column.type
         -%}
             $this->{{ column.phpName }} = new \DateTime($values['{{ column.name }}']);
+        {%- elseif constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_ENUM') == column.type -%}
+            $this->{{ column.phpName }} = self::$enum{{ column.methodName }}[$values['{{ column.name }}']];
         {%- else -%}
             $this->{{ column.phpName }} = ({{ column.typeAsPhpDoc }}) $values['{{ column.name }}'];
         {%- endif -%}
