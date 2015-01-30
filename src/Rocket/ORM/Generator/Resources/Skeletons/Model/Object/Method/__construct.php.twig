@@ -1,0 +1,12 @@
+    /**
+     * This is the model constructor, do not forget to call the parent constructor<br />
+     * with params if you override it
+     */
+    public function __construct()
+    {
+        {%- if table.hasDefaultColumn -%}
+            {{ "\n        " -}}
+            $this->hydrateDefaults();
+        {%- endif %}
+        {{- "\n    " -}}
+    }
