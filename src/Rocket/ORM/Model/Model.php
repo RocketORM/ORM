@@ -25,6 +25,11 @@ abstract class Model implements ModelInterface
     protected $_isNew = true;
 
     /**
+     * @var bool
+     */
+    protected $_isDeleted = false;
+
+    /**
      * @var TableMapInterface
      */
     protected $tableMap;
@@ -39,6 +44,10 @@ abstract class Model implements ModelInterface
      */
     public function save(\PDO $con = null)
     {
+        if ($this->_isDeleted) {
+            throw new \LogicException('Cannot save a deleted object');
+        }
+
         if (null == $con) {
             $con = Rocket::getConnection($this->getTableMap()->getConnectionName(), Rocket::CONNECTION_MODE_WRITE);
         }
@@ -70,6 +79,42 @@ abstract class Model implements ModelInterface
      * @param \PDO $con
      *
      * @return bool
+     *
+     * @throws \Exception
+     */
+    public function delete(\PDO $con = null)
+    {
+        if ($this->_isNew) {
+            throw new \LogicException('Cannot delete an unsaved object');
+        }
+
+        if (null == $con) {
+            $con = Rocket::getConnection($this->getTableMap()->getConnectionName(), Rocket::CONNECTION_MODE_WRITE);
+        }
+
+        try {
+            if ($this->preDelete($con)) {
+                $this->doDelete($con);
+            }
+
+            $this->postDelete($con);
+        } catch (\Exception $e) {
+            if ($con->inTransaction()) {
+                $con->rollBack();
+            }
+
+            throw $e;
+        }
+
+        $this->_isDeleted = true;
+
+        return true;
+    }
+
+    /**
+     * @param \PDO $con
+     *
+     * @return bool
      */
     protected function preSave(\PDO $con = null)
     {
@@ -82,6 +127,26 @@ abstract class Model implements ModelInterface
      * @return bool
      */
     protected function postSave(\PDO $con = null)
+    {
+        return true;
+    }
+
+    /**
+     * @param \PDO $con
+     *
+     * @return bool
+     */
+    protected function preDelete(\PDO $con = null)
+    {
+        return true;
+    }
+
+    /**
+     * @param \PDO $con
+     *
+     * @return bool
+     */
+    protected function postDelete(\PDO $con = null)
     {
         return true;
     }
@@ -111,4 +176,11 @@ abstract class Model implements ModelInterface
      * @return void
      */
     protected abstract function doUpdate(\PDO $con);
+
+    /**
+     * @param \PDO $con
+     *
+     * @return void
+     */
+    protected abstract function doDelete(\PDO $con);
 }

@@ -121,6 +121,30 @@ class Base{{ table.phpName }} extends {{ baseModel }}
         $con->commit();
     }
 
+    /**
+     * @param \PDO $con
+     */
+    protected function doDelete(\PDO $con)
+    {
+        $con->beginTransaction();
+
+        $stmt = $con->prepare('DELETE FROM `{{ table.schema.database }}`.`{{ table.name }}` WHERE{{ ' ' }}
+            {%- for column in table.primaryKeys -%}
+                `{{ column.name }}` = :{{ column.name }}
+                {%- if not loop.last %} AND {% endif %}
+            {%- endfor -%}
+        ');
+
+        {%- for column in table.primaryKeys -%}
+            {{ "\n        " }}$stmt->bindValue(':{{ column.name }}', $this->{{ column.phpName }}, \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
+        {%- endfor -%}
+
+        {{ "\n" }}
+        $stmt->execute();
+
+        $con->commit();
+    }
+
     {%- for column in table.columns -%}
         {{ "\n\n    " }}/**
      * @return {{ column.typeAsPhpDoc }}
