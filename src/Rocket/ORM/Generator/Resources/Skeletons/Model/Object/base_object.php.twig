@@ -70,7 +70,7 @@ class Base{{ table.phpName }} extends {{ baseModel }}
         )');
 
         {%- for column in table.columns -%}
-            {{ "\n        " }}$stmt->bindValue(':{{ column.name }}', $this->{{ column.phpName }}, \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
+            {{ "\n        " }}$stmt->bindValue(':{{ column.name }}', $this->get{{ column.methodName }}(), \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
         {%- endfor -%}
         {{ "\n" }}
         $stmt->execute();
@@ -109,11 +109,11 @@ class Base{{ table.phpName }} extends {{ baseModel }}
 
         {%- for column in table.columns -%}
             {%- if not column.isPrimaryKey or column.isPrimaryKey and not column.isAutoIncrement -%}
-                {{ "\n        " }}$stmt->bindValue(':{{ column.name }}', $this->{{ column.phpName }}, \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
+                {{ "\n        " }}$stmt->bindValue(':{{ column.name }}', $this->get{{ column.methodName }}(), \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
             {%- endif -%}
         {%- endfor -%}
         {%- for column in table.primaryKeys -%}
-            {{ "\n        " }}$stmt->bindValue(':where_{{ column.name }}', $this->{{ column.phpName }}, \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
+            {{ "\n        " }}$stmt->bindValue(':where_{{ column.name }}', $this->get{{ column.methodName }}(), \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
         {%- endfor -%}
         {{ "\n" }}
         $stmt->execute();
@@ -136,7 +136,7 @@ class Base{{ table.phpName }} extends {{ baseModel }}
         ');
 
         {%- for column in table.primaryKeys -%}
-            {{ "\n        " }}$stmt->bindValue(':{{ column.name }}', $this->{{ column.phpName }}, \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
+            {{ "\n        " }}$stmt->bindValue(':{{ column.name }}', $this->get{{ column.methodName }}(), \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
         {%- endfor -%}
 
         {{ "\n" }}
