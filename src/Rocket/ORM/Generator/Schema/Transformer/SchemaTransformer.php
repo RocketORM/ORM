@@ -87,6 +87,7 @@ class SchemaTransformer implements SchemaTransformerInterface
             }
 
             // TODO check if table phpName is named "RocketBaseModel"
+            // TODO check if table has a primary key, RocketORM do not support a table without PK
 
             $this->transformColumns($table->getColumns());
             $this->transformPrimaryKeys($table->getColumns());

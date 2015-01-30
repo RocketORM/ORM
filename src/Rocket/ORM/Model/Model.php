@@ -39,17 +39,17 @@ abstract class Model implements ModelInterface
      */
     public function save(\PDO $con = null)
     {
-        if (!$this->_isNew) {
-            throw new \Exception('Cannot save a non new object');
-        }
-
         if (null == $con) {
             $con = Rocket::getConnection($this->getTableMap()->getConnectionName(), Rocket::CONNECTION_MODE_WRITE);
         }
 
         try {
             if ($this->preSave($con)) {
-                $this->doInsert($con);
+                if ($this->_isNew) {
+                    $this->doInsert($con);
+                } else {
+                    $this->doUpdate($con);
+                }
             }
 
             $this->postSave($con);
@@ -104,4 +104,11 @@ abstract class Model implements ModelInterface
      * @return void
      */
     protected abstract function doInsert(\PDO $con);
+
+    /**
+     * @param \PDO $con
+     *
+     * @return void
+     */
+    protected abstract function doUpdate(\PDO $con);
 }

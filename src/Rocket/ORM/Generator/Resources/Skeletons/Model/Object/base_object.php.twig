@@ -52,10 +52,8 @@ class Base{{ table.phpName }} extends {{ baseModel }}
 
     /**
      * @param \PDO $con
-     *
-     * @throws \RuntimeException
      */
-    public function doInsert(\PDO $con)
+    protected function doInsert(\PDO $con)
     {
         $con->beginTransaction();
 
@@ -82,7 +80,44 @@ class Base{{ table.phpName }} extends {{ baseModel }}
                 {{ "\n\n        " }}$this->{{ primaryKey.phpName }} = $con->lastInsertId();
             {%- endif -%}
         {%- endfor -%}
+        {{ "\n        " -}}
+        $this->_isNew = false;
+        {{ "\n        " -}}
+        $con->commit();
+    }
+
+    /**
+     * @param \PDO $con
+     */
+    protected function doUpdate(\PDO $con)
+    {
+        $con->beginTransaction();
+
+        $stmt = $con->prepare('UPDATE `{{ table.schema.database }}`.`{{ table.name }}` SET{{ ' ' }}
+            {%- for column in table.columns -%}
+                {%- if not column.isPrimaryKey or column.isPrimaryKey and not column.isAutoIncrement -%}
+                    `{{ column.name }}` = :{{ column.name }}
+                    {%- if not loop.last %}, {% endif %}
+                {%- endif -%}
+            {%- endfor -%}
+        {{ ' ' }}WHERE{{ ' ' }}
+            {%- for column in table.primaryKeys -%}
+                `{{ column.name }}` = :where_{{ column.name }}
+                {%- if not loop.last %} AND {% endif %}
+            {%- endfor -%}
+        ');
+
+        {%- for column in table.columns -%}
+            {%- if not column.isPrimaryKey or column.isPrimaryKey and not column.isAutoIncrement -%}
+                {{ "\n        " }}$stmt->bindValue(':{{ column.name }}', $this->{{ column.phpName }}, \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
+            {%- endif -%}
+        {%- endfor -%}
+        {%- for column in table.primaryKeys -%}
+            {{ "\n        " }}$stmt->bindValue(':where_{{ column.name }}', $this->{{ column.phpName }}, \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
+        {%- endfor -%}
         {{ "\n" }}
+        $stmt->execute();
+
         $con->commit();
     }
 
