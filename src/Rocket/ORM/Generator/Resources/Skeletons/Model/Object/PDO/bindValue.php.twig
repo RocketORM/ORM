@@ -1,0 +1,1 @@
+$stmt->bindValue(':{{ (prefix is defined ? prefix : '') ~ column.name }}', $this->get{{ column.methodName }}({{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_ENUM') == column.type ? 'true' : '' }}), \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});

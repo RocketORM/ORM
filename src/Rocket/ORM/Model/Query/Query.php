@@ -12,6 +12,7 @@
 namespace Rocket\ORM\Model\Query;
 
 use Rocket\ORM\Model\Map\TableMapInterface;
+use Rocket\ORM\Model\Object\RocketObject;
 use Rocket\ORM\Rocket;
 
 /**
@@ -151,7 +152,7 @@ abstract class Query implements QueryInterface
     /**
      * @param \PDO $con
      *
-     * @return mixed
+     * @return RocketObject|bool
      */
     public function findOne(\PDO $con = null)
     {

@@ -70,7 +70,7 @@ class Base{{ table.phpName }} extends {{ baseModel }}
         )');
 
         {%- for column in table.columns -%}
-            {{ "\n        " }}$stmt->bindValue(':{{ column.name }}', $this->get{{ column.methodName }}(), \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
+            {{ "\n        " }}{% include 'PDO/bindValue.php.twig' %}
         {%- endfor -%}
         {{ "\n" }}
         $stmt->execute();
@@ -109,11 +109,11 @@ class Base{{ table.phpName }} extends {{ baseModel }}
 
         {%- for column in table.columns -%}
             {%- if not column.isPrimaryKey or column.isPrimaryKey and not column.isAutoIncrement -%}
-                {{ "\n        " }}$stmt->bindValue(':{{ column.name }}', $this->get{{ column.methodName }}(), \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
+                {{ "\n        " }}{% include 'PDO/bindValue.php.twig' %}
             {%- endif -%}
         {%- endfor -%}
         {%- for column in table.primaryKeys -%}
-            {{ "\n        " }}$stmt->bindValue(':where_{{ column.name }}', $this->get{{ column.methodName }}(), \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
+            {{ "\n        " }}{% include 'PDO/bindValue.php.twig' with {'prefix': 'where_'} %}
         {%- endfor -%}
         {{ "\n" }}
         $stmt->execute();
@@ -136,7 +136,7 @@ class Base{{ table.phpName }} extends {{ baseModel }}
         ');
 
         {%- for column in table.primaryKeys -%}
-            {{ "\n        " }}$stmt->bindValue(':{{ column.name }}', $this->get{{ column.methodName }}(), \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
+            {{ "\n        " }}{% include 'PDO/bindValue.php.twig' %}
         {%- endfor -%}
 
         {{ "\n" }}
@@ -148,7 +148,7 @@ class Base{{ table.phpName }} extends {{ baseModel }}
     {%- for column in table.columns -%}
         {%- include ['Method/getColumn/' ~ column.typeAsString ~ '.php.twig', 'Method/getColumn.php.twig'] -%}
         {{ "\n\n" }}
-        {%- include 'Method/setColumn.php.twig' -%}
+        {%- include ['Method/setColumn/' ~ column.typeAsString ~ '.php.twig', 'Method/setColumn.php.twig'] -%}
         {% if not loop.last -%}
             {{ "\n\n" }}
         {%- endif %}

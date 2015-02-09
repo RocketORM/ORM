@@ -1,0 +1,15 @@
+    /**
+     * @param {{ column.typeAsPhpDoc }} ${{ column.phpName }}
+     *
+     * @return $this
+     */
+    public function set{{ column.methodName }}(${{ column.phpName }})
+    {
+        if (!in_array(${{ column.phpName }}, static::$enum{{ column.methodName }})) {
+            throw new \InvalidArgumentException('Unknown enum value "' . ${{ column.phpName }} . '" for column "{{ column.name }}"');
+        }
+
+        $this->{{ column.phpName }} = ${{ column.phpName }};
+
+        return $this;
+    }
