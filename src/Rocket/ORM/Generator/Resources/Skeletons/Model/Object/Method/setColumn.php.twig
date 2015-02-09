@@ -3,7 +3,7 @@
      *
      * @return $this
      */
-    public function set{{ column.methodName }}(${{ column.phpName }})
+    public function set{{ column.methodName }}({% block definition %}${{ column.phpName }}{% endblock %})
     {
         $this->{{ column.phpName }} = ${{ column.phpName }};
 
