@@ -1,5 +1,5 @@
 {% extends 'Method/setColumn.php.twig' %}
 
 {% block definition -%}
-    \DateTime ${{ column.phpName }}
+    \DateTime ${{ column.phpName }}{{ not column.isRequired ? ' = null' : '' }}
 {%- endblock %}

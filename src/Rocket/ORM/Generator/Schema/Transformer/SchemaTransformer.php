@@ -113,7 +113,8 @@ class SchemaTransformer implements SchemaTransformerInterface
             // TODO column DATETIME can't have a default value
 
             // Check if default value is valid if the type is boolean
-            if (TableMap::COLUMN_TYPE_BOOLEAN == $column->type && true !== $column->getDefault() && false !== $column->getDefault()) {
+            if (TableMap::COLUMN_TYPE_BOOLEAN == $column->type && null !== $column->getDefault()
+                && true !== $column->getDefault() && false !== $column->getDefault()) {
                 throw new InvalidConfigurationException(
                     'The default value "' . $column->getDefault(true) . '" for boolean column "' . $column->name . '" on table "' . $column->getTable()->name . '" should be a boolean'
                 );

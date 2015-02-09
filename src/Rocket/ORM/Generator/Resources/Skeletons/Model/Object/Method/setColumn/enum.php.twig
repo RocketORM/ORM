@@ -3,9 +3,14 @@
      *
      * @return $this
      */
-    public function set{{ column.methodName }}(${{ column.phpName }})
+    public function set{{ column.methodName }}(${{ column.phpName }}{{ not column.isRequired ? ' = null' : '' }})
     {
-        if (!in_array(${{ column.phpName }}, static::$enum{{ column.methodName }})) {
+        {% if column.isRequired -%}
+            if (!in_array(${{ column.phpName }}, static::$enum{{ column.methodName }})) {
+        {%- else -%}
+            if (null !== ${{ column.phpName }} && !in_array(${{ column.phpName }}, static::$enum{{ column.methodName }})) {
+        {% endif %}
+
             throw new \InvalidArgumentException('Unknown enum value "' . ${{ column.phpName }} . '" for column "{{ column.name }}"');
         }
 
