@@ -3,10 +3,10 @@
      *
      * @return {{ column.typeAsPhpDoc }}
      */
-    public function get{{ column.methodName }}($key = false)
+    public function {{ column.methodName }}($key = false)
     {
         if ($key) {
-            foreach (static::$enum{{ column.methodName }} as $i => $value) {
+            foreach (static::$enum{{ column.phpName(true) }} as $i => $value) {
                 if ($value === $this->{{ column.phpName }}) {
                     return $i;
                 }

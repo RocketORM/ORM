@@ -3,7 +3,7 @@
      *
      * @return $this
      */
-    public function set{{ column.methodName }}({% block definition %}${{ column.phpName }}{{ not column.isRequired ? ' = null' }}{% endblock %})
+    public function set{{ column.phpName(true) }}({% block definition %}${{ column.phpName }}{{ not column.isRequired ? ' = null' }}{% endblock %})
     {
         $this->{{ column.phpName }} = ${{ column.phpName }};
 

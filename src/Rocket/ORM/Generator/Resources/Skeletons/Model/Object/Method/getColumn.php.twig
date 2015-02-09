@@ -4,7 +4,7 @@
      */
     {% endblock -%}
     {% block body -%}
-    public function get{{ column.methodName }}()
+    public function {{ column.methodName }}()
     {
         {% block inner -%}
             return $this->{{ column.phpName }};

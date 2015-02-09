@@ -193,11 +193,30 @@ class Column
     }
 
     /**
+     * @param bool $firstLetterUpper
+     *
+     * @return string
+     */
+    public function getPhpName($firstLetterUpper = false)
+    {
+        if ($firstLetterUpper) {
+            return ucfirst($this->phpName);
+        }
+
+        return $this->phpName;
+    }
+
+    /**
      * @return string
      */
     public function getMethodName()
     {
-        return ucfirst($this->phpName);
+        // Do not prefix method name when the column phpName starts by "is" or "has"
+        if (0 === strpos($this->phpName, 'is') || 0 === strpos($this->phpName, 'has')) {
+            return $this->phpName;
+        }
+
+        return 'get' . $this->getPhpName(true);
     }
 
     /**

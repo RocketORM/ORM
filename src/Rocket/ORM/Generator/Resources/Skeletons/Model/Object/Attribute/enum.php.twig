@@ -4,7 +4,7 @@
      *
      * @var array
      */
-    protected static $enum{{ column.methodName }} = [
+    protected static $enum{{ column.phpName(true) }} = [
         {%- for i,value in column.values -%}
             {{ "\n        " -}}
             {{ i }} => {{ value|type('string') ? "'" ~ value ~ "'" : value }}{{ not loop.last ? ',' : '' }}
