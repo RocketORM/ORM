@@ -105,7 +105,7 @@ class Base{{ table.phpName }}Query extends Query
         $stmt->closeCursor();
         $this->clear();
 
-        if (1 === $this->limit) {
+        if (1 === $this->limit && isset($objects[0])) {
             return $objects[0];
         }
 
