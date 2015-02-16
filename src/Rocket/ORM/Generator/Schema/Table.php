@@ -71,7 +71,7 @@ class Table
 
         foreach ($data['relations'] as $with => $relationData) {
             $relation = new Relation($with, $relationData);
-            $relation->setTable($this);
+            $relation->setLocalTable($this);
 
             $this->relations[] = $relation;
         }
@@ -187,7 +187,7 @@ class Table
     {
         $relations = [];
         foreach ($this->relations as $relation) {
-            $relations[$relation->getTable()->name][] = $relation;
+            $relations[$relation->getLocalTable()->name][] = $relation;
         }
 
         return $relations;

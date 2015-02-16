@@ -267,7 +267,8 @@ class SchemaTransformer implements SchemaTransformerInterface
             'onUpdate' => $relation->onUpdate,
             'onDelete' => $relation->onDelete,
         ]);
-        $relatedRelation->setTable($table);
+        $relatedRelation->setLocalTable($relatedTable);
+        $relatedRelation->setRelatedTable($table);
 
         if (!$relatedTable->hasRelation($relatedRelation->with)) {
             $relatedTable->addRelation($relatedRelation);
@@ -374,7 +375,7 @@ class SchemaTransformer implements SchemaTransformerInterface
             $relation->type = TableMap::RELATION_TYPE_MANY_TO_ONE;
             $relation->phpName = $this->pluralize($relation->phpName);
         } else {
-            if (1 < $relation->getTable()->getPrimaryKeyCount()) {
+            if (1 < $relation->getLocalTable()->getPrimaryKeyCount()) {
                 $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
             } elseif (1 < $relatedTable->getPrimaryKeyCount()) {
                 $relation->type = TableMap::RELATION_TYPE_MANY_TO_ONE;
