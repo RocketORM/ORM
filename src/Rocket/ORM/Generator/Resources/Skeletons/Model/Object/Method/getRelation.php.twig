@@ -1,0 +1,25 @@
+    /**
+     * @param bool $hydrate If true and if the object has not been set before, it will be hydrated
+     * @param \PDO $con     The database connection
+     *
+     * @return \{{ relation.relatedTable.schema.namespace ~ '\\' ~ relation.relatedTable.phpName -}}
+               {% if relation.isMany -%}
+                   []|array
+               {%- endif %}|null
+     */
+    public function get{{ relation.phpName }}($hydrate = true, \PDO $con = null)
+    {
+        if ($hydrate && !isset($this->{{ relation.phpName(false) }})) {
+            $this->{{ relation.phpName(false) }} = {{ relation.relatedTable.phpName }}Query::create()
+                ->where('{{ relation.foreignColumn.name }}', $this->{{ relation.localColumn.phpName }})
+                {% if relation.isMany -%}
+                    ->find($con)
+                {%- else -%}
+                    ->findOne($con)
+                {%- endif %}
+
+            ;
+        }
+
+        return $this->{{ relation.phpName(false) }};
+    }

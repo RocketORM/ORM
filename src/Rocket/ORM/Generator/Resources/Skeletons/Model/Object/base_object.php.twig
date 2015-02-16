@@ -12,6 +12,9 @@ namespace {{ table.schema.namespace }}\Base;
 {% else -%}
     use Rocket\ORM\Model\Model;
 {% endif %}
+{% for relation in table.relations -%}
+    use {{ relation.relatedTable.schema.namespace }}\{{ relation.relatedTable.phpName }}Query;
+{% endfor %}
 
 {% block comment %}
 /**
@@ -144,6 +147,16 @@ class Base{{ table.phpName }} extends {{ baseModel }}
 
         $con->commit();
     }
+
+    {{- "\n" -}}
+    {%- for relation in table.relations -%}
+        {{ loop.first ? "\n" : '' }}
+        {%- include 'Method/getRelation.php.twig' -%}
+        {% if not loop.last -%}
+            {{ "\n\n" }}
+        {%- endif %}
+    {%- endfor -%}
+    {{ "\n\n" -}}
 
     {%- for column in table.columns -%}
         {%- include ['Method/getColumn/' ~ column.typeAsString ~ '.php.twig', 'Method/getColumn.php.twig'] -%}

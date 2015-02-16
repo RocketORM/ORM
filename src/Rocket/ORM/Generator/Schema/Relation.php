@@ -11,6 +11,8 @@
 
 namespace Rocket\ORM\Generator\Schema;
 
+use Rocket\ORM\Model\Map\TableMap;
+
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
@@ -32,9 +34,19 @@ class Relation
     public $local;
 
     /**
+     * @var Column
+     */
+    public $localColumn;
+
+    /**
      * @var string
      */
     public $foreign;
+
+    /**
+     * @var Column
+     */
+    public $foreignColumn;
 
     /**
      * @var string
@@ -54,7 +66,7 @@ class Relation
     /**
      * @var Table
      */
-    protected $table;
+    protected $localTable;
 
     /**
      * A related table is the table where the relation is explicitly mentioned in the schema configuration,
@@ -76,7 +88,7 @@ class Relation
         $this->local    = $data['local'];
         $this->foreign  = $data['foreign'];
         $this->onDelete = $data['onDelete'];
-        $this->onUpdate =  $data['onUpdate'];
+        $this->onUpdate = $data['onUpdate'];
 
         if (isset($data['type'])) {
             $this->type = $data['type'];
@@ -87,17 +99,18 @@ class Relation
     /**
      * @return Table
      */
-    public function getTable()
+    public function getLocalTable()
     {
-        return $this->table;
+        return $this->localTable;
     }
 
     /**
      * @param Table $table
      */
-    public function setTable(Table $table)
+    public function setLocalTable(Table $table)
     {
-        $this->table = $table;
+        $this->localTable  = $table;
+        $this->localColumn = $table->getColumn($this->local);
     }
 
     /**
@@ -130,7 +143,8 @@ class Relation
      */
     public function setRelatedTable($relatedTable)
     {
-        $this->relatedTable = $relatedTable;
+        $this->relatedTable  = $relatedTable;
+        $this->foreignColumn = $relatedTable->getColumn($this->foreign);
     }
 
     /**
@@ -139,5 +153,28 @@ class Relation
     public function isForeignKey()
     {
         return null != $this->relatedTable;
+    }
+
+    /**
+     * @param bool $firstUpper True if the first letter must be upper case
+     *
+     * @return string
+     */
+    public function getPhpName($firstUpper = true)
+    {
+        if (!$firstUpper) {
+            return lcfirst($this->phpName);
+        }
+
+        return $this->phpName;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isMany()
+    {
+        return TableMap::RELATION_TYPE_MANY_TO_ONE === $this->type
+               || TableMap::RELATION_TYPE_MANY_TO_MANY === $this->type;
     }
 }

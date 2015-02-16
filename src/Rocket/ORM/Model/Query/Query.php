@@ -81,7 +81,7 @@ abstract class Query implements QueryInterface
 
     /**
      * @param string     $clause
-     * @param null|mixed $value
+     * @param null|mixed $value  Can't be an array
      *
      * @return $this
      */
