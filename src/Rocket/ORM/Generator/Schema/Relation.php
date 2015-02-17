@@ -59,6 +59,11 @@ class Relation
     public $onUpdate = 'RESTRICT';
 
     /**
+     * @var bool
+     */
+    public $isForeignKey;
+
+    /**
      * @var int
      */
     public $type;
@@ -80,15 +85,17 @@ class Relation
     /**
      * @param string $with
      * @param array  $data
+     * @param bool   $isForeignKey
      */
-    public function __construct($with, array $data)
+    public function __construct($with, array $data, $isForeignKey = true)
     {
-        $this->with     = $with;
-        $this->phpName  = $data['phpName'];
-        $this->local    = $data['local'];
-        $this->foreign  = $data['foreign'];
-        $this->onDelete = $data['onDelete'];
-        $this->onUpdate = $data['onUpdate'];
+        $this->with         = $with;
+        $this->phpName      = $data['phpName'];
+        $this->local        = $data['local'];
+        $this->foreign      = $data['foreign'];
+        $this->onDelete     = $data['onDelete'];
+        $this->onUpdate     = $data['onUpdate'];
+        $this->isForeignKey = $isForeignKey;
 
         if (isset($data['type'])) {
             $this->type = $data['type'];
@@ -152,7 +159,7 @@ class Relation
      */
     public function isForeignKey()
     {
-        return null != $this->relatedTable;
+        return $this->isForeignKey;
     }
 
     /**

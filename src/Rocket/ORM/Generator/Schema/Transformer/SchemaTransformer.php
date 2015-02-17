@@ -266,7 +266,7 @@ class SchemaTransformer implements SchemaTransformerInterface
             'phpName'  => $phpName,
             'onUpdate' => $relation->onUpdate,
             'onDelete' => $relation->onDelete,
-        ]);
+        ], false);
         $relatedRelation->setLocalTable($relatedTable);
         $relatedRelation->setRelatedTable($table);
 
