@@ -6,6 +6,7 @@
     public function set{{ column.phpName(true) }}({% block definition %}${{ column.phpName }}{{ not column.isRequired ? ' = null' }}{% endblock %})
     {
         $this->{{ column.phpName }} = ${{ column.phpName }};
+        $this->_isModified = true;
 
         return $this;
     }

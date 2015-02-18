@@ -27,6 +27,11 @@ abstract class Model implements ModelInterface
     /**
      * @var bool
      */
+    protected $_isModified = false;
+
+    /**
+     * @var bool
+     */
     protected $_isDeleted = false;
 
     /**
@@ -54,14 +59,19 @@ abstract class Model implements ModelInterface
 
         try {
             if ($this->preSave($con)) {
-                if ($this->_isNew) {
+                if ($this->_isNew && $this->saveRelations()) {
                     $this->doInsert($con);
-                } else {
+                    $this->postSave($con);
+
+                    $this->_isNew = false;
+                    $this->_isModified = false;
+                } elseif ($this->_isModified && $this->saveRelations()) {
                     $this->doUpdate($con);
+                    $this->postSave($con);
+
+                    $this->_isModified = false;
                 }
             }
-
-            $this->postSave($con);
         } catch (\Exception $e) {
             if ($con->inTransaction()) {
                 $con->rollBack();
@@ -69,8 +79,6 @@ abstract class Model implements ModelInterface
 
             throw $e;
         }
-
-        $this->_isNew = false;
 
         return true;
     }
@@ -91,9 +99,9 @@ abstract class Model implements ModelInterface
         if (null == $con) {
             $con = Rocket::getConnection($this->getTableMap()->getConnectionName(), Rocket::CONNECTION_MODE_WRITE);
         }
-
         try {
             if ($this->preDelete($con)) {
+
                 $this->doDelete($con);
             }
 
@@ -161,6 +169,14 @@ abstract class Model implements ModelInterface
         }
 
         return $this->tableMap;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function saveRelations()
+    {
+        return true;
     }
 
     /**

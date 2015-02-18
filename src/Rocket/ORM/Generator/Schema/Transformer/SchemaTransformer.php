@@ -185,6 +185,8 @@ class SchemaTransformer implements SchemaTransformerInterface
                 throw new InvalidConfigurationException('Invalid foreign column value "' . $relation->foreign . '" for relation "' . $oldWith . '"');
             }
 
+            // TODO check if the local column type == foreign column type
+
             // Relation type guessing
             $this->guessRelationType($localColumn, $foreignColumn, $relatedTable, $relation);
 

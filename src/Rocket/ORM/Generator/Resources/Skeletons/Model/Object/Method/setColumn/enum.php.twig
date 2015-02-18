@@ -15,6 +15,7 @@
         }
 
         $this->{{ column.phpName }} = ${{ column.phpName }};
+        $this->_isModified = true;
 
         return $this;
     }
