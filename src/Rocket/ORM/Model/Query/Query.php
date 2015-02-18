@@ -340,15 +340,18 @@ abstract class Query implements QueryInterface
         $query = ' WHERE ';
         $i = 0;
 
+        // FIXME handle the case when a clause need to be encapsulated by parentheses
         foreach ($this->clauses as $clauseParams) {
             if (0 == $i) {
                 if (null != $clauseParams['value']) {
+                    // foo = :param_0
                     $query .= sprintf('%s :param_%d', trim(substr($clauseParams['clause'], 0, -1)), $i);
                 } else {
                     $query .= $clauseParams['clause'];
                 }
             } else {
                 if (null != $clauseParams['value']) {
+                    // AND foo = :param_1
                     $query .= sprintf(' %s %s :param_%d', $clauseParams['operator'], trim(substr($clauseParams['clause'], 0, -1)), $i);
                 } else {
                     $query .= $clauseParams['operator'] . ' ' . $clauseParams['clause'];

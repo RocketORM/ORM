@@ -11,11 +11,12 @@
     {
         if ($hydrate && !isset($this->{{ relation.phpName(false) }})) {
             $this->{{ relation.phpName(false) }} = {{ relation.relatedTable.phpName }}Query::create()
-                ->where('{{ relation.foreignColumn.name }}', $this->{{ relation.localColumn.phpName }})
+                ->where('{{ relation.foreignColumn.name }} = ?', $this->{{ relation.localColumn.phpName }})
                 {% if relation.isMany -%}
                     ->find($con)
                 {%- else -%}
                     ->findOne($con)
+                ->hydrate() {#- TODO allow to disable this line with schema option #}
                 {%- endif %}
 
             ;
