@@ -5,3 +5,15 @@
         protected ${{ column.phpName }};
         {{- "\n" -}}
     {% endfor %}
+
+    {% for relation in table.relations -%}
+        /**
+     * @var \{{ relation.relatedTable.schema.namespace ~ '\\' ~ relation.relatedTable.phpName -}}
+    {% if relation.isMany -%}
+        []|array
+    {%- endif %}
+
+     */
+    protected ${{ relation.phpName(false) }};
+
+    {% endfor %}
