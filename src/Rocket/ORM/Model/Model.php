@@ -59,13 +59,13 @@ abstract class Model implements ModelInterface
 
         try {
             if ($this->preSave($con)) {
-                if ($this->_isNew && $this->saveRelations()) {
+                if ($this->_isNew && $this->saveRelations($con)) {
                     $this->doInsert($con);
                     $this->postSave($con);
 
                     $this->_isNew = false;
                     $this->_isModified = false;
-                } elseif ($this->_isModified && $this->saveRelations()) {
+                } elseif ($this->_isModified && $this->saveRelations($con)) {
                     $this->doUpdate($con);
                     $this->postSave($con);
 
@@ -124,7 +124,7 @@ abstract class Model implements ModelInterface
      *
      * @return bool
      */
-    protected function preSave(\PDO $con = null)
+    protected function preSave(\PDO $con)
     {
         return true;
     }
@@ -134,7 +134,7 @@ abstract class Model implements ModelInterface
      *
      * @return bool
      */
-    protected function postSave(\PDO $con = null)
+    protected function postSave(\PDO $con)
     {
         return true;
     }
@@ -144,7 +144,7 @@ abstract class Model implements ModelInterface
      *
      * @return bool
      */
-    protected function preDelete(\PDO $con = null)
+    protected function preDelete(\PDO $con)
     {
         return true;
     }
@@ -154,7 +154,7 @@ abstract class Model implements ModelInterface
      *
      * @return bool
      */
-    protected function postDelete(\PDO $con = null)
+    protected function postDelete(\PDO $con)
     {
         return true;
     }
@@ -172,9 +172,11 @@ abstract class Model implements ModelInterface
     }
 
     /**
+     * @param \PDO $con
+     *
      * @return bool
      */
-    protected function saveRelations()
+    protected function saveRelations(\PDO $con)
     {
         return true;
     }

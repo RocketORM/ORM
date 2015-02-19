@@ -149,6 +149,11 @@ class Base{{ table.phpName }} extends {{ baseModel }}
     }
 
     {{- "\n" -}}
+    {%- if table.hasForeignKey -%}
+        {%- include 'Method/saveRelations.php.twig' -%}
+        {{ "\n" -}}
+    {%- endif -%}
+
     {%- for relation in table.relations -%}
         {{ loop.first ? "\n" : '' }}
         {%- include 'Method/getRelation.php.twig' -%}
