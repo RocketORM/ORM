@@ -294,14 +294,19 @@ abstract class Query implements QueryInterface
     protected function hydrateRelationValue(&$row, $alias, $columnName, $value, $from)
     {
         if (null == $from) {
-            $row[$this->joins[$alias]['relation']['phpName']][$columnName] = $value;
-        } else {
-            $relationName = $this->joins[$from]['relation']['phpName'];
-            if (!isset($row[$relationName])) {
-                $row[$relationName] = [];
+            if (!isset($row[$this->joins[$alias]['relation']['phpName']])) {
+                $row[$this->joins[$alias]['relation']['phpName']] = new RocketObject([], $this->joins[$alias]['relation']['namespace']);
             }
 
-            $this->hydrateRelationValue($row[$relationName], $alias, $columnName, $value, $this->with[$from]['from']);
+            $row[$this->joins[$alias]['relation']['phpName']][$columnName] = $value;
+        } else {
+            $this->hydrateRelationValue(
+                $row[$this->joins[$from]['relation']['phpName']],
+                $alias,
+                $columnName,
+                $value,
+                $this->with[$from]['from']
+            );
         }
     }
 

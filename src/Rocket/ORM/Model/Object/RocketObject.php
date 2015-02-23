@@ -15,8 +15,10 @@ use Rocket\ORM\Model\ModelInterface;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
+ *
+ * TODO implement \Serializable
  */
-class RocketObject
+class RocketObject implements \IteratorAggregate, \ArrayAccess, \Countable
 {
     /**
      * @var array
