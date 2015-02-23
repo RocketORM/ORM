@@ -293,8 +293,7 @@ abstract class Query implements QueryInterface
     {
         if (null == $from) {
             $row[$this->joins[$alias]['relation']['phpName']][$columnName] = $value;
-        }
-        else {
+        } else {
             $relationName = $this->joins[$from]['relation']['phpName'];
             if (!isset($row[$relationName])) {
                 $row[$relationName] = [];

@@ -1,6 +1,6 @@
     /**
-     * @param array $values The model values, required values must be provided
-     * @param bool  $isNew  In case of the model is new, and will be inserted, pass the "true"
+     * @param array|\Rocket\ORM\Model\Object\RocketObject[] $values The model values, required values must be provided
+     * @param bool                                          $isNew  In case of the model is new, and will be inserted, pass the "true"
      *
      * @return void
      */
@@ -26,8 +26,16 @@
         }
         {%- endif -%}
         {{ "\n" }}
-    {%- endfor %}
-
+        {%- endfor %}
+        {%- if table.hasForeignKey -%}
+            {{ "\n" -}}
+            {% for relation in table.relations %}
+        if (isset($values['{{ relation.phpName }}'])) {
+            $this->{{ relation.phpName(false) }} = $values['{{ relation.phpName }}']->hydrate();
+        }
+        {{- "\n\n" -}}
+            {% endfor -%}
+        {% endif %}
         $this->_isModified = $isNew;
         $this->_isNew = $isNew;
     }

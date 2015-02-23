@@ -97,6 +97,13 @@ class Base{{ table.phpName }}Query extends Query
 
                 $row = $tmpRow;
                 unset($tmpRow);
+
+                foreach ($this->joins as $join) {
+                    $row[$join['relation']['phpName']] = new RocketObject(
+                        $row[$join['relation']['phpName']],
+                        $join['relation']['namespace']
+                    );
+                }
             }
 
             $objects[] = new RocketObject($row, self::MODEL_NAMESPACE);
