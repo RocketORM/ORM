@@ -125,12 +125,12 @@ abstract class TableMap implements TableMapInterface
             throw new RelationAlreadyExistsException('The relation between ' . str_replace(['TableMap\\', 'TableMap'], '', get_called_class()) . ' and "' . $classNamespace . '" already exists');
         }
 
-        $this->relations[$classNamespace] = [
+        $this->relations[$phpName] = [
             'namespace' => $classNamespace,
-            'phpName' => $phpName,
-            'type' => $type,
-            'local' => $local,
-            'foreign' => $foreign,
+            'phpName'   => $phpName,
+            'type'      => $type,
+            'local'     => $local,
+            'foreign'   => $foreign,
             //'table_map_namespace' => constant($classNamespace . 'Query::TABLE_MAP_NAMESPACE')
         ];
     }

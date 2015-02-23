@@ -207,9 +207,19 @@ abstract class Query implements QueryInterface
      */
     protected function join($relation, $alias, $joinType = self::JOIN_TYPE_INNER, $with = false)
     {
+        $hasLink = false;
+        $relationTable = $relation;
+
+        // Remove the link alias if exists : "Alias.Relation", removing "Alias."
+        $pos = strpos($relation, '.');
+        if (false !== $pos) {
+            $relationTable = substr($relation, $pos + 1);
+            $hasLink = true;
+        }
+
         $tableMap = $this->getTableMap();
-        if (!$tableMap->hasRelation($relation)) {
-            if (false === strpos($relation, '.')) {
+        if (!$tableMap->hasRelation($relationTable)) {
+            if (!$hasLink) {
                 throw new \Exception('No relation with ' . $relation . ' for model ' . $this->modelNamespace);
             }
 
@@ -221,9 +231,9 @@ abstract class Query implements QueryInterface
         }
 
         $this->joins[$alias] = [
-            'from' => $this->alias,
-            'relation' => $tableMap->getRelation($relation),
-            'type' => $joinType
+            'from'     => $this->alias,
+            'relation' => $tableMap->getRelation($relationTable),
+            'type'     => $joinType
         ];
 
         return $this;
@@ -302,7 +312,7 @@ abstract class Query implements QueryInterface
         $query = '';
         foreach ($this->with as $with) {
             /** @var TableMapInterface $relationTableMap */
-            $relationTableMap = Rocket::getTableMap($this->joins[$with['alias']]['relation']['table_map_namespace']);
+            $relationTableMap = Rocket::getTableMap($this->joins[$with['alias']]['relation']['namespace']);
             foreach ($relationTableMap->getColumns() as $column) {
                 $query .= ', ' . $with['alias'] . '.' . $column['name'] . ' AS "' . $with['alias'] . '.' . $column['name'] . '"';
             }
@@ -321,10 +331,17 @@ abstract class Query implements QueryInterface
         $query = '';
         foreach ($this->joins as $alias => $join) {
             /** @var TableMapInterface $relationTableMap */
-            $tableMap = Rocket::getTableMap($join['relation']['table_map_namespace']);
-            $query .= ' ' . $join['type'] . ' JOIN ' . $tableMap->getTableName() . ' ' . $alias .
-                ' ON ' . $join['from'] . '.' . $join['relation']['local'] . ' = ' . $alias . '.' . $join['relation']['foreign']
-            ;
+            $tableMap = Rocket::getTableMap($join['relation']['namespace']);
+            $query .= sprintf(' %s JOIN `%s`.`%s` %s ON %s.%s = %s.%s',
+                $join['type'],
+                $tableMap->getDatabase(),
+                $tableMap->getTableName(),
+                $alias,
+                $join['from'],
+                $join['relation']['local'],
+                $alias,
+                $join['relation']['foreign']
+            );
 
             unset($tableMap);
         }
