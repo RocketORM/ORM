@@ -207,19 +207,21 @@ abstract class Query implements QueryInterface
      */
     protected function join($relation, $alias, $joinType = self::JOIN_TYPE_INNER, $with = false)
     {
-        $hasLink = false;
         $relationTable = $relation;
+        $from = null;
 
         // Remove the link alias if exists : "Alias.Relation", removing "Alias."
         $pos = strpos($relation, '.');
         if (false !== $pos) {
             $relationTable = substr($relation, $pos + 1);
-            $hasLink = true;
+            $from = substr($relation, 0, $pos);
         }
 
         $tableMap = $this->getTableMap();
-        if (!$tableMap->hasRelation($relationTable)) {
-            if (!$hasLink) {
+        $hasRelation = $tableMap->hasRelation($relationTable);
+
+        if (!$hasRelation || $hasRelation && null !== $from && $this->alias !== $from) {
+            if (null == $from) {
                 throw new \Exception('No relation with ' . $relation . ' for model ' . $this->modelNamespace);
             }
 
@@ -256,7 +258,7 @@ abstract class Query implements QueryInterface
             throw new \Exception('No alias found for relation ' . $params[0] . ' for model ' . $this->modelNamespace);
         }
 
-        $tableMap = Rocket::getTableMap($this->joins[$params[0]]['relation']['table_map_namespace']);
+        $tableMap = Rocket::getTableMap($this->joins[$params[0]]['relation']['namespace']);
         if ($with) {
             $this->with($alias, $params[0]);
         }
