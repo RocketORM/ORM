@@ -131,6 +131,7 @@ abstract class TableMap implements TableMapInterface
             'type'      => $type,
             'local'     => $local,
             'foreign'   => $foreign,
+            'is_many'   => self::RELATION_TYPE_MANY_TO_MANY === $type || self::RELATION_TYPE_MANY_TO_ONE === $type
             //'table_map_namespace' => constant($classNamespace . 'Query::TABLE_MAP_NAMESPACE')
         ];
     }
