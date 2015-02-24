@@ -405,11 +405,135 @@ abstract class Query implements QueryInterface
     }
 
     /**
+     * @param \PDOStatement $stmt
+     *
+     * @return array|RocketObject[]
+     */
+    protected function hydrate(\PDOStatement $stmt)
+    {
+        $hasRelation = 0 < sizeof($this->with);
+        if (!$hasRelation) {
+            $objects = $this->hydrateWithoutRelation($stmt);
+        } else {
+            $objects = $this->hydrateWithRelations($stmt);
+        }
+
+        $stmt->closeCursor();
+
+        return $objects;
+    }
+
+    /**
+     * @param \PDOStatement $stmt
+     *
+     * @return array|RocketObject[]
+     */
+    protected function hydrateWithoutRelation(\PDOStatement $stmt)
+    {
+        $objects = [];
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            $objects[] = new RocketObject($row, $this->modelNamespace);
+        }
+
+        return $objects;
+    }
+
+    /**
+     * @param \PDOStatement $stmt
+     *
+     * @return array|RocketObject[]
+     */
+    protected function hydrateWithRelations(\PDOStatement $stmt)
+    {
+        // The main objects array, returning at the end
+        $objects = [];
+
+        // An array of objects indexed by the query alias, to know if the object has been already
+        // instantiated and avoid multiple instantiations
+        $objectsByAlias = [];
+
+        // An array of objects indexed by query alias by row (cleared after each loop),
+        // to know where the relation object should be placed
+        $objectsByAliasByRow = [];
+
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            $data = [];
+
+            // Create an array of columns indexed by the query alias
+            foreach ($row as $columnName => $value) {
+                if (false !== strpos($columnName, '.')) {
+                    $params = explode('.', $columnName);
+                    $data[$params[0]][$params[1]] = $value;
+                }
+                else {
+                    $data[$this->alias][$columnName] = $value;
+                }
+            }
+
+            foreach ($data as $alias => $item) {
+                // The main object
+                if ($this->alias === $alias) {
+                    $objectHash = $this->getTableMap()->getPrimaryKeysHash($row);
+
+                    if (!isset($objectsByAlias[$this->alias][$objectHash])) {
+                        $object = new RocketObject($item, $this->modelNamespace);
+
+                        // Saving object for relations
+                        $objectsByAlias[$alias][$objectHash] = $object;
+                        $objectsByAliasByRow[$alias] = $object;
+                        $objects[] = $object;
+                    } else {
+                        $objectsByAliasByRow[$alias] = $objectsByAlias[$alias][$objectHash];
+                    }
+                } else {
+                    // Relations
+                    $hash = Rocket::getTableMap($this->joins[$alias]['relation']['namespace'])->getPrimaryKeysHash($item);
+                    if (!isset($objectsByAlias[$alias][$hash])) {
+                        $objectsByAlias[$alias][$hash] = new RocketObject($item, $this->joins[$alias]['relation']['namespace']);
+                    }
+
+                    $objectsByAliasByRow[$alias] = $objectsByAlias[$alias][$hash];
+                    $relationPhpName = $this->joins[$alias]['relation']['phpName'];
+                    $relationFrom = $this->joins[$alias]['from'];
+
+                    if (!isset($objectsByAliasByRow[$relationFrom])) {
+                        throw new \LogicException(
+                            'The parent object for the relation "' . $relationPhpName . '"'
+                            . ' (from: "' . $relationFrom . '") does not exist'
+                        );
+                    }
+
+                    if ($this->joins[$alias]['relation']['is_many']) {
+                        // If many, create the array if doesn't exist
+                        if (!isset($objectsByAliasByRow[$relationFrom][$relationPhpName])) {
+                            $objectsByAliasByRow[$relationFrom][$relationPhpName] = [];
+                        }
+
+                        $objectsByAliasByRow[$relationFrom][$relationPhpName][] = $objectsByAlias[$alias][$hash];
+                    } else {
+                        $objectsByAliasByRow[$relationFrom][$relationPhpName] = $objectsByAlias[$alias][$hash];
+                    }
+                }
+            }
+
+
+            $objectsByAliasByRow = null;
+            unset($objectsByAliasByRow);
+        }
+
+        $objectsByAlias = null;
+        unset($objectsByAlias);
+
+        return $objects;
+    }
+
+    /**
      * Clear all values
      */
     protected function clear()
     {
-        unset($this->clauses, $this->joins, $this->with, $this->offset);
+        unset($this->clauses, $this->joins, $this->with, $this->limit, $this->offset, $this->count);
+
         $this->clauses = [];
         $this->joins   = [];
         $this->with    = [];

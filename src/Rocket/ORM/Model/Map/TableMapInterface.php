@@ -72,6 +72,13 @@ interface TableMapInterface
     public function getRelation($name);
 
     /**
+     * @param array $row
+     *
+     * @return string
+     */
+    public function getPrimaryKeysHash(array $row);
+
+    /**
      * @return array
      */
     public function getColumns();

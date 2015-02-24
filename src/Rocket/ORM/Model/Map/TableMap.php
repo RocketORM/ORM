@@ -137,6 +137,28 @@ abstract class TableMap implements TableMapInterface
     }
 
     /**
+     * @param array $row
+     *
+     * @return string
+     *
+     * @internal Used by the query class
+     */
+    public function getPrimaryKeysHash(array $row)
+    {
+        $hash = '';
+        foreach ($this->getPrimaryKeys() as $primaryKey) {
+            $hash .= $row[$primaryKey['name']];
+        }
+
+        // if hash is too long, transform it into MD5 hash
+        if (isset($hash[33])) {
+            return md5($hash);
+        }
+
+        return $hash;
+    }
+
+    /**
      * @return string
      */
     public function getClassName()

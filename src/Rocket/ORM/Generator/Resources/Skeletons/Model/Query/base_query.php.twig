@@ -3,6 +3,7 @@
 namespace {{ table.schema.namespace }}\Base;
 
 use Rocket\ORM\Rocket;
+use Rocket\ORM\Model\Map\TableMap;
 use Rocket\ORM\Model\Object\RocketObject;
 use Rocket\ORM\Model\Query\Query;
 
@@ -82,39 +83,15 @@ class Base{{ table.phpName }}Query extends Query
             throw $e;
         }
 
-        $objects = [];
-        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-            if ($hasRelationWith) {
-                $tmpRow = [];
-                foreach ($row as $columnName => $value) {
-                    if (false !== strpos($columnName, '.')) {
-                        $params = explode('.', $columnName);
-                        $this->hydrateRelationValue($tmpRow, $params[0], $params[1], $value, $this->with[$params[0]]['from']);
-                    } else {
-                        $tmpRow[$columnName] = $value;
-                    }
-                }
-
-                $row = $tmpRow;
-                unset($tmpRow);
-
-                foreach ($this->joins as $join) {
-                    $row[$join['relation']['phpName']] = new RocketObject(
-                        $row[$join['relation']['phpName']],
-                        $join['relation']['namespace']
-                    );
-                }
-            }
-
-            $objects[] = new RocketObject($row, self::MODEL_NAMESPACE);
-        }
-
-        $stmt->closeCursor();
-        $this->clear();
+        $objects = $this->hydrate($stmt);
 
         if (1 === $this->limit && isset($objects[0])) {
+            $this->clear();
+
             return $objects[0];
         }
+
+        $this->clear();
 
         return $objects;
     }
