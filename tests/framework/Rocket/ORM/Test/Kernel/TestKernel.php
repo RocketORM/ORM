@@ -14,6 +14,8 @@ namespace Rocket\ORM\Test\Kernel;
 use Rocket\ORM\Config\ConfigLoader;
 use Rocket\ORM\Generator\Database\DatabaseGenerator;
 use Rocket\ORM\Generator\Database\Table\DatabaseTableGenerator;
+use Rocket\ORM\Generator\Model\Object\ObjectGenerator;
+use Rocket\ORM\Generator\Model\TableMap\TableMapGenerator;
 use Rocket\ORM\Generator\Schema\Loader\SchemaLoader;
 use Rocket\ORM\Generator\Schema\Schema;
 use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer;
@@ -74,6 +76,8 @@ class TestKernel
         $this->loadConfig();
         $this->loadSchemas();
         $this->generateSql();
+        $this->generateTableMaps();
+        $this->generateObjects();
         $this->loadDatabases();
     }
 
@@ -113,6 +117,28 @@ class TestKernel
         $databaseGenerator = new DatabaseGenerator($this->sqlInputDir);
         foreach ($this->schemas as $schema) {
             $databaseGenerator->generate($schema);
+        }
+    }
+
+    /**
+     * Generate table map objects
+     */
+    protected function generateTableMaps()
+    {
+        $tableMapGenerator = new TableMapGenerator();
+        foreach ($this->schemas as $schema) {
+            $tableMapGenerator->generate($schema);
+        }
+    }
+
+    /**
+     * Generate model objects
+     */
+    protected function generateObjects()
+    {
+        $objectGenerator = new ObjectGenerator();
+        foreach ($this->schemas as $schema) {
+            $objectGenerator->generate($schema);
         }
     }
 
