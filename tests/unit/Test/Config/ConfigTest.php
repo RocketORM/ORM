@@ -30,7 +30,7 @@ class ConfigTest extends RocketTestCase
     {
         // Good load
         try {
-            $loader = new ConfigLoader($this->rootDir . '/resources/config/rocket.yml');
+            $loader = new ConfigLoader(self::$rootDir . '/resources/config/rocket.yml');
             $config = $loader->all();
 
             $this->assertTrue(is_array($config));
@@ -41,7 +41,7 @@ class ConfigTest extends RocketTestCase
         // Wrong file
         $error = null;
         try {
-            new ConfigLoader($this->rootDir . '/resources/config/not_found');
+            new ConfigLoader(self::$rootDir . '/resources/config/not_found');
         } catch (ConfigurationFileNotFoundException $e) {
             $error = $e->getMessage();
         }
@@ -49,7 +49,7 @@ class ConfigTest extends RocketTestCase
         $this->assertTrue(0 === strpos($error, 'The rocket configuration file is not found in the selected folder'));
 
         // No specified path, and file found
-        chdir($this->rootDir . '/resources');
+        chdir(self::$rootDir . '/resources');
         $loader = new ConfigLoader();
         $config = $loader->all();
 
@@ -79,7 +79,7 @@ class ConfigTest extends RocketTestCase
      */
     public function fileNotFoundException()
     {
-        chdir($this->rootDir);
+        chdir(self::$rootDir);
         new ConfigLoader();
     }
 }

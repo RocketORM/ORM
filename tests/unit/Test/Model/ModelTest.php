@@ -18,19 +18,12 @@ use Rocket\ORM\Test\RocketTestCase;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
+ *
+ * @coversNothing
  */
 class ModelTest extends RocketTestCase
 {
     use ModelTestHelper, SchemaTestHelper;
-
-    public function setUp()
-    {
-        parent::setUp();
-
-        $this->generateObjects([
-            $this->getSchemaByName('car_schema.yml')
-        ]);
-    }
 
     /**
      * @test

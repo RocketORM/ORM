@@ -13,14 +13,19 @@ namespace Test\Generator\Schema\Loader;
 
 use Rocket\ORM\Generator\Schema\Loader\SchemaLoader;
 use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer;
+use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface;
 use Rocket\ORM\Test\Generator\Schema\Loader\InlineSchemaLoader;
 use Rocket\ORM\Test\Generator\Schema\SchemaTestHelper;
 use Rocket\ORM\Test\RocketTestCase;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
+ *
+ * @covers \Rocket\ORM\Generator\Schema\Loader\SchemaLoader
+ * @covers \Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException
  */
 class SchemaLoaderTest extends RocketTestCase
 {
@@ -29,23 +34,36 @@ class SchemaLoaderTest extends RocketTestCase
     /**
      * @var string
      */
-    protected $schemaDirPath;
+    protected static $schemaDirPath;
 
     /**
      * @var string
      */
-    protected $validSchema;
+    protected static $validSchema;
 
 
     /**
-     *
+     * @inheritdoc
      */
-    public function setUp()
+    public static function setUpBeforeClass()
     {
-        parent::setUp();
+        parent::setUpBeforeClass();
 
-        $this->schemaDirPath = $this->rootDir . '/resources/schemas';
-        $this->validSchema = Yaml::parse($this->schemaDirPath . '/car_schema.yml');
+        self::$schemaDirPath = self::$rootDir . '/resources/schemas';
+        self::$validSchema   = Yaml::parse(self::$schemaDirPath . '/car_schema.yml');
+    }
+
+    /**
+     * @test
+     *
+     * @expectedException \Rocket\ORM\Generator\Schema\Loader\Exception\SchemaNotFoundException
+     * @expectedExceptionMessageRegExp /Schema not found in path "(.+)Schema\/Loader"/
+     *
+     * @covers \Rocket\ORM\Generator\Schema\Loader\Exception\SchemaNotFoundException
+     */
+    public function schemaNotFoundException()
+    {
+        (new SchemaLoader(__DIR__, [], new SchemaTransformer()))->load();
     }
 
     /**
@@ -53,29 +71,8 @@ class SchemaLoaderTest extends RocketTestCase
      */
     public function load()
     {
-        // Wrong schema model class
-        $error = null;
-        try {
-            new SchemaTransformer('\\Rocket\\ORM\\Rocket');
-        } catch (\InvalidArgumentException $e) {
-            $error = $e->getMessage();
-        }
-
-        $this->assertTrue($error == 'The schema model must extend Rocket\ORM\Generator\Schema\Schema', 'Wrong schema model class');
-
-        // Custom schema model class
-        $transformer = new SchemaTransformer($this->getMockClass('\\Rocket\\ORM\\Generator\\Schema\\Schema', [], [], 'SchemaTest'));
-        $this->assertTrue(null != $transformer, 'Custom schema model class');
-
-        // Schema not found
-        $this->assertSchemaLoadingException(
-            new SchemaLoader(__DIR__, [], new SchemaTransformer()),
-            'Schema not found in path "' . __DIR__ . '"',
-            'Schema not found'
-        );
-
         // Format directory path
-        $validSchema = $this->validSchema;
+        $validSchema = self::$validSchema;
         $validSchema['directory'] = '../Model/';
         $schemaLoader = new InlineSchemaLoader([$validSchema]);
         $schemas = $schemaLoader->load();
@@ -84,126 +81,60 @@ class SchemaLoaderTest extends RocketTestCase
         $this->assertTrue('/../Model' == $schemas[0]->relativeDirectory, 'Model output directory format');
 
         // Good load
-        $schemaLoader = new SchemaLoader($this->schemaDirPath, [], new SchemaTransformer());
+        $schemaLoader = new SchemaLoader(self::$schemaDirPath, [], new SchemaTransformer());
         $schemas = $schemaLoader->load();
 
         $finder = new Finder();
         $finder->files()
-            ->in($this->schemaDirPath)
+            ->in(self::$schemaDirPath)
         ;
-
-        $finder->getIterator()->rewind();
-        $this->validSchema = $finder->getIterator()->current();
 
         $this->assertCount($finder->count(), $schemas, 'Schemas count');
     }
 
     /**
      * @test
+     *
+     * @expectedException \Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException
+     * @expectedExceptionMessage Houston, we have a problem
      */
-    public function invalidColumnConfiguration()
+    public function validateSchemaTransformerException()
     {
-        // Wrong column name
-        $wrongSchema = $this->validSchema;
+        $schemaTransformer = $this->getMockBuilder('\Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer')
+            ->setMethods(['transform'])
+            ->getMock()
+        ;
 
-        $idColumn = $wrongSchema['tables']['car']['columns']['id'];
-        $idColumn['primaryKey_notfound'] = $idColumn['primaryKey'];
-        unset($idColumn['primaryKey']);
-        $wrongSchema['tables']['car']['columns']['id'] = $idColumn;
+        /** @var SchemaTransformerInterface|\PHPUnit_Framework_MockObject_MockObject $schemaTransformer */
+        $schemaTransformer
+            ->expects($this->once())
+            ->method('transform')
+            ->willThrowException(new InvalidConfigurationException('Houston, we have a problem'))
+        ;
 
-        $this->assertSchemaLoadingException(
-            new InlineSchemaLoader([$wrongSchema]),
-            'Unrecognized option "primaryKey_notfound" under "schema.tables.car.columns.id" (schema : "inline_0")',
-            'Wrong property for column'
-        );
-
-        // Wrong enum default value
-        $wrongSchema = $this->validSchema;
-        $wrongSchema['tables']['car']['columns']['door_count']['default'] = 'notfound';
-
-        $this->assertSchemaLoadingException(
-            new InlineSchemaLoader([$wrongSchema]),
-            'Invalid default value "notfound" for enum column "door_count" on table "car" (schema : "inline_0")',
-            'Default value for enum column'
-        );
-
-        // Wrong size or decimal value
-        $wrongSchema = $this->validSchema;
-        $wrongSchema['tables']['car']['columns']['price']['size'] = $wrongSchema['tables']['car']['columns']['price']['decimal'];
-
-        $this->assertSchemaLoadingException(
-            new InlineSchemaLoader([$wrongSchema]),
-            'Invalid size value "' . $wrongSchema['tables']['car']['columns']['price']['size'] . '" for column "price" '
-                . 'on table "car", the size should be greater than the decimal value "'
-                . $wrongSchema['tables']['car']['columns']['price']['size'] . '" (schema : "inline_0")'
-            ,
-            'Wrong size or decimal value'
-        );
-
-        // Wrong default value for boolean
-        $wrongSchema = $this->validSchema;
-        $wrongSchema['tables']['certificate']['columns']['is_valid']['default'] = 'not_a_boolean';
-
-        $this->assertSchemaLoadingException(
-            new InlineSchemaLoader([$wrongSchema]),
-            'The default value "not_a_boolean" for boolean column "is_valid" on table "certificate" should be a boolean (schema : "inline_0")',
-            'Wrong default value on boolean type'
-        );
+        (new InlineSchemaLoader([self::$validSchema], $schemaTransformer))->load();
     }
 
     /**
      * @test
+     *
+     * @expectedException \Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException
+     * @expectedExceptionMessage Houston, we have a problem
      */
-    public function invalidRelationConfiguration()
+    public function validateSchemaTransformerRelationException()
     {
-        // Wrong relation name
-        $wrongSchema = $this->validSchema;
+        $schemaTransformer = $this->getMockBuilder('\Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer')
+            ->setMethods(['transformRelations'])
+            ->getMock()
+        ;
 
-        $relations = $wrongSchema['tables']['car']['relations'];
-        $relations['car_db.wheel_notfound'] = $relations['car_db.wheel'];
-        unset($relations['car_db.wheel']);
-        $wrongSchema['tables']['car']['relations'] = $relations;
+        /** @var SchemaTransformerInterface|\PHPUnit_Framework_MockObject_MockObject $schemaTransformer */
+        $schemaTransformer
+            ->expects($this->once())
+            ->method('transformRelations')
+            ->willThrowException(new InvalidConfigurationException('Houston, we have a problem'))
+        ;
 
-        $this->assertSchemaLoadingException(
-            new InlineSchemaLoader([$wrongSchema]),
-            'Invalid relation "car_db.wheel_notfound" (schema : "inline_0")',
-            'Wrong relation name'
-        );
-
-        // Wrong local column
-        $wrongSchema = $this->validSchema;
-        $wrongSchema['tables']['car']['relations']['car_db.wheel']['local'] = 'notfound';
-        $this->assertSchemaLoadingException(
-            new InlineSchemaLoader([$wrongSchema]),
-            'Invalid local column value "notfound" for relation "car_db.wheel" (schema : "inline_0")',
-            'Wrong relation local column'
-        );
-
-        // Wrong foreign column
-        $wrongSchema = $this->validSchema;
-        $wrongSchema['tables']['car']['relations']['car_db.wheel']['foreign'] = 'notfound';
-        $this->assertSchemaLoadingException(
-            new InlineSchemaLoader([$wrongSchema]),
-            'Invalid foreign column value "notfound" for relation "car_db.wheel" (schema : "inline_0")',
-            'Wrong relation foreign column'
-        );
-
-        // Too much table for the same relation name
-        $wrongSchema = $this->validSchema;
-        $wrongSchema2 = $this->validSchema;
-
-        $wrongSchema2['database'] = $wrongSchema['database'] . '2';
-        $wrongSchema2['namespace'] = $wrongSchema['namespace'] . '2';
-
-        $relations = $wrongSchema2['tables']['car']['relations'];
-        $relations['wheel'] = $relations['car_db.wheel'];
-        unset($relations['car_db.wheel']);
-        $wrongSchema2['tables']['car']['relations'] = $relations;
-
-        $this->assertSchemaLoadingException(
-            new InlineSchemaLoader([$wrongSchema, $wrongSchema2]),
-            'Too much table for the relation "wheel", prefix it with the database or use the object namespace (schema : "inline_1")',
-            'Wrong relation foreign column'
-        );
+        (new InlineSchemaLoader([self::$validSchema], $schemaTransformer))->load();
     }
 }

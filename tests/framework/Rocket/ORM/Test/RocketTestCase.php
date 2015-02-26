@@ -21,12 +21,12 @@ class RocketTestCase extends \PHPUnit_Framework_TestCase
     /**
      * @var string
      */
-    protected $rootDir;
+    protected static $rootDir;
 
     /**
      * @var string
      */
-    protected $cacheDir = TEST_CACHE_DIR;
+    protected static $cacheDir = TEST_CACHE_DIR;
 
 
     /**
@@ -34,7 +34,7 @@ class RocketTestCase extends \PHPUnit_Framework_TestCase
      */
     public function __construct()
     {
-        $this->rootDir = __DIR__ . '/../../../..';
+        self::$rootDir = __DIR__ . '/../../../..';
     }
 
     /**
@@ -43,7 +43,7 @@ class RocketTestCase extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         Rocket::setConfiguration(
-            require $this->cacheDir . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php'
+            require self::$cacheDir . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php'
         );
     }
 }

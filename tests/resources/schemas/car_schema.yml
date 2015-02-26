@@ -1,7 +1,7 @@
 connection: car
 database: car_db
 namespace: Fixture\Car\Model
-directory: '../fixtures/Fixture/Car/Model'
+directory: '/../fixtures/Fixture/Car/Model'
 tables:
     car:
         columns:

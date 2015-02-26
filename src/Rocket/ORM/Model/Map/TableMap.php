@@ -121,7 +121,7 @@ abstract class TableMap implements TableMapInterface
      */
     public function addRelation($classNamespace, $phpName, $type, $local, $foreign)
     {
-        if (isset($this->relations[$classNamespace])) {
+        if (isset($this->relations[$phpName])) {
             throw new RelationAlreadyExistsException('The relation between ' . str_replace(['TableMap\\', 'TableMap'], '', get_called_class()) . ' and "' . $classNamespace . '" already exists');
         }
 

@@ -12,19 +12,18 @@
 namespace Test\Model\Map;
 
 use Rocket\ORM\Generator\Model\TableMap\TableMapGenerator;
-use Rocket\ORM\Generator\Schema\Loader\SchemaLoader;
-use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer;
-use Rocket\ORM\Model\Map\Exception\RelationAlreadyExistsException;
 use Rocket\ORM\Model\Map\TableMap;
 use Rocket\ORM\Rocket;
 use Rocket\ORM\Test\Generator\Model\TableMapTestHelper;
-use Rocket\ORM\Test\Generator\Schema\Loader\InlineSchemaLoader;
 use Rocket\ORM\Test\Generator\Schema\SchemaTestHelper;
 use Rocket\ORM\Test\RocketTestCase;
+use Rocket\ORM\Test\Utils\String;
 use Symfony\Component\Yaml\Yaml;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
+ *
+ * @covers \Rocket\ORM\Model\Map\TableMap
  */
 class TableMapTest extends RocketTestCase
 {
@@ -33,93 +32,68 @@ class TableMapTest extends RocketTestCase
     /**
      * @var array
      */
-    protected $validSchema;
+    protected static $validSchema;
 
     /**
      * @var string
      */
-    protected $schemaDirPath;
+    protected static $schemaDirPath;
 
 
     /**
-     *
+     * @inheritdoc
      */
-    public function setUp()
+    public static function setUpBeforeClass()
     {
-        parent::setUp();
+        parent::setUpBeforeClass();
 
-        $this->schemaDirPath = $this->rootDir . '/resources/schemas';
-        $this->validSchema = Yaml::parse($this->schemaDirPath . '/car_schema.yml');
+        self::$schemaDirPath = self::$rootDir . '/resources/schemas';
+        self::$validSchema = Yaml::parse(self::$schemaDirPath . '/car_schema.yml');
     }
-
 
     /**
      * @test
+     *
+     * @expectedException \Rocket\ORM\Model\Map\Exception\RelationAlreadyExistsException
+     * @expectedExceptionMessage The relation between Fixture\Car\Model\Car and "Fixture\Car\Model\Wheel" already exists
+     *
+     * @covers \Rocket\ORM\Model\Map\Exception\RelationAlreadyExistsException
      */
-    public function generationValidation()
+    public function addRelationException()
     {
-        $tableMapGenerator = new TableMapGenerator();
-
-        // Double relation generation
-        $wrongSchema = $this->validSchema;
-        $wrongSchema['tables']['company']['relations']['car_db.wheel'] = [
-            'local' => 'id',
-            'foreign' => 'company_id'
-        ];
-
-        $schemaLoader = new InlineSchemaLoader([$this->rootDir . '/resources/schemas/car_schema.yml' => $wrongSchema]);
-        $schemas = $schemaLoader->load();
-
-        $this->assertCount(1, $schemas, 'Schema count');
-        $tableMapGenerator->generate($schemas[0]);
-
-        $tableMap = null;
-        try {
-            /** @var TableMap $tableMap */
-            $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Company');
-        } catch (RelationAlreadyExistsException $e) {
-            // Nothing
-        }
-
-        $this->assertNotNull($tableMap, 'Relation already exists');
-
-        // Good generation
-        $schemaLoader = new SchemaLoader($this->schemaDirPath, [], new SchemaTransformer());
-        $schemas = $schemaLoader->load();
-
-        foreach ($schemas as $schema) {
-            $tableMapGenerator->generate($schema);
-        }
+        /** @var TableMap $tableMap */
+        $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Car');
 
         // Double relation exception
-        $error = false;
-        try {
-            $tableMap->addRelation('Fixture\\Car\\Model\\Wheel', null, null, null, null, null);
-        } catch (RelationAlreadyExistsException $e) {
-            $error = true;
-        }
+        $tableMap->addRelation(
+            'Fixture\\Car\\Model\\Wheel',
+            'Wheel',
+            TableMap::RELATION_TYPE_ONE_TO_MANY,
+            'wheel_unique_name',
+            'unique_name'
+        );
+    }
 
-        $this->assertTrue($error, 'Double relation exception');
+    /**
+     * @test
+     *
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Invalid column type for value "notfound"
+     */
+    public function convertColumnTypeToConstantNotFoundException()
+    {
+        TableMap::convertColumnTypeToConstant('notfound');
+    }
 
-        // Column type constant not found
-        $error = false;
-        try {
-            TableMap::convertColumnTypeToConstant('notfound');
-        } catch (\InvalidArgumentException $e) {
-            $error = true;
-        }
-
-        $this->assertTrue($error, 'Column type constant exception');
-
-        // Wrong table map model namespace
-        $error = null;
-        try {
-            new TableMapGenerator('\\Rocket\\ORM\\Rocket');
-        } catch (\Exception $e) {
-            $error = $e->getMessage();
-        }
-
-        $this->assertEquals('The table map model must implement Rocket\ORM\Model\Map\TableMapInterface', $error);
+    /**
+     * @test
+     *
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage The table map model must implement Rocket\ORM\Model\Map\TableMapInterface
+     */
+    public function wrongModelException()
+    {
+        new TableMapGenerator('\\stdClass');
     }
 
     /**
@@ -127,8 +101,6 @@ class TableMapTest extends RocketTestCase
      */
     public function commonValidation()
     {
-        $this->generateTableMaps($this->getSchemas());
-
         $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Company');
 
         // Assert values
@@ -149,8 +121,6 @@ class TableMapTest extends RocketTestCase
      */
     public function columnsValidation()
     {
-        $this->generateTableMaps($this->getSchemas());
-
         // Assert columns
         $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Car');
 
@@ -277,15 +247,20 @@ class TableMapTest extends RocketTestCase
         $this->assertFalse($column['required']);
 
         // Wrong column
-        $error = false;
-        try {
-            $tableMap->getColumn('notfound');
-        } catch (\InvalidArgumentException $e) {
-            $error = true;
-        }
-
-        $this->assertTrue($error, 'Wrong column name');
         $this->assertFalse($tableMap->hasColumn('notfound'), 'Wrong column name');
+    }
+
+    /**
+     * Wrong column name
+     *
+     * @test
+     *
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage The column with name "notfound" is not found for table "company"
+     */
+    public function columnNotFoundException()
+    {
+        Rocket::getTableMap('\\Fixture\\Car\\Model\\Company')->getColumn('notfound');
     }
 
     /**
@@ -293,13 +268,11 @@ class TableMapTest extends RocketTestCase
      */
     public function relationsValidation()
     {
-        $this->generateTableMaps($this->getSchemas());
-
         $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Wheel');
 
         // Assert specified relation (one to many)
-        $this->assertTrue($tableMap->hasRelation('Fixture\\Car\\Model\\Company'));
-        $relation = $tableMap->getRelation('Fixture\\Car\\Model\\Company');
+        $this->assertTrue($tableMap->hasRelation('Company'));
+        $relation = $tableMap->getRelation('Company');
         $this->assertEquals('Fixture\\Car\\Model\\Company', $relation['namespace']);
         $this->assertEquals('Company', $relation['phpName']);
         $this->assertEquals(TableMap::RELATION_TYPE_ONE_TO_MANY, $relation['type']);
@@ -309,8 +282,8 @@ class TableMapTest extends RocketTestCase
         $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Company');
 
         // Assert non specified relation (many to one)
-        $this->assertTrue($tableMap->hasRelation('Fixture\\Car\\Model\\Wheel'));
-        $relation = $tableMap->getRelation('Fixture\\Car\\Model\\Wheel');
+        $this->assertTrue($tableMap->hasRelation('Wheels'));
+        $relation = $tableMap->getRelation('Wheels');
         $this->assertEquals('Fixture\\Car\\Model\\Wheel', $relation['namespace']);
         $this->assertEquals('Wheels', $relation['phpName']);
         $this->assertEquals(TableMap::RELATION_TYPE_MANY_TO_ONE, $relation['type']);
@@ -318,8 +291,8 @@ class TableMapTest extends RocketTestCase
         $this->assertEquals('company_id', $relation['foreign']);
 
         // Assert specified relation (one to one)
-        $this->assertTrue($tableMap->hasRelation('Fixture\\Car\\Model\\Validator'));
-        $relation = $tableMap->getRelation('Fixture\\Car\\Model\\Validator');
+        $this->assertTrue($tableMap->hasRelation('Validator'));
+        $relation = $tableMap->getRelation('Validator');
         $this->assertEquals('Fixture\\Car\\Model\\Validator', $relation['namespace']);
         $this->assertEquals('Validator', $relation['phpName']);
         $this->assertEquals(TableMap::RELATION_TYPE_ONE_TO_ONE, $relation['type']);
@@ -329,12 +302,47 @@ class TableMapTest extends RocketTestCase
         $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Validator');
 
         // Assert non specified relation (one to one)
-        $this->assertTrue($tableMap->hasRelation('Fixture\\Car\\Model\\Company'));
-        $relation = $tableMap->getRelation('Fixture\\Car\\Model\\Company');
+        $this->assertTrue($tableMap->hasRelation('Company'));
+        $relation = $tableMap->getRelation('Company');
         $this->assertEquals('Fixture\\Car\\Model\\Company', $relation['namespace']);
         $this->assertEquals('Company', $relation['phpName']);
         $this->assertEquals(TableMap::RELATION_TYPE_ONE_TO_ONE, $relation['type']);
         $this->assertEquals('company_id', $relation['local']);
         $this->assertEquals('id', $relation['foreign']);
+    }
+
+    /**
+     * Wrong relation name
+     *
+     * @test
+     *
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage The relation with name "notfound" is not found for table "company"
+     */
+    public function relationNotFoundException()
+    {
+        Rocket::getTableMap('\\Fixture\\Car\\Model\\Company')->getRelation('notfound');
+    }
+
+    /**
+     * @test
+     */
+    public function getPrimaryKeysHash()
+    {
+        $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Company');
+
+        $this->assertEquals('1', $tableMap->getPrimaryKeysHash([
+            'bar' => 'foo',
+            'id'  => 1,
+            'foo' => 'bar'
+        ]));
+
+        // Hash is too long, return the MD5
+        $id = String::generateRandomString(34);
+        $this->assertEquals(md5($id), $tableMap->getPrimaryKeysHash([
+            'bar' => 'foo',
+            'id'  => $id,
+            'foo' => 'bar'
+        ]));
     }
 }
