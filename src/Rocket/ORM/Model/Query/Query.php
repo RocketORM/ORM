@@ -285,32 +285,6 @@ abstract class Query implements QueryInterface
     }
 
     /**
-     * @param array  $row
-     * @param string $alias
-     * @param string $columnName
-     * @param mixed  $value
-     * @param string $from
-     */
-    protected function hydrateRelationValue(&$row, $alias, $columnName, $value, $from)
-    {
-        if (null == $from) {
-            if (!isset($row[$this->joins[$alias]['relation']['phpName']])) {
-                $row[$this->joins[$alias]['relation']['phpName']] = new RocketObject([], $this->joins[$alias]['relation']['namespace']);
-            }
-
-            $row[$this->joins[$alias]['relation']['phpName']][$columnName] = $value;
-        } else {
-            $this->hydrateRelationValue(
-                $row[$this->joins[$from]['relation']['phpName']],
-                $alias,
-                $columnName,
-                $value,
-                $this->with[$from]['from']
-            );
-        }
-    }
-
-    /**
      * @return string
      */
     protected function buildRelationWith()
@@ -361,10 +335,9 @@ abstract class Query implements QueryInterface
     protected function buildClauses()
     {
         $query = ' WHERE ';
-        $i = 0;
 
         // FIXME handle the case when a clause need to be encapsulated by parentheses
-        foreach ($this->clauses as $clauseParams) {
+        foreach ($this->clauses as $i => $clauseParams) {
             if (0 == $i) {
                 if (null != $clauseParams['value']) {
                     // foo = :param_0
@@ -380,8 +353,6 @@ abstract class Query implements QueryInterface
                     $query .= $clauseParams['operator'] . ' ' . $clauseParams['clause'];
                 }
             }
-
-            ++$i;
         }
 
         return $query;
