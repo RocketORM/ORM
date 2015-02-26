@@ -30,18 +30,22 @@ class RocketTestCase extends \PHPUnit_Framework_TestCase
 
 
     /**
-     *
+     * @inheritdoc
      */
-    public function __construct()
+    public static function setUpBeforeClass()
     {
+        parent::setUpBeforeClass();
+
         self::$rootDir = __DIR__ . '/../../../..';
     }
 
     /**
-     *
+     * @inheritdoc
      */
     public function setUp()
     {
+        parent::setUp();
+
         Rocket::setConfiguration(
             require self::$cacheDir . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php'
         );
