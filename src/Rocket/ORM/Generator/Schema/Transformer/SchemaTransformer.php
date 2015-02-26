@@ -188,7 +188,7 @@ class SchemaTransformer implements SchemaTransformerInterface
             // TODO check if the local column type == foreign column type
 
             // Relation type guessing
-            $this->guessRelationType($localColumn, $foreignColumn, $relatedTable, $relation);
+            $this->guessRelationType($localColumn, $relatedTable, $relation);
 
             // Then, save the related table for check if the related relation has been created
             $relation->setRelatedTable($relatedTable);
@@ -365,17 +365,13 @@ class SchemaTransformer implements SchemaTransformerInterface
 
     /**
      * @param Column   $local
-     * @param Column   $foreign
      * @param Table    $relatedTable
      * @param Relation $relation
      */
-    protected function guessRelationType(Column $local, Column $foreign, Table $relatedTable, Relation $relation)
+    protected function guessRelationType(Column $local, Table $relatedTable, Relation $relation)
     {
         if (!$local->isPrimaryKey) {
             $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
-        } elseif (!$foreign->isPrimaryKey) {
-            $relation->type = TableMap::RELATION_TYPE_MANY_TO_ONE;
-            $relation->phpName = $this->pluralize($relation->phpName);
         } else {
             if (1 < $relation->getLocalTable()->getPrimaryKeyCount()) {
                 $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
