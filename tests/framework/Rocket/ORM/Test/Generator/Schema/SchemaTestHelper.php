@@ -16,14 +16,16 @@ use Rocket\ORM\Generator\Schema\Schema;
 use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer;
 use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface;
 use Rocket\ORM\Test\Generator\Schema\Loader\InlineSchemaLoader;
-use Rocket\ORM\Test\Helper\TestHelper;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
+ *
+ * @method bool assertEquals($expected, $value, $message = null)
+ * @method bool assertCount($expected, $countable, $message = null)
  */
-class SchemaTestHelper extends \PHPUnit_Framework_TestCase implements TestHelper
+trait SchemaTestHelper
 {
     /**
      * @param SchemaLoader $schemaLoader
@@ -99,13 +101,5 @@ class SchemaTestHelper extends \PHPUnit_Framework_TestCase implements TestHelper
         $this->assertCount(1, $schemas);
 
         return $schemas[0];
-    }
-
-    /**
-     * @return string
-     */
-    public function getHelperName()
-    {
-        return 'schema';
     }
 }

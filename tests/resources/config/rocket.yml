@@ -5,14 +5,14 @@ rocket:
         car:
             class: ~
             params:
-                dsn:        'sqlite:__DIR__/../fixtures/databases/car.sq3'
+                dsn:        'sqlite:__DIR__/../fixtures/cache/databases/car.sq3'
                 username:   ~
                 password:   ~
                 attributes: ~
         bookstore:
             class: ~
             params:
-                dsn:        'sqlite:__DIR__/../fixtures/databases/bookstore.sq3'
+                dsn:        'sqlite:__DIR__/../fixtures/cache/databases/bookstore.sq3'
                 username:   ~
                 password:   ~
                 attributes: ~

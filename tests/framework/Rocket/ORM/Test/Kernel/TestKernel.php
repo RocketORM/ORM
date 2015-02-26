@@ -29,12 +29,12 @@ class TestKernel
     /**
      * @var string
      */
-    protected $databaseOutputDir;
+    protected $cacheDir;
 
     /**
      * @var string
      */
-    protected $databaseInputDir;
+    protected $sqlInputDir;
 
     /**
      * @var string
@@ -53,17 +53,17 @@ class TestKernel
 
 
     /**
-     * @param string $databaseOutputDir
+     * @param string $cacheDir
      * @param string $configPath
      * @param string $schemaDir
-     * @param string $databaseInputDir
+     * @param string $sqlInputDir
      */
-    public function __construct($databaseOutputDir, $databaseInputDir, $configPath, $schemaDir)
+    public function __construct($cacheDir, $sqlInputDir, $configPath, $schemaDir)
     {
-        $this->databaseOutputDir = $databaseOutputDir;
-        $this->databaseInputDir  = $databaseInputDir;
-        $this->configPath        = $configPath;
-        $this->schemaDir         = $schemaDir;
+        $this->cacheDir    = $cacheDir;
+        $this->sqlInputDir = $sqlInputDir;
+        $this->configPath  = $configPath;
+        $this->schemaDir   = $schemaDir;
     }
 
     /**
@@ -82,7 +82,19 @@ class TestKernel
      */
     protected function loadConfig()
     {
-        Rocket::setConfiguration((new ConfigLoader($this->configPath))->all());
+        $config = (new ConfigLoader($this->configPath))->all();
+        $cacheFolder = $this->cacheDir . DIRECTORY_SEPARATOR . 'config';
+        if (!is_dir($cacheFolder)) {
+            mkdir($cacheFolder);
+        }
+
+        file_put_contents(
+            $cacheFolder . DIRECTORY_SEPARATOR . 'config.php',
+            '<?php' . PHP_EOL . PHP_EOL . 'return ' . var_export($config, true) . ';' . PHP_EOL
+        );
+
+        // Needed for generation
+        Rocket::setConfiguration($config);
     }
 
     /**
@@ -98,7 +110,7 @@ class TestKernel
      */
     protected function generateSql()
     {
-        $databaseGenerator = new DatabaseGenerator($this->databaseInputDir);
+        $databaseGenerator = new DatabaseGenerator($this->sqlInputDir);
         foreach ($this->schemas as $schema) {
             $databaseGenerator->generate($schema);
         }
@@ -109,20 +121,25 @@ class TestKernel
      */
     protected function loadDatabases()
     {
-        // Delete old databases
-        $iterator = (new Finder())
-            ->files()
-            ->in($this->databaseOutputDir)
-            ->name('*.sq3')
-        ;
+        try {
+            // Delete old databases
+            $iterator = (new Finder())
+                ->files()
+                ->in($this->cacheDir . DIRECTORY_SEPARATOR . 'databases')
+                ->name('*.sq3')
+            ;
 
-        /** @var SplFileInfo $file */
-        foreach ($iterator as $file) {
-            unlink($file->getRealPath());
+            /** @var SplFileInfo $file */
+            foreach ($iterator as $file) {
+                unlink($file->getRealPath());
+            }
+        } catch (\InvalidArgumentException $e) {
+            // Directory is not exist
+            mkdir($this->cacheDir . DIRECTORY_SEPARATOR . 'databases');
         }
 
         // Generate new databases
-        $tableGenerator = new DatabaseTableGenerator($this->databaseInputDir);
+        $tableGenerator = new DatabaseTableGenerator($this->sqlInputDir);
         foreach ($this->schemas as $schema) {
             $tableGenerator->generate($schema);
         }

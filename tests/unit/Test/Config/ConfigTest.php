@@ -18,6 +18,8 @@ use Rocket\ORM\Test\RocketTestCase;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
+ *
+ * @covers \Rocket\ORM\Config\ConfigLoader
  */
 class ConfigTest extends RocketTestCase
 {
@@ -46,29 +48,38 @@ class ConfigTest extends RocketTestCase
 
         $this->assertTrue(0 === strpos($error, 'The rocket configuration file is not found in the selected folder'));
 
-        // No specified path, and file not found
-        chdir($this->rootDir);
-        $error = null;
-        try {
-            new ConfigLoader();
-        } catch (ConfigurationFileNotFoundException $e) {
-            $error = $e->getMessage();
-        }
-
-        $this->assertEquals(
-            'The rocket configuration file is not found. Please create a new one into your root folder or in a folder named "/config" or "/configs".',
-            $error
-        );
-
         // No specified path, and file found
         chdir($this->rootDir . '/resources');
-        $error = null;
-        try {
-            new ConfigLoader();
-        } catch (ConfigurationFileNotFoundException $e) {
-            $error = $e->getMessage();
-        }
+        $loader = new ConfigLoader();
+        $config = $loader->all();
 
-        $this->assertNull($error);
+        $this->assertNotNull($config);
+        $this->assertInternalType('array', $config);
+
+        // Test some keys
+        $this->assertArrayHasKey('default_connection', $config);
+        $this->assertEquals('default', $config['default_connection']);
+
+        $this->assertArrayHasKey('connection_class', $config);
+        $this->assertNull($config['connection_class']);
+
+        $this->assertArrayHasKey('connections', $config);
+        $this->assertInternalType('array', $config['connections']);
+        $this->assertArrayHasKey('car', $config['connections']);
+        $this->assertInternalType('array', $config['connections']['car']);
+    }
+
+    /**
+     * @test
+     *
+     * @expectedException \Rocket\ORM\Config\Exception\ConfigurationFileNotFoundException
+     * @expectedExceptionMessage The rocket configuration file is not found. Please create a new one into your root folder or in a folder named "/config" or "/configs".
+     *
+     * @covers \Rocket\ORM\Config\Exception\ConfigurationFileNotFoundException
+     */
+    public function fileNotFoundException()
+    {
+        chdir($this->rootDir);
+        new ConfigLoader();
     }
 }

@@ -13,12 +13,13 @@ namespace Rocket\ORM\Test\Generator\Model;
 
 use Rocket\ORM\Generator\Model\Object\ObjectGenerator;
 use Rocket\ORM\Generator\Schema\Schema;
-use Rocket\ORM\Test\Helper\TestHelper;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
+ *
+ * @method markTestSkipped($message)
  */
-class ModelTestHelper extends \PHPUnit_Framework_TestCase implements TestHelper
+trait ModelTestHelper
 {
     /**
      * @param array  $schemas
@@ -36,13 +37,5 @@ class ModelTestHelper extends \PHPUnit_Framework_TestCase implements TestHelper
         foreach ($schemas as $schema) {
             $generator->generate($schema);
         }
-    }
-
-    /**
-     * @return string
-     */
-    public function getHelperName()
-    {
-        return 'model';
     }
 }

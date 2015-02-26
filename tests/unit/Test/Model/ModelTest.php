@@ -21,16 +21,15 @@ use Rocket\ORM\Test\RocketTestCase;
  */
 class ModelTest extends RocketTestCase
 {
+    use ModelTestHelper, SchemaTestHelper;
+
     public function setUp()
     {
         parent::setUp();
 
-        /** @var ModelTestHelper $modelHelper */
-        $modelHelper = $this->getHelper('model');
-        /** @var SchemaTestHelper $schemaHelper */
-        $schemaHelper = $this->getHelper('schema');
-
-        $modelHelper->generateObjects([$schemaHelper->getSchemaByName('car_schema.yml')]);
+        $this->generateObjects([
+            $this->getSchemaByName('car_schema.yml')
+        ]);
     }
 
     /**

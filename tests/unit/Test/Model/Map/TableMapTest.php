@@ -28,15 +28,7 @@ use Symfony\Component\Yaml\Yaml;
  */
 class TableMapTest extends RocketTestCase
 {
-    /**
-     * @var SchemaTestHelper
-     */
-    protected $schemaHelper;
-
-    /**
-     * @var TableMapTestHelper
-     */
-    protected $tableMapHelper;
+    use SchemaTestHelper, TableMapTestHelper;
 
     /**
      * @var array
@@ -55,9 +47,6 @@ class TableMapTest extends RocketTestCase
     public function setUp()
     {
         parent::setUp();
-
-        $this->schemaHelper = $this->getHelper('schema');
-        $this->tableMapHelper = $this->getHelper('table_map');
 
         $this->schemaDirPath = $this->rootDir . '/resources/schemas';
         $this->validSchema = Yaml::parse($this->schemaDirPath . '/car_schema.yml');
@@ -138,7 +127,7 @@ class TableMapTest extends RocketTestCase
      */
     public function commonValidation()
     {
-        $this->tableMapHelper->generate($this->schemaHelper->getSchemas());
+        $this->generateTableMaps($this->getSchemas());
 
         $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Company');
 
@@ -160,7 +149,7 @@ class TableMapTest extends RocketTestCase
      */
     public function columnsValidation()
     {
-        $this->tableMapHelper->generate($this->schemaHelper->getSchemas());
+        $this->generateTableMaps($this->getSchemas());
 
         // Assert columns
         $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Car');
@@ -304,7 +293,7 @@ class TableMapTest extends RocketTestCase
      */
     public function relationsValidation()
     {
-        $this->tableMapHelper->generate($this->schemaHelper->getSchemas());
+        $this->generateTableMaps($this->getSchemas());
 
         $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Wheel');
 

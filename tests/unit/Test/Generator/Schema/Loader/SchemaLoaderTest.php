@@ -24,6 +24,8 @@ use Symfony\Component\Yaml\Yaml;
  */
 class SchemaLoaderTest extends RocketTestCase
 {
+    use SchemaTestHelper;
+
     /**
      * @var string
      */
@@ -33,11 +35,6 @@ class SchemaLoaderTest extends RocketTestCase
      * @var string
      */
     protected $validSchema;
-
-    /**
-     * @var SchemaTestHelper
-     */
-    protected $schemaHelper;
 
 
     /**
@@ -49,7 +46,6 @@ class SchemaLoaderTest extends RocketTestCase
 
         $this->schemaDirPath = $this->rootDir . '/resources/schemas';
         $this->validSchema = Yaml::parse($this->schemaDirPath . '/car_schema.yml');
-        $this->schemaHelper = $this->getHelper('schema');
     }
 
     /**
@@ -72,7 +68,7 @@ class SchemaLoaderTest extends RocketTestCase
         $this->assertTrue(null != $transformer, 'Custom schema model class');
 
         // Schema not found
-        $this->schemaHelper->assertSchemaLoadingException(
+        $this->assertSchemaLoadingException(
             new SchemaLoader(__DIR__, [], new SchemaTransformer()),
             'Schema not found in path "' . __DIR__ . '"',
             'Schema not found'
@@ -115,7 +111,7 @@ class SchemaLoaderTest extends RocketTestCase
         unset($idColumn['primaryKey']);
         $wrongSchema['tables']['car']['columns']['id'] = $idColumn;
 
-        $this->schemaHelper->assertSchemaLoadingException(
+        $this->assertSchemaLoadingException(
             new InlineSchemaLoader([$wrongSchema]),
             'Unrecognized option "primaryKey_notfound" under "schema.tables.car.columns.id" (schema : "inline_0")',
             'Wrong property for column'
@@ -125,7 +121,7 @@ class SchemaLoaderTest extends RocketTestCase
         $wrongSchema = $this->validSchema;
         $wrongSchema['tables']['car']['columns']['door_count']['default'] = 'notfound';
 
-        $this->schemaHelper->assertSchemaLoadingException(
+        $this->assertSchemaLoadingException(
             new InlineSchemaLoader([$wrongSchema]),
             'Invalid default value "notfound" for enum column "door_count" on table "car" (schema : "inline_0")',
             'Default value for enum column'
@@ -135,7 +131,7 @@ class SchemaLoaderTest extends RocketTestCase
         $wrongSchema = $this->validSchema;
         $wrongSchema['tables']['car']['columns']['price']['size'] = $wrongSchema['tables']['car']['columns']['price']['decimal'];
 
-        $this->schemaHelper->assertSchemaLoadingException(
+        $this->assertSchemaLoadingException(
             new InlineSchemaLoader([$wrongSchema]),
             'Invalid size value "' . $wrongSchema['tables']['car']['columns']['price']['size'] . '" for column "price" '
                 . 'on table "car", the size should be greater than the decimal value "'
@@ -148,7 +144,7 @@ class SchemaLoaderTest extends RocketTestCase
         $wrongSchema = $this->validSchema;
         $wrongSchema['tables']['certificate']['columns']['is_valid']['default'] = 'not_a_boolean';
 
-        $this->schemaHelper->assertSchemaLoadingException(
+        $this->assertSchemaLoadingException(
             new InlineSchemaLoader([$wrongSchema]),
             'The default value "not_a_boolean" for boolean column "is_valid" on table "certificate" should be a boolean (schema : "inline_0")',
             'Wrong default value on boolean type'
@@ -168,7 +164,7 @@ class SchemaLoaderTest extends RocketTestCase
         unset($relations['car_db.wheel']);
         $wrongSchema['tables']['car']['relations'] = $relations;
 
-        $this->schemaHelper->assertSchemaLoadingException(
+        $this->assertSchemaLoadingException(
             new InlineSchemaLoader([$wrongSchema]),
             'Invalid relation "car_db.wheel_notfound" (schema : "inline_0")',
             'Wrong relation name'
@@ -177,7 +173,7 @@ class SchemaLoaderTest extends RocketTestCase
         // Wrong local column
         $wrongSchema = $this->validSchema;
         $wrongSchema['tables']['car']['relations']['car_db.wheel']['local'] = 'notfound';
-        $this->schemaHelper->assertSchemaLoadingException(
+        $this->assertSchemaLoadingException(
             new InlineSchemaLoader([$wrongSchema]),
             'Invalid local column value "notfound" for relation "car_db.wheel" (schema : "inline_0")',
             'Wrong relation local column'
@@ -186,7 +182,7 @@ class SchemaLoaderTest extends RocketTestCase
         // Wrong foreign column
         $wrongSchema = $this->validSchema;
         $wrongSchema['tables']['car']['relations']['car_db.wheel']['foreign'] = 'notfound';
-        $this->schemaHelper->assertSchemaLoadingException(
+        $this->assertSchemaLoadingException(
             new InlineSchemaLoader([$wrongSchema]),
             'Invalid foreign column value "notfound" for relation "car_db.wheel" (schema : "inline_0")',
             'Wrong relation foreign column'
@@ -204,7 +200,7 @@ class SchemaLoaderTest extends RocketTestCase
         unset($relations['car_db.wheel']);
         $wrongSchema2['tables']['car']['relations'] = $relations;
 
-        $this->schemaHelper->assertSchemaLoadingException(
+        $this->assertSchemaLoadingException(
             new InlineSchemaLoader([$wrongSchema, $wrongSchema2]),
             'Too much table for the relation "wheel", prefix it with the database or use the object namespace (schema : "inline_1")',
             'Wrong relation foreign column'
