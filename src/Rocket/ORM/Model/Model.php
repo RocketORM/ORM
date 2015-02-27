@@ -93,7 +93,11 @@ abstract class Model implements ModelInterface
     public function delete(\PDO $con = null)
     {
         if ($this->_isNew) {
-            throw new \LogicException('Cannot delete an unsaved object');
+            throw new \LogicException('Cannot delete a new object');
+        }
+
+        if ($this->_isDeleted) {
+            throw new \LogicException('Cannot delete an already deleted object');
         }
 
         if (null == $con) {
@@ -101,7 +105,6 @@ abstract class Model implements ModelInterface
         }
         try {
             if ($this->preDelete($con)) {
-
                 $this->doDelete($con);
             }
 
