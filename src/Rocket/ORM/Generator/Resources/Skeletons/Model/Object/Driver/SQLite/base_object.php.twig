@@ -17,3 +17,26 @@
         {%- endfor -%}
     )
 {%- endblock %}
+
+{% block update_query %}
+    UPDATE `{{ table.name }}` SET{{ ' ' }}
+    {%- for column in table.columns -%}
+        {%- if not column.isPrimaryKey or column.isPrimaryKey and not column.isAutoIncrement -%}
+            `{{ column.name }}` = :{{ column.name }}
+            {%- if not loop.last %}, {% endif %}
+        {%- endif -%}
+    {%- endfor -%}
+    {{ ' ' }}WHERE{{ ' ' }}
+    {%- for column in table.primaryKeys -%}
+        `{{ column.name }}` = :where_{{ column.name }}
+        {%- if not loop.last %} AND {% endif %}
+    {%- endfor -%}
+{% endblock update_query %}
+
+{% block delete_query %}
+    DELETE FROM `{{ table.name }}` WHERE{{ ' ' }}
+    {%- for column in table.primaryKeys -%}
+        `{{ column.name }}` = :{{ column.name }}
+        {%- if not loop.last %} AND {% endif %}
+    {%- endfor -%}
+{% endblock delete_query %}
