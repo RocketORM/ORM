@@ -1,0 +1,19 @@
+{% extends 'base_object.php.twig' %}
+
+{% block insert_query -%}
+    INSERT INTO `{{ table.name }}` (
+        {%- for column in table.columns -%}
+            {% if not column.isAutoIncrement -%}
+                `{{ column.name }}`
+                {%- if not loop.last %}, {% endif %}
+            {%- endif %}
+        {%- endfor -%}
+        ) VALUES (
+        {%- for column in table.columns -%}
+            {% if not column.isAutoIncrement -%}
+                :{{ column.name }}
+                {%- if not loop.last %}, {% endif %}
+            {%- endif %}
+        {%- endfor -%}
+    )
+{%- endblock %}

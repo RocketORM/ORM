@@ -13,6 +13,7 @@ namespace Rocket\ORM\Generator\Model\Object;
 
 use Rocket\ORM\Generator\Generator;
 use Rocket\ORM\Generator\Schema\Schema;
+use Rocket\ORM\Rocket;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -37,7 +38,13 @@ class ObjectGenerator extends Generator
     public function __construct($modelNamespace = '', array $templateDirs = [])
     {
         $this->modelNamespace = $modelNamespace;
-        $this->twig           = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templateDirs, [__DIR__ . '/../../Resources/Skeletons/Model/Object'])), [
+
+        $loader = new \Twig_Loader_Filesystem(array_merge($templateDirs, [
+            __DIR__ . '/../../Resources/Skeletons/Model/Object'
+        ]));
+        $loader->addPath(__DIR__ . '/../../Resources/Skeletons/Model/Object/Driver/SQLite', 'sqlite');
+
+        $this->twig = new \Twig_Environment($loader, [
             'cache'            => false,
             'strict_variables' => true
         ]);
@@ -88,8 +95,15 @@ class ObjectGenerator extends Generator
         $outputDirectory = $schema->absoluteDirectory . DIRECTORY_SEPARATOR . 'Base';
         $this->createDirectory($outputDirectory);
 
+        // Allow overriding template for a given driver
+        $dsn = Rocket::getConfiguration('connections.' . $schema->connection)['params']['dsn'];
+        $driver = substr($dsn, 0, strpos($dsn, ':'));
+
         foreach ($schema->getTables() as $table) {
-            $template = $this->twig->render('base_object.php.twig', [
+            $template = $this->twig->resolveTemplate([
+                '@' . $driver . '/base_object.php.twig',
+                'base_object.php.twig'
+            ])->render([
                 'table'  => $table
             ]);
 

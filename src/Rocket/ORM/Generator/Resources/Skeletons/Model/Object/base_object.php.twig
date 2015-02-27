@@ -60,20 +60,26 @@ class Base{{ table.phpName }} extends {{ baseModel }}
     {
         $con->beginTransaction();
 
-        $stmt = $con->prepare('INSERT INTO `{{ table.schema.database }}`.`{{ table.name }}` (
+        $stmt = $con->prepare('{% block insert_query %}INSERT INTO `{{ table.schema.database }}`.`{{ table.name }}` (
             {%- for column in table.columns -%}
-                `{{ column.name }}`
-                {%- if not loop.last %}, {% endif %}
+                {% if not column.isAutoIncrement -%}
+                    `{{ column.name }}`
+                    {%- if not loop.last %}, {% endif %}
+                {%- endif %}
             {%- endfor -%}
         ) VALUES (
             {%- for column in table.columns -%}
-                :{{ column.name }}
-                {%- if not loop.last %}, {% endif %}
+                {% if not column.isAutoIncrement -%}
+                    :{{ column.name }}
+                    {%- if not loop.last %}, {% endif %}
+                {%- endif %}
             {%- endfor -%}
-        )');
+        ){% endblock %}');
 
         {%- for column in table.columns -%}
-            {{ "\n        " }}{% include 'PDO/bindValue.php.twig' %}
+            {% if not column.isAutoIncrement -%}
+                {{ "\n        " }}{% include 'PDO/bindValue.php.twig' %}
+            {%- endif %}
         {%- endfor -%}
         {{ "\n" }}
         $stmt->execute();
