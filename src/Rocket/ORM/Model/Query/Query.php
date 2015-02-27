@@ -70,6 +70,10 @@ abstract class Query implements QueryInterface
      */
     public function __construct($alias, $modelNamespace)
     {
+        if (null == $alias) {
+            throw new \LogicException('The "' . get_called_class() . '" alias can be null');
+        }
+
         $this->alias          = $alias;
         $this->modelNamespace = $modelNamespace;
     }
@@ -469,13 +473,18 @@ abstract class Query implements QueryInterface
                 } else {
                     // Relations
                     $hash = Rocket::getTableMap($this->joins[$alias]['relation']['namespace'])->getPrimaryKeysHash($item);
+                    $relationFrom = $this->joins[$alias]['from'];
+
+                    if (isset($objectsByAlias[$relationFrom]['childs'][$hash])) {
+                        continue;
+                    }
+
                     if (!isset($objectsByAlias[$alias][$hash])) {
                         $objectsByAlias[$alias][$hash] = new RocketObject($item, $this->joins[$alias]['relation']['namespace']);
                     }
 
                     $objectsByAliasByRow[$alias] = $objectsByAlias[$alias][$hash];
                     $relationPhpName = $this->joins[$alias]['relation']['phpName'];
-                    $relationFrom = $this->joins[$alias]['from'];
 
                     if (!isset($objectsByAliasByRow[$relationFrom])) {
                         throw new \LogicException(
@@ -494,12 +503,11 @@ abstract class Query implements QueryInterface
                     } else {
                         $objectsByAliasByRow[$relationFrom][$relationPhpName] = $objectsByAlias[$alias][$hash];
                     }
+
+                    // Avoid duplicate relation objects
+                    $objectsByAlias[$relationFrom]['childs'][$hash] = $objectsByAlias[$alias][$hash];
                 }
             }
-
-
-            $objectsByAliasByRow = null;
-            unset($objectsByAliasByRow);
         }
 
         $objectsByAlias = null;

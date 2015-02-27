@@ -20,8 +20,8 @@ SET FOREIGN_KEY_CHECKS = 0;
         {%- block columns -%}
             {%- for column in table.columns -%}
                 {% include [
-                    '@' ~ driver ~ '/Column/' ~ column.typeAsString ~ '.sql.twig', '@' ~ driver ~ '/Column/column.sql.twig',
-                    'Column/' ~ column.typeAsString ~ '.sql.twig', 'Column/column.sql.twig'
+                    '@' ~ driver ~ '/Column/' ~ column.typeAsString ~ '.sql.twig', 'Column/' ~ column.typeAsString ~ '.sql.twig',
+                    '@' ~ driver ~ '/Column/column.sql.twig', 'Column/column.sql.twig'
                 ] %}
                 {{- loop.last ? '' : ',' }}
             {%- endfor %}
