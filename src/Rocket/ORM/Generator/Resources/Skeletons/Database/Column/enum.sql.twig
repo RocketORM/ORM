@@ -1,1 +1,1 @@
-{% extends 'Column/boolean.sql.twig' %}
+{% extends ['@' ~ driver ~ '/Column/boolean.sql.twig', 'Column/boolean.sql.twig'] %}

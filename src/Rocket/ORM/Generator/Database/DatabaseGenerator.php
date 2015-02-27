@@ -38,10 +38,17 @@ class DatabaseGenerator extends Generator
     public function __construct($outputPath, array $templateDirs = [])
     {
         $this->outputPath = $outputPath;
-        $this->twig       = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templateDirs, [__DIR__ . '/../Resources/Skeletons/Database'])), [
+
+        $loader = new \Twig_Loader_Filesystem(array_merge($templateDirs, [
+            __DIR__ . '/../Resources/Skeletons/Database'
+        ]));
+        $loader->addPath(__DIR__ . '/../Resources/Skeletons/Database/Driver/SQLite', 'sqlite');
+
+        $this->twig = new \Twig_Environment($loader, [
             'cache'            => false,
             'strict_variables' => true
         ]);
+
     }
 
     /**
@@ -57,8 +64,9 @@ class DatabaseGenerator extends Generator
         $dsn = Rocket::getConfiguration('connections.' . $schema->connection)['params']['dsn'];
         $driver = substr($dsn, 0, strpos($dsn, ':'));
 
-        $template = $this->twig->resolveTemplate([$driver . '.sql.twig', 'schema.sql.twig'])->render([
-            'schema'  => $schema
+        $template = $this->twig->resolveTemplate(['@' . $driver . '/schema.sql.twig', 'schema.sql.twig'])->render([
+            'schema' => $schema,
+            'driver' => $driver
         ]);
 
         file_put_contents($this->outputPath . DIRECTORY_SEPARATOR . $schema->database . '.sql', $template);

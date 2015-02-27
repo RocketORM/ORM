@@ -1,4 +1,4 @@
-{% extends 'Column/column.sql.twig' %}
+{% extends ['@' ~ driver ~ '/Column/column.sql.twig', 'Column/column.sql.twig'] %}
 
 {% block type %}
     {%- spaceless %}
