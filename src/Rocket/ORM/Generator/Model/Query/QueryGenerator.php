@@ -13,6 +13,7 @@ namespace Rocket\ORM\Generator\Model\Query;
 
 use Rocket\ORM\Generator\Generator;
 use Rocket\ORM\Generator\Schema\Schema;
+use Rocket\ORM\Rocket;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -42,7 +43,13 @@ class QueryGenerator extends Generator
         }
 
         $this->modelNamespace = $modelNamespace;
-        $this->twig           = new \Twig_Environment(new \Twig_Loader_Filesystem(array_merge($templateDirs, [__DIR__ . '/../../Resources/Skeletons/Model/Query'])), [
+
+        $loader = new \Twig_Loader_Filesystem(array_merge($templateDirs, [
+            __DIR__ . '/../../Resources/Skeletons/Model/Query'
+        ]));
+        $loader->addPath(__DIR__ . '/../../Resources/Skeletons/Model/Query/Driver/SQLite', 'sqlite');
+
+        $this->twig = new \Twig_Environment($loader, [
             'cache'            => false,
             'strict_variables' => true
         ]);
@@ -85,9 +92,16 @@ class QueryGenerator extends Generator
         $outputDirectory = $schema->absoluteDirectory . DIRECTORY_SEPARATOR . 'Base';
         $this->createDirectory($outputDirectory);
 
+        // Allow overriding template for a given driver
+        $driver = Rocket::getConnectionDriver($schema->connection);
+
         foreach ($schema->getTables() as $table) {
-            $template = $this->twig->render('base_query.php.twig', [
-                'table'  => $table
+            $template = $this->twig->resolveTemplate([
+                '@' . $driver . '/base_query.php.twig',
+                'base_query.php.twig'
+            ])->render([
+                'table'  => $table,
+                'driver' => $driver
             ]);
 
             file_put_contents($outputDirectory . DIRECTORY_SEPARATOR . 'Base' . $table->phpName . 'Query.php', $template);

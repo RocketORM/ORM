@@ -34,11 +34,6 @@ abstract class Query implements QueryInterface
     protected $modelNamespace;
 
     /**
-     * @var string The column to count
-     */
-    protected $count;
-
-    /**
      * @var TableMapInterface
      */
     protected $tableMap;
@@ -138,27 +133,21 @@ abstract class Query implements QueryInterface
     }
 
     /**
-     * @param string $column
-     *
-     * @return $this|Query
-     */
-    public function count($column = '*')
-    {
-        $this->count = $column;
-
-        return $this;
-    }
-
-    /**
      * @param \PDO $con
      *
-     * @return RocketObject|bool
+     * @return RocketObject|null
      */
     public function findOne(\PDO $con = null)
     {
         $this->limit(1);
 
-        return $this->find($con);
+        $objects = $this->find($con);
+
+        if (isset($objects[0])) {
+            return $objects[0];
+        }
+
+        return null;
     }
 
     /**
@@ -382,6 +371,8 @@ abstract class Query implements QueryInterface
      */
     protected function hydrate(\PDOStatement $stmt)
     {
+        // FIXME do sub query when limit == 1 and there is many_to_* relation
+
         $hasRelation = 0 < sizeof($this->with);
         if (!$hasRelation) {
             $objects = $this->hydrateWithoutRelation($stmt);
@@ -407,6 +398,25 @@ abstract class Query implements QueryInterface
         }
 
         return $objects;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSqlQuery()
+    {
+        $query = $this->buildQuery();
+        if (0 < sizeof($this->clauses)) {
+            foreach ($this->clauses as $i => $clauseParams) {
+                if (is_string($clauseParams['value'])) {
+                    $query = str_replace(':param_' . $i, "'" . $clauseParams['value'] . "'", $query);
+                } else {
+                    $query = str_replace(':param_' . $i, $clauseParams['value'], $query);
+                }
+            }
+        }
+
+        return $query;
     }
 
     /**
@@ -503,11 +513,13 @@ abstract class Query implements QueryInterface
      */
     protected function clear()
     {
-        unset($this->clauses, $this->joins, $this->with, $this->limit, $this->offset, $this->count);
+        unset($this->clauses, $this->joins, $this->with, $this->limit, $this->offset);
 
         $this->clauses = [];
         $this->joins   = [];
         $this->with    = [];
+        $this->limit   = null;
+        $this->offset  = null;
     }
 
     /**
@@ -528,4 +540,9 @@ abstract class Query implements QueryInterface
      * @return mixed
      */
     public abstract function find(\PDO $con = null);
+
+    /**
+     * @return string
+     */
+    protected abstract function buildQuery();
 }

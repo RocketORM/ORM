@@ -1,0 +1,7 @@
+{% extends 'base_query.php.twig' %}
+
+{% block use_query %}use Rocket\ORM\Model\Query\SQLite\Query;{%- endblock %}
+
+{% block find_query_from -%}
+    FROM `{{ table.name }}` AS ' . $this->alias
+{%- endblock %}
