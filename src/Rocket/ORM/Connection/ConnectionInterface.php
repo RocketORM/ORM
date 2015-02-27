@@ -29,4 +29,9 @@ interface ConnectionInterface
      * @return void
      */
     public function createDatabase($databaseName);
+
+    /**
+     * @return string
+     */
+    public static function getDriver();
 }

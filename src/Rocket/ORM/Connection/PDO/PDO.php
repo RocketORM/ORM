@@ -73,6 +73,14 @@ class PDO extends \PDO implements ConnectionFactoryInterface, ConnectionInterfac
     }
 
     /**
+     * @return string
+     */
+    public static function getDriver()
+    {
+        return 'mysql';
+    }
+
+    /**
      * Sets a logger instance on the object
      *
      * @param LoggerInterface $logger

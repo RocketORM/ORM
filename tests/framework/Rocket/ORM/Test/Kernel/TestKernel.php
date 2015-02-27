@@ -15,6 +15,7 @@ use Rocket\ORM\Config\ConfigLoader;
 use Rocket\ORM\Generator\Database\DatabaseGenerator;
 use Rocket\ORM\Generator\Database\Table\DatabaseTableGenerator;
 use Rocket\ORM\Generator\Model\Object\ObjectGenerator;
+use Rocket\ORM\Generator\Model\Query\QueryGenerator;
 use Rocket\ORM\Generator\Model\TableMap\TableMapGenerator;
 use Rocket\ORM\Generator\Schema\Loader\SchemaLoader;
 use Rocket\ORM\Generator\Schema\Schema;
@@ -75,10 +76,14 @@ class TestKernel
     {
         $this->loadConfig();
         $this->loadSchemas();
+
         $this->generateSql();
+        // Delete databases (must be ran before generating methods) & regenerate
+        $this->loadDatabases();
+
         $this->generateTableMaps();
         $this->generateObjects();
-        $this->loadDatabases();
+        $this->generateQueryObjects();
     }
 
     /**
@@ -139,6 +144,17 @@ class TestKernel
         $objectGenerator = new ObjectGenerator();
         foreach ($this->schemas as $schema) {
             $objectGenerator->generate($schema);
+        }
+    }
+
+    /**
+     * Generate model query objects
+     */
+    protected function generateQueryObjects()
+    {
+        $queryGenerator = new QueryGenerator();
+        foreach ($this->schemas as $schema) {
+            $queryGenerator->generate($schema);
         }
     }
 

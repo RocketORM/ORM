@@ -43,6 +43,20 @@ class ConnectionFactory
             ;
         }
 
+        $class = self::getClassNamespace($config, $name);
+        $connection = $class::create($config['connections'][$name]['params']);
+
+        return $connection;
+    }
+
+    /**
+     * @param array  $config
+     * @param string $name
+     *
+     * @return string
+     */
+    public static function getClassNamespace(array $config, $name)
+    {
         if (isset($config['connections'][$name]['class']) && null != $config['connections'][$name]['class']) {
             $class = $config['connections'][$name]['class'];
         } elseif (isset($config['connection_class']) && null != $config['connection_class']) {
@@ -57,9 +71,6 @@ class ConnectionFactory
             }
         }
 
-        /** @var ConnectionInterface $class */
-        $connection = $class::create($config['connections'][$name]['params']);
-
-        return $connection;
+        return $class;
     }
 }

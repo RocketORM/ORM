@@ -61,8 +61,7 @@ class DatabaseGenerator extends Generator
         $this->createDirectory($this->outputPath);
 
         // Allow overriding template for a given driver
-        $dsn = Rocket::getConfiguration('connections.' . $schema->connection)['params']['dsn'];
-        $driver = substr($dsn, 0, strpos($dsn, ':'));
+        $driver = Rocket::getConnectionDriver($schema->connection);
 
         $template = $this->twig->resolveTemplate(['@' . $driver . '/schema.sql.twig', 'schema.sql.twig'])->render([
             'schema' => $schema,

@@ -69,6 +69,23 @@ class Rocket
     }
 
     /**
+     * @param null|string $name
+     *
+     * @return string
+     */
+    public static function getConnectionDriver($name = null)
+    {
+        if (null == $name) {
+            $name = self::getConfiguration('default_connection');
+        }
+
+        /** @var ConnectionInterface $class */
+        $class = ConnectionFactory::getClassNamespace(self::$config, $name);
+
+        return $class::getDriver();
+    }
+
+    /**
      * @param array $config
      */
     public static function setConfiguration(array $config)

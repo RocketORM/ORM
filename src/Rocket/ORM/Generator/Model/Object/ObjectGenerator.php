@@ -96,15 +96,15 @@ class ObjectGenerator extends Generator
         $this->createDirectory($outputDirectory);
 
         // Allow overriding template for a given driver
-        $dsn = Rocket::getConfiguration('connections.' . $schema->connection)['params']['dsn'];
-        $driver = substr($dsn, 0, strpos($dsn, ':'));
+        $driver = Rocket::getConnectionDriver($schema->connection);
 
         foreach ($schema->getTables() as $table) {
             $template = $this->twig->resolveTemplate([
                 '@' . $driver . '/base_object.php.twig',
                 'base_object.php.twig'
             ])->render([
-                'table'  => $table
+                'table'  => $table,
+                'driver' => $driver
             ]);
 
             file_put_contents($outputDirectory . DIRECTORY_SEPARATOR . 'Base' . $table->phpName . '.php', $template);

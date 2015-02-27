@@ -37,4 +37,12 @@ class SQLitePDO extends PDO
     {
         // No need to create database in SQLite
     }
+
+    /**
+     * @return string
+     */
+    public static function getDriver()
+    {
+        return 'sqlite';
+    }
 }
