@@ -1,5 +1,5 @@
 connection: car
-database: car_db
+database: car_company
 namespace: Fixture\Car\Model
 directory: '/../fixtures/Fixture/Car/Model'
 tables:
@@ -31,7 +31,7 @@ tables:
                 required: false
         relations:
             # TODO many to many
-            car_db.wheel:
+            car_company.wheel:
                 local: wheel_unique_name
                 foreign: unique_name
                 onUpdate: CASCADE
@@ -51,7 +51,7 @@ tables:
                 size: 11
                 required: true
         relations:
-            car_db.company:
+            car_company.company:
                 local: company_id
                 foreign: id
                 onUpdate: CASCADE
@@ -83,7 +83,7 @@ tables:
                 size: 100
                 required: true
         relations:
-            car_db.company:
+            car_company.company:
                 local: company_id
                 foreign: id
                 onUpdate: RESTRICT
@@ -111,10 +111,10 @@ tables:
                 required: false
                 default: 10.5
         relations:
-            car_db.validator:
+            car_company.validator:
                 local: validator_company_id
                 foreign: company_id
-            car_db.car:
+            car_company.car:
                 local: car_id
                 foreign: id
 
@@ -131,7 +131,7 @@ tables:
                 type: datetime
                 required: true
         relations:
-            car_db.certificate:
+            car_company.certificate:
                 local: certicate_car_id
                 foreign: car_id
 

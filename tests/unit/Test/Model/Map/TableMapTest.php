@@ -104,7 +104,7 @@ class TableMapTest extends RocketTestCase
         $tableMap = Rocket::getTableMap('\\Fixture\\Car\\Model\\Company');
 
         // Assert values
-        $this->assertEquals('car_db', $tableMap->getDatabase(), 'Table map database');
+        $this->assertEquals('car_company', $tableMap->getDatabase(), 'Table map database');
         $this->assertEquals('car', $tableMap->getConnectionName(), 'Table map connection');
         $this->assertEquals('Company', $tableMap->getClassName(), 'Table map class name');
         $this->assertEquals('company', $tableMap->getTableName(), 'Table map table name');

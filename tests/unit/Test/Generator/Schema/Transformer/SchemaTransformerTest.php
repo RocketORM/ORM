@@ -135,7 +135,7 @@ class SchemaTransformerTest extends RocketTestCase
      * @test
      *
      * @expectedException \Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid relation "car_db.wheel_notfound" (schema : "inline_0")
+     * @expectedExceptionMessage Invalid relation "car_company.wheel_notfound" (schema : "inline_0")
      */
     public function invalidRelationNameConfigurationValue()
     {
@@ -143,8 +143,8 @@ class SchemaTransformerTest extends RocketTestCase
         $wrongSchema = self::$validSchema;
 
         $relations = $wrongSchema['tables']['car']['relations'];
-        $relations['car_db.wheel_notfound'] = $relations['car_db.wheel'];
-        unset($relations['car_db.wheel']);
+        $relations['car_company.wheel_notfound'] = $relations['car_company.wheel'];
+        unset($relations['car_company.wheel']);
         $wrongSchema['tables']['car']['relations'] = $relations;
 
         (new InlineSchemaLoader([$wrongSchema]))->load();
@@ -154,14 +154,14 @@ class SchemaTransformerTest extends RocketTestCase
      * @test
      *
      * @expectedException \Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid local column value "notfound" for relation "car_db.wheel" (schema : "inline_0")
+     * @expectedExceptionMessage Invalid local column value "notfound" for relation "car_company.wheel" (schema : "inline_0")
      */
     public function invalidRelationLocalColumnNameConfigurationValue()
     {
         // Wrong local column
         $wrongSchema = self::$validSchema;
 
-        $wrongSchema['tables']['car']['relations']['car_db.wheel']['local'] = 'notfound';
+        $wrongSchema['tables']['car']['relations']['car_company.wheel']['local'] = 'notfound';
 
         (new InlineSchemaLoader([$wrongSchema]))->load();
     }
@@ -170,14 +170,14 @@ class SchemaTransformerTest extends RocketTestCase
      * @test
      *
      * @expectedException \Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid foreign column value "notfound" for relation "car_db.wheel" (schema : "inline_0")
+     * @expectedExceptionMessage Invalid foreign column value "notfound" for relation "car_company.wheel" (schema : "inline_0")
      */
     public function invalidRelationForeignColumnNameConfigurationValue()
     {
         // Wrong local column
         $wrongSchema = self::$validSchema;
 
-        $wrongSchema['tables']['car']['relations']['car_db.wheel']['foreign'] = 'notfound';
+        $wrongSchema['tables']['car']['relations']['car_company.wheel']['foreign'] = 'notfound';
 
         (new InlineSchemaLoader([$wrongSchema]))->load();
     }
@@ -198,8 +198,8 @@ class SchemaTransformerTest extends RocketTestCase
         $wrongSchema2['namespace'] = $wrongSchema['namespace'] . '2';
 
         $relations = $wrongSchema2['tables']['car']['relations'];
-        $relations['wheel'] = $relations['car_db.wheel'];
-        unset($relations['car_db.wheel']);
+        $relations['wheel'] = $relations['car_company.wheel'];
+        unset($relations['car_company.wheel']);
         $wrongSchema2['tables']['car']['relations'] = $relations;
 
         (new InlineSchemaLoader([$wrongSchema, $wrongSchema2]))->load();

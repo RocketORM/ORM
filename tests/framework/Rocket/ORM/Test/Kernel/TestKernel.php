@@ -80,6 +80,7 @@ class TestKernel
         $this->generateSql();
         // Delete databases (must be ran before generating methods) & regenerate
         $this->loadDatabases();
+        $this->loadFixtures();
 
         $this->generateTableMaps();
         $this->generateObjects();
@@ -184,6 +185,24 @@ class TestKernel
         $tableGenerator = new DatabaseTableGenerator($this->sqlInputDir);
         foreach ($this->schemas as $schema) {
             $tableGenerator->generate($schema);
+        }
+    }
+
+    /**
+     * Generate SQL fixtures
+     */
+    protected function loadFixtures()
+    {
+        $fixtures = file_get_contents(
+            $this->sqlInputDir . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'car_company.sql'
+        );
+
+        foreach ($this->schemas as $schema) {
+            if ('car_company' == $schema->database) {
+                Rocket::getConnection($schema->connection)->exec(trim($fixtures));
+
+                break;
+            }
         }
     }
 }

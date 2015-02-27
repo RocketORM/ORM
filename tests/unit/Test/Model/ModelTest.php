@@ -30,6 +30,32 @@ class ModelTest extends RocketTestCase
     use ModelTestHelper, SchemaTestHelper;
 
     /**
+     * @var array
+     */
+    protected static $companyScheduledDeletion = [];
+
+
+    /**
+     * @inheritdoc
+     */
+    public static function tearDownAfterClass()
+    {
+        if (isset(self::$companyScheduledDeletion[0])) {
+            $tableMap = Rocket::getTableMap(get_class(new Company()));
+            $con = Rocket::getConnection($tableMap->getConnectionName());
+
+            $con->exec(
+                'DELETE FROM `' . $tableMap->getTableName()
+                . '` WHERE id IN ('
+                    . join(', ', self::$companyScheduledDeletion)
+                . ')'
+            );
+        }
+
+        parent::tearDownAfterClass();
+    }
+
+    /**
      * @test
      */
     public function methodValidation()
@@ -76,6 +102,9 @@ class ModelTest extends RocketTestCase
 
         $this->assertTrue($result, 'Cannot insert the object');
         $this->assertNotNull($company->getId(), 'The autoincrement id should not be null');
+
+        self::$companyScheduledDeletion[] = $company->getId();
+
         $this->assertProtectedAttributeEquals(false, '_isModified', $company);
         $this->assertProtectedAttributeEquals(false, '_isNew', $company);
         $this->assertProtectedAttributeEquals(false, '_isDeleted', $company);
@@ -225,6 +254,7 @@ class ModelTest extends RocketTestCase
         $company
             ->setName(String::generateRandomString(10))
         ->save();
+        self::$companyScheduledDeletion[] = $company->getId();
 
         $con = Rocket::getConnection(
             Rocket::getTableMap(get_class(new Company()))->getConnectionName()
