@@ -1,9 +1,20 @@
 <?php
 
+/*
+ * This file is part of the "RocketORM" package.
+ *
+ * https://github.com/RocketORM/ORM
+ *
+ * For the full license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Test\Model\Query;
 
+use Fixture\Car\Model\CarQuery;
 use Fixture\Car\Model\Company;
 use Fixture\Car\Model\CompanyQuery;
+use Fixture\Car\Model\WheelQuery;
 use Rocket\ORM\Model\Object\RocketObject;
 use Rocket\ORM\Rocket;
 use Rocket\ORM\Test\RocketTestCase;
@@ -15,6 +26,17 @@ use Rocket\ORM\Test\RocketTestCase;
  */
 class QueryTest extends RocketTestCase
 {
+    /**
+     * @test
+     *
+     * @expectedException \LogicException
+     * @expectedExceptionMessage The "Fixture\Car\Model\CompanyQuery" alias can be null
+     */
+    public function construct()
+    {
+        CompanyQuery::create(null);
+    }
+
     /**
      * @test
      */
@@ -204,17 +226,21 @@ class QueryTest extends RocketTestCase
                 ->where('name = ?', 'Honda')
             ->find();
 
+            // Company array integrity
             $this->assertInternalType('array', $companies);
             $this->assertArrayHasKey(0, $companies);
+
+            // Wheel array integrity
             $this->assertArrayHasKey('Wheels', $companies[0]);
             $this->assertInternalType('array', $companies[0]['Wheels']);
 
+            // Wheel integrity
             $this->assertArrayHasKey(0, $companies[0]['Wheels']);
             $this->assertTrue($companies[0]['Wheels'][0] instanceof RocketObject);
+            $this->assertEquals('GRAM_LIGHTS', $companies[0]['Wheels'][0]['unique_name']);
+
             $this->assertArrayHasKey(1, $companies[0]['Wheels']);
             $this->assertTrue($companies[0]['Wheels'][1] instanceof RocketObject);
-
-            $this->assertEquals('GRAM_LIGHTS', $companies[0]['Wheels'][0]['unique_name']);
             $this->assertEquals('VOLK', $companies[0]['Wheels'][1]['unique_name']);
 
             unset($companies);
@@ -234,9 +260,11 @@ class QueryTest extends RocketTestCase
                 ->where('name = ?', 'Honda')
             ->find();
 
-            // Wheel array integrity
+            // Company array integrity
             $this->assertInternalType('array', $companies);
             $this->assertArrayHasKey(0, $companies);
+
+            // Wheel array integrity
             $this->assertArrayHasKey('Wheels', $companies[0]);
             $this->assertInternalType('array', $companies[0]['Wheels']);
 
@@ -274,6 +302,215 @@ class QueryTest extends RocketTestCase
 
             unset($companies);
         }
+
+        // Deep join (one) with and without alias
+        foreach (['c', null] as $alias) {
+            if (null === $alias) {
+                $query = CarQuery::create();
+            } else {
+                $query = CarQuery::create($alias);
+            }
+
+            $cars = $query
+                ->innerJoinWith('Wheel', 'w')
+                ->innerJoinWith('w.Company')
+                ->where('Company.name = ?', 'Honda')
+            ->find();
+
+            // Car array integrity
+            $this->assertInternalType('array', $cars);
+            $this->assertCount(3, $cars);
+
+            foreach ($cars as $car) {
+                // Wheel integrity
+                $this->assertArrayHasKey('Wheel', $car);
+                $this->assertNotNull($car['Wheel']);
+                $this->assertTrue($car['Wheel'] instanceof RocketObject);
+
+                // Company integrity
+                $this->assertArrayHasKey('Company', $car['Wheel']);
+                $this->assertNotNull($car['Wheel']['Company']);
+                $this->assertTrue($car['Wheel']['Company'] instanceof RocketObject);
+                $this->assertEquals('Honda', $car['Wheel']['Company']['name']);
+            }
+
+            // Data integrity
+            $this->assertEquals(2, $cars[0]['id']);
+            $this->assertEquals('GRAM_LIGHTS', $cars[0]['Wheel']['unique_name']);
+
+            $this->assertEquals(3, $cars[1]['id']);
+            $this->assertEquals('GRAM_LIGHTS', $cars[1]['Wheel']['unique_name']);
+
+            $this->assertEquals(4, $cars[2]['id']);
+            $this->assertEquals('VOLK', $cars[2]['Wheel']['unique_name']);
+        }
+    }
+
+    /**
+     * @test
+     *
+     * @depends innerJoinWith
+     */
+    public function leftJoinWith()
+    {
+        // With and without alias
+        foreach (['c', null] as $alias) {
+            if (null === $alias) {
+                $query = CarQuery::create();
+            } else {
+                $query = CarQuery::create($alias);
+            }
+
+            $cars = $query
+                ->leftJoinWith('Wheel')
+            ->find();
+
+            // Car array integrity
+            $this->assertInternalType('array', $cars);
+            $this->assertArrayHasKey(0, $cars);
+
+            // Wheel integry
+            $this->assertArrayHasKey('Wheel', $cars[0]);
+            $this->assertTrue($cars[0]['Wheel'] instanceof RocketObject);
+
+            // Wheel integrity
+            $this->assertEquals('VOSSEN', $cars[0]['Wheel']['unique_name']);
+
+            for ($i=0; $i<7; $i++) {
+                $this->assertArrayHasKey('Wheel', $cars[$i]);
+                $this->assertNotNull($cars[$i]['Wheel']);
+            }
+
+            // Car without Wheel integrity
+            for ($i=7; $i<10; $i++) {
+                $this->assertArrayHasKey('Wheel', $cars[$i]);
+                $this->assertNull($cars[$i]['Wheel']);
+            }
+
+            unset($cars);
+        }
+
+        // Deep join (many) with and without alias
+        foreach (['w', null] as $alias) {
+            if (null === $alias) {
+                $query = WheelQuery::create();
+            } else {
+                $query = WheelQuery::create($alias);
+            }
+
+            $wheels = $query
+                ->leftJoinWith('Cars')
+                ->leftJoinWith('Cars.Wheel', 'w2')
+                ->leftJoinWith('w2.Company', 'c')
+            ->find();
+
+            // Wheel array integrity
+            $this->assertInternalType('array', $wheels);
+
+            foreach ($wheels as $wheel) {
+                $this->assertTrue($wheel instanceof RocketObject);
+                $this->assertArrayHasKey('Cars', $wheel);
+                $this->assertInternalType('array', $wheel['Cars']);
+
+                // Wheel without cars
+                if (in_array($wheel['unique_name'], [
+                    'KONIG', 'WORK', 'AMERICAN_RACING', 'RONAL'
+                ])) {
+                    $this->assertCount(0, $wheel['Cars']);
+
+                    continue;
+                }
+
+                // Car integrity
+                foreach ($wheel['Cars'] as $car) {
+                    $this->assertTrue($car instanceof RocketObject);
+                    $this->assertArrayHasKey('Wheel', $car);
+
+                    // Car without wheel
+                    if (in_array($car['id'], [
+                        8, 9, 10
+                    ])) {
+                        $this->assertNull($car['Wheel']);
+
+                        continue;
+                    }
+
+                    $this->assertTrue($car['Wheel'] instanceof RocketObject);
+                    $this->assertArrayHasKey('Company', $car['Wheel']);
+                    $this->assertTrue($car['Wheel']['Company'] instanceof RocketObject);
+                }
+            }
+
+            unset($wheels);
+        }
+    }
+
+    /**
+     * @test
+     *
+     * @expectedException \Rocket\ORM\Model\Query\Exception\RelationNotFoundException
+     * @expectedExceptionMessage Unknown relation with "FooBar" for model "\Fixture\Car\Model\Company"
+     *
+     * @covers \Rocket\ORM\Model\Query\Exception\RelationNotFoundException
+     */
+    public function joinRelationNotFoundException()
+    {
+        CompanyQuery::create('c')
+            ->innerJoinWith('FooBar')
+        ->find();
+    }
+
+    /**
+     * @test
+     *
+     * @expectedException \Rocket\ORM\Model\Query\Exception\RelationAliasNotFoundException
+     * @expectedExceptionMessage Unknown alias for relation "FooBar" for model "\Fixture\Car\Model\Company"
+     *
+     * @covers \Rocket\ORM\Model\Query\Exception\RelationAliasNotFoundException
+     */
+    public function joinDeepRelationAliasNotFoundException()
+    {
+        CompanyQuery::create('c')
+            ->innerJoinWith('Wheels', 'w')
+            ->innerJoinWith('FooBar.Company', 'comp')
+        ->find();
+    }
+
+    /**
+     * @test
+     *
+     * @depends getSqlQuery
+     * @depends where
+     */
+    public function buildClauses()
+    {
+        // Clause generation validation where there is a value or not
+        $this->assertEquals("SELECT c.id, c.name FROM `company` AS c WHERE name = 'BMW' AND id IS NOT NULL", CompanyQuery::create('c')
+            ->where('name = ?', 'BMW')
+            ->where('id IS NOT NULL')
+        ->getSqlQuery());
+
+        $this->assertEquals("SELECT c.id, c.name FROM `company` AS c WHERE id IS NOT NULL AND name = 'BMW'", CompanyQuery::create('c')
+            ->where('id IS NOT NULL')
+            ->where('name = ?', 'BMW')
+        ->getSqlQuery());
+    }
+
+    /**
+     * @test
+     *
+     * @depends getSqlQuery
+     * @depends limit
+     */
+    public function buildLimit()
+    {
+        $this->assertEquals("SELECT c.id, c.name FROM `company` AS c LIMIT 1", CompanyQuery::create('c')
+            ->limit(1)
+        ->getSqlQuery());
+
+        $this->assertEquals("SELECT c.id, c.name FROM `company` AS c LIMIT 1,2", CompanyQuery::create('c')
+            ->limit(1, 2)
+        ->getSqlQuery());
     }
 
     /**

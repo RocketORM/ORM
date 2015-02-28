@@ -37,3 +37,6 @@ INSERT INTO car (id, door_count, wheel_unique_name, price, released_at) VALUES (
 INSERT INTO car (id, door_count, wheel_unique_name, price, released_at) VALUES (5, 0, 'BBS', 65000, null);
 INSERT INTO car (id, door_count, wheel_unique_name, price, released_at) VALUES (6, 0, 'ENKEI', 20050, '2006-12-29');
 INSERT INTO car (id, door_count, wheel_unique_name, price, released_at) VALUES (7, 1, 'O_Z', 47100, null);
+INSERT INTO car (id, door_count, wheel_unique_name, price, released_at) VALUES (8, 1, null, 9100, null);
+INSERT INTO car (id, door_count, wheel_unique_name, price, released_at) VALUES (9, 1, null, 11900, null);
+INSERT INTO car (id, door_count, wheel_unique_name, price, released_at) VALUES (10, 1, null, 8990, null);

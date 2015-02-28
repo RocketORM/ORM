@@ -163,7 +163,7 @@ class TableMapTest extends RocketTestCase
         $this->assertNull($column['decimal']);
         $this->assertNull($column['values']);
         $this->assertNull($column['default']);
-        $this->assertTrue($column['required']);
+        $this->assertFalse($column['required']);
 
         // car.price
         $this->assertTrue($tableMap->hasColumn('price'));

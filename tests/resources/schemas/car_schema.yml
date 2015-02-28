@@ -20,7 +20,6 @@ tables:
                 phpName: wheelName
                 type: varchar
                 size: 255
-                required: true
             price:
                 type: double
                 size: 4
