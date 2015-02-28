@@ -11,9 +11,7 @@
 
 namespace Rocket\ORM\Model\Query\SQLite;
 
-use Rocket\ORM\Model\Map\TableMapInterface;
 use Rocket\ORM\Model\Query\Query as BaseQuery;
-use Rocket\ORM\Rocket;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -25,23 +23,8 @@ abstract class Query extends BaseQuery
      */
     protected function buildRelationClauses()
     {
-        $query = '';
-        foreach ($this->joins as $alias => $join) {
-            /** @var TableMapInterface $relationTableMap */
-            $tableMap = Rocket::getTableMap($join['relation']['namespace']);
-            $query .= sprintf(' %s JOIN `%s` %s ON %s.%s = %s.%s',
-                $join['type'],
-                $tableMap->getTableName(),
-                $alias,
-                $join['from'],
-                $join['relation']['local'],
-                $alias,
-                $join['relation']['foreign']
-            );
+        // Remove the database name
 
-            unset($tableMap);
-        }
-
-        return $query;
+        return preg_replace('/`([a-zA-Z0-9_-]+)`\./', '', parent::buildRelationClauses());
     }
 }
