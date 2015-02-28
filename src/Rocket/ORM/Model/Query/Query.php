@@ -13,6 +13,8 @@ namespace Rocket\ORM\Model\Query;
 
 use Rocket\ORM\Model\Map\TableMapInterface;
 use Rocket\ORM\Model\Object\RocketObject;
+use Rocket\ORM\Model\Query\Exception\RelationAliasNotFoundException;
+use Rocket\ORM\Model\Query\Exception\RelationNotFoundException;
 use Rocket\ORM\Rocket;
 
 /**
@@ -160,14 +162,11 @@ abstract class Query implements QueryInterface
      *
      * @return $this|Query
      *
-     * @throws \Exception
+     * @throws RelationNotFoundException
+     * @throws RelationAliasNotFoundException
      */
     public function innerJoinWith($relation, $alias = null)
     {
-        if (null == $alias) {
-            $alias = $relation;
-        }
-
         return $this->join($relation, $alias, self::JOIN_TYPE_INNER, true);
     }
 
@@ -177,14 +176,11 @@ abstract class Query implements QueryInterface
      *
      * @return $this|Query
      *
-     * @throws \Exception
+     * @throws RelationNotFoundException
+     * @throws RelationAliasNotFoundException
      */
     public function leftJoinWith($relation, $alias = null)
     {
-        if (null == $alias) {
-            $alias = $relation;
-        }
-
         return $this->join($relation, $alias, self::JOIN_TYPE_LEFT, true);
     }
 
@@ -196,7 +192,7 @@ abstract class Query implements QueryInterface
      *
      * @return $this|Query
      *
-     * @throws \Exception
+     * @throws RelationNotFoundException
      */
     protected function join($relation, $alias, $joinType = self::JOIN_TYPE_INNER, $with = false)
     {
@@ -210,12 +206,18 @@ abstract class Query implements QueryInterface
             $from = substr($relation, 0, $pos);
         }
 
+        if (null == $alias) {
+            $alias = $relationTable;
+        }
+
         $tableMap = $this->getTableMap();
         $hasRelation = $tableMap->hasRelation($relationTable);
 
         if (!$hasRelation || $hasRelation && null !== $from && $this->alias !== $from) {
             if (null == $from) {
-                throw new \Exception('No relation with ' . $relation . ' for model ' . $this->modelNamespace);
+                throw new RelationNotFoundException(
+                    'Unknown relation with "' . $relation . '" for model "' . $this->modelNamespace . '"'
+                );
             }
 
             return $this->joinDeep($relation, $alias, $joinType, $with);
@@ -242,13 +244,15 @@ abstract class Query implements QueryInterface
      *
      * @return $this|Query
      *
-     * @throws \Exception
+     * @throws RelationAliasNotFoundException
      */
     protected function joinDeep($relation, $alias, $joinType, $with)
     {
         $params = explode('.', $relation);
         if (!isset($this->joins[$params[0]])) {
-            throw new \Exception('No alias found for relation ' . $params[0] . ' for model ' . $this->modelNamespace);
+            throw new RelationAliasNotFoundException(
+                'Unknown alias for relation "' . $params[0] . '" for model "' . $this->modelNamespace . '"'
+            );
         }
 
         $tableMap = Rocket::getTableMap($this->joins[$params[0]]['relation']['namespace']);
@@ -343,7 +347,7 @@ abstract class Query implements QueryInterface
                     // AND foo = :param_1
                     $query .= sprintf(' %s %s :param_%d', $clauseParams['operator'], trim(substr($clauseParams['clause'], 0, -1)), $i);
                 } else {
-                    $query .= $clauseParams['operator'] . ' ' . $clauseParams['clause'];
+                    $query .= ' ' . $clauseParams['operator'] . ' ' . $clauseParams['clause'];
                 }
             }
         }
@@ -464,33 +468,59 @@ abstract class Query implements QueryInterface
                         $object = new RocketObject($item, $this->modelNamespace);
 
                         // Saving object for relations
-                        $objectsByAlias[$alias][$objectHash] = $object;
+                        $objectsByAlias[$alias][$objectHash] = ['object' => $object];
                         $objectsByAliasByRow[$alias] = $object;
                         $objects[] = $object;
                     } else {
-                        $objectsByAliasByRow[$alias] = $objectsByAlias[$alias][$objectHash];
+                        $objectsByAliasByRow[$alias] = $objectsByAlias[$alias][$objectHash]['object'];
                     }
                 } else {
                     // Relations
                     $hash = Rocket::getTableMap($this->joins[$alias]['relation']['namespace'])->getPrimaryKeysHash($item);
                     $relationFrom = $this->joins[$alias]['from'];
+                    $relationPhpName = $this->joins[$alias]['relation']['phpName'];
 
-                    if (isset($objectsByAlias[$relationFrom]['childs'][$hash])) {
+                    if (isset($this->joins[$relationFrom])) {
+                        $parentHash = Rocket::getTableMap($this->joins[$relationFrom]['relation']['namespace'])->getPrimaryKeysHash($data[$relationFrom]);
+                    } else {
+                        // Parent is the main object
+                        $parentHash = $this->getTableMap()->getPrimaryKeysHash($data[$this->alias]);
+                    }
+
+                    // Item for the current row is empty
+                    if (null == $hash) {
+                        if (!$this->joins[$alias]['relation']['is_many']) {
+                            $objectsByAliasByRow[$relationFrom][$relationPhpName] = null;
+                        } else {
+                            $objectsByAliasByRow[$relationFrom][$relationPhpName] = [];
+                        }
+
+                        // Do not forget to unset the current row
+                        unset($objectsByAliasByRow[$alias]);
+
+                        continue;
+                    }
+
+                    if (isset($objectsByAlias[$relationFrom][$parentHash]['childs'][$hash])) {
                         continue;
                     }
 
                     if (!isset($objectsByAlias[$alias][$hash])) {
-                        $objectsByAlias[$alias][$hash] = new RocketObject($item, $this->joins[$alias]['relation']['namespace']);
+                        $objectsByAlias[$alias][$hash] = [
+                            'object' => new RocketObject($item, $this->joins[$alias]['relation']['namespace'])
+                        ];
                     }
 
-                    $objectsByAliasByRow[$alias] = $objectsByAlias[$alias][$hash];
-                    $relationPhpName = $this->joins[$alias]['relation']['phpName'];
+                    $objectsByAliasByRow[$alias] = $objectsByAlias[$alias][$hash]['object'];
 
                     if (!isset($objectsByAliasByRow[$relationFrom])) {
+                        // @codeCoverageIgnoreStart
+                        // Should never append
                         throw new \LogicException(
                             'The parent object for the relation "' . $relationPhpName . '"'
                             . ' (from: "' . $relationFrom . '") does not exist'
                         );
+                        // @codeCoverageIgnoreEnd
                     }
 
                     if ($this->joins[$alias]['relation']['is_many']) {
@@ -499,13 +529,13 @@ abstract class Query implements QueryInterface
                             $objectsByAliasByRow[$relationFrom][$relationPhpName] = [];
                         }
 
-                        $objectsByAliasByRow[$relationFrom][$relationPhpName][] = $objectsByAlias[$alias][$hash];
+                        $objectsByAliasByRow[$relationFrom][$relationPhpName][] = $objectsByAlias[$alias][$hash]['object'];
                     } else {
-                        $objectsByAliasByRow[$relationFrom][$relationPhpName] = $objectsByAlias[$alias][$hash];
+                        $objectsByAliasByRow[$relationFrom][$relationPhpName] = $objectsByAlias[$alias][$hash]['object'];
                     }
 
                     // Avoid duplicate relation objects
-                    $objectsByAlias[$relationFrom]['childs'][$hash] = $objectsByAlias[$alias][$hash];
+                    $objectsByAlias[$relationFrom][$parentHash]['childs'][$hash] = $objectsByAlias[$alias][$hash]['object'];
                 }
             }
         }
