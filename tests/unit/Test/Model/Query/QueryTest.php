@@ -16,7 +16,9 @@ use Fixture\Car\Model\Company;
 use Fixture\Car\Model\CompanyQuery;
 use Fixture\Car\Model\WheelQuery;
 use Rocket\ORM\Model\Object\RocketObject;
+use Rocket\ORM\Model\Query\Hydrator\QueryHydratorInterface;
 use Rocket\ORM\Rocket;
+use Rocket\ORM\Test\Fixture\Car\CompanyQueryTest;
 use Rocket\ORM\Test\RocketTestCase;
 
 /**
@@ -148,36 +150,26 @@ class QueryTest extends RocketTestCase
     /**
      * @test
      *
+     * @depends getSqlQuery
      * @depends where
      * @depends limit
      */
     public function find()
     {
-        $query = CompanyQuery::create('c');
+        $query = CompanyQueryTest::create('c');
         $con = Rocket::getConnection(Rocket::getTableMap(get_class(new Company()))->getConnectionName());
 
         foreach ([null, $con] as $connection) {
-            $companies = $query
+            $query
                 ->limit(2)
-                ->find($connection)
             ;
 
+            $this->assertEquals('SELECT c.id, c.name FROM `company` AS c LIMIT 2', $query->getSqlQuery());
+
+            $companies = $query->find($connection);
             $this->assertNotNull($companies);
-            $this->assertInternalType('array', $companies);
             $this->assertCount(2, $companies);
-            $this->assertArrayHasKey(0, $companies);
-            $this->assertInternalType('object', $companies[0]);
-            $this->assertTrue($companies[0] instanceof RocketObject);
-
-            $this->assertEquals('Cadillak', $companies[0]['name']);
-            $this->assertEquals('Ferrari', $companies[1]['name']);
         }
-
-        $companies = $query
-            ->where('name = ?', 'FooBarFooBar')
-        ->find();
-
-        $this->assertEquals([], $companies);
     }
 
     /**
@@ -189,7 +181,7 @@ class QueryTest extends RocketTestCase
      */
     public function findOne()
     {
-        $query = CompanyQuery::create('c');
+        $query = CompanyQueryTest::create('c');
         $con = Rocket::getConnection(Rocket::getTableMap(get_class(new Company()))->getConnectionName());
 
         foreach ([null, $con] as $connection) {
@@ -210,141 +202,115 @@ class QueryTest extends RocketTestCase
     /**
      * @test
      *
+     * @depends getSqlQuery
      * @depends find
      */
     public function innerJoinWith()
     {
         // With and without alias
-        foreach (['c', null] as $alias) {
-            if (null === $alias) {
-                $query = CompanyQuery::create();
-            } else {
-                $query = CompanyQuery::create($alias);
-            }
-
-            $companies = $query
+        $this->assertEquals(
+            'SELECT '
+                . 'c.id, c.name, Wheels.unique_name AS "Wheels.unique_name", '
+                . 'Wheels.score AS "Wheels.score", '
+                . 'Wheels.company_id AS "Wheels.company_id" '
+            . 'FROM `company` AS c '
+            . 'INNER JOIN `wheel` Wheels ON c.id = Wheels.company_id '
+            . 'WHERE name = \'Honda\'',
+            CompanyQuery::create('c')
                 ->innerJoinWith('Wheels')
                 ->where('name = ?', 'Honda')
-            ->find();
+            ->getSqlQuery()
+        );
 
-            // Company array integrity
-            $this->assertInternalType('array', $companies);
-            $this->assertArrayHasKey(0, $companies);
-
-            // Wheel array integrity
-            $this->assertArrayHasKey('Wheels', $companies[0]);
-            $this->assertInternalType('array', $companies[0]['Wheels']);
-
-            // Wheel integrity
-            $this->assertArrayHasKey(0, $companies[0]['Wheels']);
-            $this->assertTrue($companies[0]['Wheels'][0] instanceof RocketObject);
-            $this->assertEquals('GRAM_LIGHTS', $companies[0]['Wheels'][0]['unique_name']);
-
-            $this->assertArrayHasKey(1, $companies[0]['Wheels']);
-            $this->assertTrue($companies[0]['Wheels'][1] instanceof RocketObject);
-            $this->assertEquals('VOLK', $companies[0]['Wheels'][1]['unique_name']);
-
-            unset($companies);
-        }
+        $this->assertEquals(
+            'SELECT '
+                . 'Company.id, Company.name, Wheels.unique_name AS "Wheels.unique_name", '
+                . 'Wheels.score AS "Wheels.score", '
+                . 'Wheels.company_id AS "Wheels.company_id" '
+            . 'FROM `company` AS Company '
+            . 'INNER JOIN `wheel` Wheels ON Company.id = Wheels.company_id '
+            . 'WHERE name = \'Honda\'',
+            CompanyQuery::create()
+                ->innerJoinWith('Wheels')
+                ->where('name = ?', 'Honda')
+            ->getSqlQuery()
+        );
 
         // Deep join with and without alias
-        foreach (['c', null] as $alias) {
-            if (null === $alias) {
-                $query = CompanyQuery::create();
-            } else {
-                $query = CompanyQuery::create($alias);
-            }
-
-            $companies = $query
+        $this->assertEquals('SELECT '
+                . 'c.id, c.name, Wheels.unique_name AS "Wheels.unique_name", '
+                . 'Wheels.score AS "Wheels.score", '
+                . 'Wheels.company_id AS "Wheels.company_id", cars.id AS "cars.id", '
+                . 'cars.door_count AS "cars.door_count", '
+                . 'cars.wheel_unique_name AS "cars.wheel_unique_name", '
+                . 'cars.price AS "cars.price", cars.released_at AS "cars.released_at" '
+            . 'FROM `company` AS c '
+            . 'INNER JOIN `wheel` Wheels ON c.id = Wheels.company_id '
+            . 'INNER JOIN `car` cars ON Wheels.unique_name = cars.wheel_unique_name '
+            . 'WHERE name = \'Honda\'',
+            CompanyQuery::create('c')
                 ->innerJoinWith('Wheels')
                 ->innerJoinWith('Wheels.Cars', 'cars')
                 ->where('name = ?', 'Honda')
-            ->find();
+            ->getSqlQuery()
+        );
 
-            // Company array integrity
-            $this->assertInternalType('array', $companies);
-            $this->assertArrayHasKey(0, $companies);
-
-            // Wheel array integrity
-            $this->assertArrayHasKey('Wheels', $companies[0]);
-            $this->assertInternalType('array', $companies[0]['Wheels']);
-
-            // Wheel integrity
-            $this->assertArrayHasKey(0, $companies[0]['Wheels']);
-            $this->assertTrue($companies[0]['Wheels'][0] instanceof RocketObject);
-            $this->assertEquals('GRAM_LIGHTS', $companies[0]['Wheels'][0]['unique_name']);
-
-            // Cars array integrity
-            $this->assertArrayHasKey('Cars', $companies[0]['Wheels'][0]);
-            $this->assertInternalType('array', $companies[0]['Wheels'][0]['Cars']);
-            $this->assertCount(2, $companies[0]['Wheels'][0]['Cars']);
-
-            // Car integrity
-            foreach ([0 => 2, 1 => 3] as $i => $id) {
-                $this->assertArrayHasKey($i, $companies[0]['Wheels'][0]['Cars']);
-                $this->assertTrue($companies[0]['Wheels'][0]['Cars'][$i] instanceof RocketObject);
-                $this->assertEquals($id, $companies[0]['Wheels'][0]['Cars'][$i]['id']);
-            }
-
-            // Wheel integrity
-            $this->assertArrayHasKey(1, $companies[0]['Wheels']);
-            $this->assertTrue($companies[0]['Wheels'][1] instanceof RocketObject);
-            $this->assertEquals('VOLK', $companies[0]['Wheels'][1]['unique_name']);
-
-            // Cars array integrity
-            $this->assertArrayHasKey('Cars', $companies[0]['Wheels'][1]);
-            $this->assertInternalType('array', $companies[0]['Wheels'][1]['Cars']);
-            $this->assertCount(1, $companies[0]['Wheels'][1]['Cars']);
-
-            // Car integrity
-            $this->assertArrayHasKey(0, $companies[0]['Wheels'][1]['Cars']);
-            $this->assertTrue($companies[0]['Wheels'][1]['Cars'][0] instanceof RocketObject);
-            $this->assertEquals(4, $companies[0]['Wheels'][1]['Cars'][0]['id']);
-
-            unset($companies);
-        }
+        $this->assertEquals('SELECT '
+                . 'Company.id, Company.name, Wheels.unique_name AS "Wheels.unique_name", '
+                . 'Wheels.score AS "Wheels.score", '
+                . 'Wheels.company_id AS "Wheels.company_id", cars.id AS "cars.id", '
+                . 'cars.door_count AS "cars.door_count", '
+                . 'cars.wheel_unique_name AS "cars.wheel_unique_name", '
+                . 'cars.price AS "cars.price", cars.released_at AS "cars.released_at" '
+            . 'FROM `company` AS Company '
+            . 'INNER JOIN `wheel` Wheels ON Company.id = Wheels.company_id '
+            . 'INNER JOIN `car` cars ON Wheels.unique_name = cars.wheel_unique_name '
+            . 'WHERE name = \'Honda\'',
+            CompanyQuery::create()
+                ->innerJoinWith('Wheels')
+                ->innerJoinWith('Wheels.Cars', 'cars')
+                ->where('name = ?', 'Honda')
+            ->getSqlQuery()
+        );
 
         // Deep join (one) with and without alias
-        foreach (['c', null] as $alias) {
-            if (null === $alias) {
-                $query = CarQuery::create();
-            } else {
-                $query = CarQuery::create($alias);
-            }
-
-            $cars = $query
+        $this->assertEquals('SELECT '
+                . 'c.id, c.door_count, c.wheel_unique_name, c.price, c.released_at, '
+                . 'w.unique_name AS "w.unique_name", w.score AS "w.score", '
+                . 'w.company_id AS "w.company_id", Company.id AS "Company.id", '
+                . 'Company.name AS "Company.name" '
+            . 'FROM `car` AS c '
+            . 'INNER JOIN `wheel` w ON c.wheel_unique_name = w.unique_name '
+            . 'INNER JOIN `company` Company ON w.company_id = Company.id '
+            . 'WHERE Company.name = \'Honda\'',
+            CarQuery::create('c')
                 ->innerJoinWith('Wheel', 'w')
                 ->innerJoinWith('w.Company')
                 ->where('Company.name = ?', 'Honda')
-            ->find();
+            ->getSqlQuery()
+        );
 
-            // Car array integrity
-            $this->assertInternalType('array', $cars);
-            $this->assertCount(3, $cars);
+        $this->assertEquals('SELECT '
+                . 'Car.id, Car.door_count, Car.wheel_unique_name, Car.price, Car.released_at, '
+                . 'w.unique_name AS "w.unique_name", w.score AS "w.score", '
+                . 'w.company_id AS "w.company_id", Company.id AS "Company.id", '
+                . 'Company.name AS "Company.name" '
+            . 'FROM `car` AS Car '
+            . 'INNER JOIN `wheel` w ON Car.wheel_unique_name = w.unique_name '
+            . 'INNER JOIN `company` Company ON w.company_id = Company.id '
+            . 'WHERE Company.name = \'Honda\'',
+            CarQuery::create()
+                ->innerJoinWith('Wheel', 'w')
+                ->innerJoinWith('w.Company')
+                ->where('Company.name = ?', 'Honda')
+            ->getSqlQuery()
+        );
 
-            foreach ($cars as $car) {
-                // Wheel integrity
-                $this->assertArrayHasKey('Wheel', $car);
-                $this->assertNotNull($car['Wheel']);
-                $this->assertTrue($car['Wheel'] instanceof RocketObject);
+        $companies = CompanyQueryTest::create('c')
+            ->innerJoinWith('Wheels')
+        ->find();
 
-                // Company integrity
-                $this->assertArrayHasKey('Company', $car['Wheel']);
-                $this->assertNotNull($car['Wheel']['Company']);
-                $this->assertTrue($car['Wheel']['Company'] instanceof RocketObject);
-                $this->assertEquals('Honda', $car['Wheel']['Company']['name']);
-            }
-
-            // Data integrity
-            $this->assertEquals(2, $cars[0]['id']);
-            $this->assertEquals('GRAM_LIGHTS', $cars[0]['Wheel']['unique_name']);
-
-            $this->assertEquals(3, $cars[1]['id']);
-            $this->assertEquals('GRAM_LIGHTS', $cars[1]['Wheel']['unique_name']);
-
-            $this->assertEquals(4, $cars[2]['id']);
-            $this->assertEquals('VOLK', $cars[2]['Wheel']['unique_name']);
-        }
+        $this->assertNotNull($companies);
     }
 
     /**
@@ -355,95 +321,72 @@ class QueryTest extends RocketTestCase
     public function leftJoinWith()
     {
         // With and without alias
-        foreach (['c', null] as $alias) {
-            if (null === $alias) {
-                $query = CarQuery::create();
-            } else {
-                $query = CarQuery::create($alias);
-            }
-
-            $cars = $query
+        $this->assertEquals('SELECT '
+                . 'c.id, c.door_count, c.wheel_unique_name, c.price, c.released_at, '
+                . 'Wheel.unique_name AS "Wheel.unique_name", '
+                . 'Wheel.score AS "Wheel.score", '
+                . 'Wheel.company_id AS "Wheel.company_id" '
+            . 'FROM `car` AS c '
+            . 'LEFT JOIN `wheel` Wheel ON c.wheel_unique_name = Wheel.unique_name',
+            CarQuery::create('c')
                 ->leftJoinWith('Wheel')
-            ->find();
+            ->getSqlQuery()
+        );
 
-            // Car array integrity
-            $this->assertInternalType('array', $cars);
-            $this->assertArrayHasKey(0, $cars);
-
-            // Wheel integry
-            $this->assertArrayHasKey('Wheel', $cars[0]);
-            $this->assertTrue($cars[0]['Wheel'] instanceof RocketObject);
-
-            // Wheel integrity
-            $this->assertEquals('VOSSEN', $cars[0]['Wheel']['unique_name']);
-
-            for ($i=0; $i<7; $i++) {
-                $this->assertArrayHasKey('Wheel', $cars[$i]);
-                $this->assertNotNull($cars[$i]['Wheel']);
-            }
-
-            // Car without Wheel integrity
-            for ($i=7; $i<10; $i++) {
-                $this->assertArrayHasKey('Wheel', $cars[$i]);
-                $this->assertNull($cars[$i]['Wheel']);
-            }
-
-            unset($cars);
-        }
+        $this->assertEquals('SELECT '
+                . 'Car.id, Car.door_count, Car.wheel_unique_name, Car.price, Car.released_at, '
+                . 'Wheel.unique_name AS "Wheel.unique_name", '
+                . 'Wheel.score AS "Wheel.score", '
+                . 'Wheel.company_id AS "Wheel.company_id" '
+            . 'FROM `car` AS Car '
+            . 'LEFT JOIN `wheel` Wheel ON Car.wheel_unique_name = Wheel.unique_name',
+            CarQuery::create()
+                ->leftJoinWith('Wheel')
+            ->getSqlQuery()
+        );
 
         // Deep join (many) with and without alias
-        foreach (['w', null] as $alias) {
-            if (null === $alias) {
-                $query = WheelQuery::create();
-            } else {
-                $query = WheelQuery::create($alias);
-            }
-
-            $wheels = $query
+        $this->assertEquals('SELECT '
+                . 'w.unique_name, w.score, w.company_id, '
+                . 'Cars.id AS "Cars.id", Cars.door_count AS "Cars.door_count", '
+                . 'Cars.wheel_unique_name AS "Cars.wheel_unique_name", '
+                . 'Cars.price AS "Cars.price", '
+                . 'Cars.released_at AS "Cars.released_at", '
+                . 'w2.unique_name AS "w2.unique_name", '
+                . 'w2.score AS "w2.score", '
+                . 'w2.company_id AS "w2.company_id", '
+                . 'c.id AS "c.id", c.name AS "c.name" '
+            . 'FROM `wheel` AS w '
+            . 'LEFT JOIN `car` Cars ON w.unique_name = Cars.wheel_unique_name '
+            . 'LEFT JOIN `wheel` w2 ON Cars.wheel_unique_name = w2.unique_name '
+            . 'LEFT JOIN `company` c ON w2.company_id = c.id',
+            WheelQuery::create('w')
                 ->leftJoinWith('Cars')
                 ->leftJoinWith('Cars.Wheel', 'w2')
                 ->leftJoinWith('w2.Company', 'c')
-            ->find();
+            ->getSqlQuery()
+        );
 
-            // Wheel array integrity
-            $this->assertInternalType('array', $wheels);
-
-            foreach ($wheels as $wheel) {
-                $this->assertTrue($wheel instanceof RocketObject);
-                $this->assertArrayHasKey('Cars', $wheel);
-                $this->assertInternalType('array', $wheel['Cars']);
-
-                // Wheel without cars
-                if (in_array($wheel['unique_name'], [
-                    'KONIG', 'WORK', 'AMERICAN_RACING', 'RONAL'
-                ])) {
-                    $this->assertCount(0, $wheel['Cars']);
-
-                    continue;
-                }
-
-                // Car integrity
-                foreach ($wheel['Cars'] as $car) {
-                    $this->assertTrue($car instanceof RocketObject);
-                    $this->assertArrayHasKey('Wheel', $car);
-
-                    // Car without wheel
-                    if (in_array($car['id'], [
-                        8, 9, 10
-                    ])) {
-                        $this->assertNull($car['Wheel']);
-
-                        continue;
-                    }
-
-                    $this->assertTrue($car['Wheel'] instanceof RocketObject);
-                    $this->assertArrayHasKey('Company', $car['Wheel']);
-                    $this->assertTrue($car['Wheel']['Company'] instanceof RocketObject);
-                }
-            }
-
-            unset($wheels);
-        }
+        $this->assertEquals('SELECT '
+                . 'Wheel.unique_name, Wheel.score, Wheel.company_id, '
+                . 'Cars.id AS "Cars.id", Cars.door_count AS "Cars.door_count", '
+                . 'Cars.wheel_unique_name AS "Cars.wheel_unique_name", '
+                . 'Cars.price AS "Cars.price", '
+                . 'Cars.released_at AS "Cars.released_at", '
+                . 'w2.unique_name AS "w2.unique_name", '
+                . 'w2.score AS "w2.score", '
+                . 'w2.company_id AS "w2.company_id", '
+                . 'c.id AS "c.id", c.name AS "c.name" '
+            . 'FROM `wheel` AS Wheel '
+            . 'LEFT JOIN `car` Cars ON Wheel.unique_name = Cars.wheel_unique_name '
+            . 'LEFT JOIN `wheel` w2 ON Cars.wheel_unique_name = w2.unique_name '
+            . 'LEFT JOIN `company` c ON w2.company_id = c.id',
+            WheelQuery::create()
+                ->leftJoinWith('Cars')
+                ->leftJoinWith('Cars.Wheel', 'w2')
+                ->leftJoinWith('w2.Company', 'c')
+            ->getSqlQuery()
+        );
     }
 
     /**
@@ -512,6 +455,32 @@ class QueryTest extends RocketTestCase
         $this->assertEquals("SELECT c.id, c.name FROM `company` AS c LIMIT 1,2", CompanyQuery::create('c')
             ->limit(1, 2)
         ->getSqlQuery());
+    }
+
+    /**
+     * @test
+     */
+    public function getSimpleQueryHydrator()
+    {
+        $query = CompanyQuery::create('c');
+        $reflection = new \ReflectionObject($query);
+        $method = $reflection->getMethod('getSimpleQueryHydrator');
+        $method->setAccessible(true);
+
+        $this->assertTrue($method->invoke($query) instanceof QueryHydratorInterface);
+    }
+
+    /**
+     * @test
+     */
+    public function getComplexQueryHydrator()
+    {
+        $query = CompanyQuery::create('c');
+        $reflection = new \ReflectionObject($query);
+        $method = $reflection->getMethod('getComplexQueryHydrator');
+        $method->setAccessible(true);
+
+        $this->assertTrue($method->invoke($query) instanceof QueryHydratorInterface);
     }
 
     /**
