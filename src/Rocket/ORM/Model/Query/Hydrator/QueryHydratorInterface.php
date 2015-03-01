@@ -9,15 +9,19 @@
  * file that was distributed with this source code.
  */
 
-namespace Rocket\ORM\Model\Query;
+namespace Rocket\ORM\Model\Query\Hydrator;
+
+use Rocket\ORM\Model\Object\RocketObject;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-interface QueryInterface
+interface QueryHydratorInterface
 {
     /**
-     * @return string
+     * @param \PDOStatement $stmt
+     *
+     * @return array|RocketObject|null
      */
-    public function getSqlQuery();
+    public function hydrate(\PDOStatement $stmt);
 }
