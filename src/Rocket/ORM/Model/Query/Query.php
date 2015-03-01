@@ -199,7 +199,7 @@ abstract class Query implements QueryInterface
         $relationTable = $relation;
         $from = null;
 
-        // Remove the link alias if exists : "Alias.Relation", removing "Alias."
+        // Separate the link alias if exists : "From.Relation", keep "From" & "Relation"
         $pos = strpos($relation, '.');
         if (false !== $pos) {
             $relationTable = substr($relation, $pos + 1);

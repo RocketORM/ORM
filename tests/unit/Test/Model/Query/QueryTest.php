@@ -23,6 +23,7 @@ use Rocket\ORM\Test\RocketTestCase;
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  *
  * @covers \Rocket\ORM\Model\Query\Query
+ * @covers \Rocket\ORM\Model\Query\SQLite\Query
  */
 class QueryTest extends RocketTestCase
 {
