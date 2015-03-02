@@ -65,7 +65,7 @@ abstract class Model implements ModelInterface
 
                     $this->_isNew = false;
                     $this->_isModified = false;
-                } elseif ($this->_isModified && $this->saveRelations($con)) {
+                } elseif ($this->saveRelations($con) && $this->_isModified) {
                     $this->doUpdate($con);
                     $this->postSave($con);
 

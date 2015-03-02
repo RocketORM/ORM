@@ -1,0 +1,11 @@
+    /**
+     * @param {{ relation.isMany ? 'array|' ~ relation.relatedTable.phpName ~ '[]' : relation.relatedTable.phpName }} ${{ relation.phpName(false) }}
+     *
+     * @return $this
+     */
+    public function set{{ relation.phpName }}({{ relation.isMany ? 'array' : relation.relatedTable.phpName }} ${{ relation.phpName(false) }})
+    {
+        $this->{{ relation.phpName(false) }} = ${{ relation.phpName(false) }};
+
+        return $this;
+    }

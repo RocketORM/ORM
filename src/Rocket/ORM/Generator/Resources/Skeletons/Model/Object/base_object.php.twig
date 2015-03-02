@@ -13,7 +13,8 @@ namespace {{ table.schema.namespace }}\Base;
     use Rocket\ORM\Model\Model;
 {% endif %}
 {% for relation in table.relations -%}
-    use {{ relation.relatedTable.schema.namespace }}\{{ relation.relatedTable.phpName }}Query;
+    use {{ relation.relatedTable.schema.namespace }}\{{ relation.relatedTable.phpName }};
+use {{ relation.relatedTable.schema.namespace }}\{{ relation.relatedTable.phpName }}Query;
 {% endfor %}
 
 {% block comment %}
@@ -163,6 +164,8 @@ class Base{{ table.phpName }} extends {{ baseModel }}
     {%- for relation in table.relations -%}
         {{ loop.first ? "\n" : '' }}
         {%- include 'Method/getRelation.php.twig' -%}
+        {{ "\n\n" }}
+        {%- include 'Method/setRelation.php.twig' -%}
         {% if not loop.last -%}
             {{ "\n\n" }}
         {%- endif %}
