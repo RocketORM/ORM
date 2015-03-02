@@ -235,4 +235,18 @@ class Table
 
         return false;
     }
+
+    /**
+     * @param bool $firstUpper
+     *
+     * @return string
+     */
+    public function getPhpName($firstUpper = true)
+    {
+        if ($firstUpper) {
+            return $this->phpName;
+        }
+
+        return lcfirst($this->phpName);
+    }
 }
