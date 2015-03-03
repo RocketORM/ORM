@@ -58,7 +58,7 @@ class ConfigTest extends RocketTestCase
 
         // Test some keys
         $this->assertArrayHasKey('default_connection', $config);
-        $this->assertEquals('default', $config['default_connection']);
+        $this->assertEquals('car', $config['default_connection']);
 
         $this->assertArrayHasKey('connection_class', $config);
         $this->assertNull($config['connection_class']);

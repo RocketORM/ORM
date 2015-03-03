@@ -11,6 +11,7 @@
 
 namespace Rocket\ORM;
 
+use Rocket\ORM\Config\Exception\ConfigurationKeyNotFoundException;
 use Rocket\ORM\Connection\ConnectionFactory;
 use Rocket\ORM\Connection\ConnectionInterface;
 use Rocket\ORM\Model\Map\TableMapInterface;
@@ -91,12 +92,15 @@ class Rocket
     public static function setConfiguration(array $config)
     {
         self::$config = $config;
+        self::$configCache = [];
     }
 
     /**
      * @param string $key
      *
      * @return mixed
+     *
+     * @throws ConfigurationKeyNotFoundException
      */
     public static function getConfiguration($key)
     {
@@ -109,7 +113,7 @@ class Rocket
 
         foreach ($parts as $part) {
             if (!array_key_exists($part, $config)) {
-                throw new \InvalidArgumentException('No configuration found for the key "' . $key . '"');
+                throw new ConfigurationKeyNotFoundException('No configuration found for the key "' . $key . '"');
             }
 
             $config = $config[$part];
@@ -138,9 +142,16 @@ class Rocket
             unset($namespaceParts[$size - 1]);
             $tableMapNamespace = join('\\', $namespaceParts) . '\\TableMap\\' . $className . 'TableMap';
 
+            if (!class_exists($tableMapNamespace)) {
+                throw new \InvalidArgumentException('The table map class "' . $tableMapNamespace . '" does not exist');
+            }
+
             $tableMap = new $tableMapNamespace();
             if (!$tableMap instanceof TableMapInterface) {
-                throw new \RuntimeException('The "' . $classNamespace . '" table map must be an instance of "\Rocket\Model\TableMap\TableMapInterface"');
+                throw new \InvalidArgumentException(
+                    'The "' . $tableMapNamespace . '" table map must implement '
+                    . '"\Rocket\Model\TableMap\TableMapInterface"'
+                );
             }
 
             $tableMap->configure();

@@ -1,5 +1,5 @@
 rocket:
-    default_connection: default
+    default_connection: car
     connection_class:   ~
     connections:
         car:
