@@ -5,7 +5,24 @@
      */
     public function set{{ relation.phpName }}({{ relation.isMany ? 'array' : relation.relatedTable.phpName }} ${{ relation.phpName(false) }})
     {
+        {% if not relation.isMany -%}
+            {% if relation.isForeignKey -%}
+                $this->set{{ relation.localColumn.phpName(true) }}(${{ relation.phpName(false) }}->{{ relation.foreignColumn.methodName }}());
+            {%- else -%}
+                ${{ relation.phpName(false) }}->set{{ relation.foreignColumn.phpName(true) }}($this->{{ relation.localColumn.methodName }}());
+            {%- endif %}
+
         $this->{{ relation.phpName(false) }} = ${{ relation.phpName(false) }};
+        {% set relatedRelation = relation.relatedRelation -%}
+        {%- elseif not relation.isForeignKey -%}
+            foreach (${{ relation.phpName(false) }} as ${{ relation.relatedTable.phpName(false) }}) {
+            if ($this->{{ relation.localColumn.phpName }} != ${{ relation.relatedTable.phpName(false) }}->{{ relation.foreignColumn.methodName }}()) {
+                ${{ relation.relatedTable.phpName(false) }}->set{{ relation.foreignColumn.phpName(true) }}($this->{{ relation.localColumn.phpName }});
+                $this->add{{ relation.relatedTable.phpName }}(${{ relation.relatedTable.phpName(false) }});
+            }
+        }
+        {{- "\n" }}
+        {%- endif %}
 
         return $this;
     }

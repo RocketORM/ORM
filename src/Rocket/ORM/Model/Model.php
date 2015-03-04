@@ -59,17 +59,12 @@ abstract class Model implements ModelInterface
 
         try {
             if ($this->preSave($con)) {
-                if ($this->_isNew && $this->saveRelations($con)) {
+                if ($this->_isNew) {
                     $this->doInsert($con);
                     $this->postSave($con);
-
-                    $this->_isNew = false;
-                    $this->_isModified = false;
-                } elseif ($this->saveRelations($con) && $this->_isModified) {
+                } elseif ($this->_isModified) {
                     $this->doUpdate($con);
                     $this->postSave($con);
-
-                    $this->_isModified = false;
                 }
             }
         } catch (\Exception $e) {
@@ -79,6 +74,9 @@ abstract class Model implements ModelInterface
 
             throw $e;
         }
+
+        $this->_isNew = false;
+        $this->_isModified = false;
 
         return true;
     }

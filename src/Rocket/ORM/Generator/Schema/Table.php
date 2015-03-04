@@ -225,6 +225,14 @@ class Table
     /**
      * @return bool
      */
+    public function hasRelations()
+    {
+        return isset($this->relations[0]);
+    }
+
+    /**
+     * @return bool
+     */
     public function hasDefaultColumn()
     {
         foreach ($this->columns as $column) {

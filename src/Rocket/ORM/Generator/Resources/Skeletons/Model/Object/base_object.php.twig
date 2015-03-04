@@ -156,7 +156,7 @@ class Base{{ table.phpName }} extends {{ baseModel }}
     }
 
     {{- "\n" -}}
-    {%- if table.hasForeignKey -%}
+    {%- if table.hasRelations -%}
         {%- include 'Method/saveRelations.php.twig' -%}
         {{ "\n" -}}
     {%- endif -%}

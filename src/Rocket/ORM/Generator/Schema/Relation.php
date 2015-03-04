@@ -74,9 +74,6 @@ class Relation
     protected $localTable;
 
     /**
-     * A related table is the table where the relation is explicitly mentioned in the schema configuration,
-     * so it can be NULL for related relations
-     *
      * @var Table
      */
     protected $relatedTable;
@@ -183,5 +180,22 @@ class Relation
     {
         return TableMap::RELATION_TYPE_MANY_TO_ONE === $this->type
                || TableMap::RELATION_TYPE_MANY_TO_MANY === $this->type;
+    }
+
+    /**
+     * @return Relation
+     */
+    public function getRelatedRelation()
+    {
+        foreach ($this->relatedTable->getRelations() as $relation) {
+            if ($relation->local == $this->foreign && $relation->foreign == $this->local) {
+                return $relation;
+            }
+        }
+
+        throw new \LogicException(
+            'Cannot retrieve the related relation for between "' . $this->localTable->name . '" and "'
+            . $this->relatedTable->name . '" (relation name : "' . $this->phpName . '")'
+        );
     }
 }

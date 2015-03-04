@@ -14,6 +14,6 @@
     {%- endif %}
 
      */
-    protected ${{ relation.phpName(false) }};
+    protected ${{ relation.phpName(false) }}{{ relation.isMany ? ' = []' : '' }};
 
     {% endfor %}

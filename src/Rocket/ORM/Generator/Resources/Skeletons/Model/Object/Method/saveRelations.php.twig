@@ -6,16 +6,26 @@
      */
     protected function saveRelations(\PDO $con)
     {
+        $canContinue = true;
         {%- for relation in table.relations -%}
             {{- "\n        " -}}
             {% if relation.isMany -%}
         foreach ($this->{{ relation.phpName(false) }} as $object) {
-            $object->save(); {#- should pass $con ? what happens if $con doesn't handle the same database #}
+            if (!$canContinue) {
+                break;
+            }
+
+            $canContinue = $object->save(); {#- should pass $con ? what happens if $con doesn't handle the same database #}
 
         }
             {%- else -%}
-        $this->{{ relation.phpName(false) }}->save(); {#- same as above #}
+        if ($canContinue && null != $this->{{ relation.phpName(false) }}) {
+            $canContinue = $this->{{ relation.phpName(false) }}->save(); {#- same as above #}
+
+        }
             {%- endif %}
             {{- "\n" }}
         {%- endfor %}
+
+        return $canContinue;
     }

@@ -13,6 +13,7 @@ namespace Test\Model;
 
 use Fixture\Car\Model\Car;
 use Fixture\Car\Model\Company;
+use Fixture\Car\Model\Wheel;
 use Rocket\ORM\Model\Model;
 use Rocket\ORM\Rocket;
 use Rocket\ORM\Test\Generator\Model\ModelTestHelper;
@@ -324,6 +325,32 @@ class ModelTest extends RocketTestCase
     }
 
     /**
+     * @test
+     *
+     * @depends insert
+     */
+    public function setRelation()
+    {
+        $company = new Company();
+        $company
+            ->setName(String::generateRandomString(10))
+            ->save()
+        ;
+
+        self::$companyScheduledDeletion[] = $company->getId();
+
+        $wheel = new Wheel();
+
+        $wheel
+            ->setUniqueName(String::generateRandomString(10))
+            ->setScore(95)
+            ->setCompany($company)
+        ;
+
+        $this->assertEquals($company->getId(), $wheel->getCompanyId());
+    }
+
+    /**
      * @param string $methodName
      *
      * @return Company|\PHPUnit_Framework_MockObject_MockObject
@@ -369,14 +396,14 @@ class ModelTest extends RocketTestCase
     /**
      * @param mixed   $expectedValue
      * @param string  $attributeName
-     * @param Company $company
+     * @param object  $object
      */
-    protected function assertProtectedAttributeEquals($expectedValue, $attributeName, Company $company)
+    protected function assertProtectedAttributeEquals($expectedValue, $attributeName, $object)
     {
-        $reflection = new \ReflectionObject($company);
+        $reflection = new \ReflectionObject($object);
         $attribute = $reflection->getProperty($attributeName);
         $attribute->setAccessible(true);
-        $this->assertEquals($expectedValue, $attribute->getValue($company));
+        $this->assertEquals($expectedValue, $attribute->getValue($object));
     }
 
     /**
