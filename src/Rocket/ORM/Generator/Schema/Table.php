@@ -257,4 +257,12 @@ class Table
 
         return lcfirst($this->phpName);
     }
+
+    /**
+     * @return string
+     */
+    public function getNamespace()
+    {
+        return $this->getSchema()->namespace . '\\' . $this->phpName;
+    }
 }

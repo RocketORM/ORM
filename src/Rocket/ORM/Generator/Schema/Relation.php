@@ -187,8 +187,11 @@ class Relation
      */
     public function getRelatedRelation()
     {
+        $localTableNamespace = $this->localTable->getNamespace();
         foreach ($this->relatedTable->getRelations() as $relation) {
-            if ($relation->local == $this->foreign && $relation->foreign == $this->local) {
+            if ($localTableNamespace == $relation->relatedTable->getNamespace() &&
+                $relation->local == $this->foreign && $relation->foreign == $this->local
+            ) {
                 return $relation;
             }
         }
