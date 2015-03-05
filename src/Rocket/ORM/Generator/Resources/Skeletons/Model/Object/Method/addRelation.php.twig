@@ -6,4 +6,5 @@
     public function add{{ relation.relatedTable.phpName }}({{ relation.relatedTable.phpName }} ${{ relation.relatedTable.phpName(false) }})
     {
         $this->{{ relation.phpName(false) }}[] = ${{ relation.relatedTable.phpName(false) }};
+        $this->_isRelationModified = true;
     }

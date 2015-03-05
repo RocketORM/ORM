@@ -10,6 +10,7 @@
         {%- for relation in table.relations -%}
             {{- "\n        " -}}
             {% if relation.isMany -%}
+
         foreach ($this->{{ relation.phpName(false) }} as $object) {
             if (!$canContinue) {
                 break;

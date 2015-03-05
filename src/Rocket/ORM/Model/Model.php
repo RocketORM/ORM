@@ -32,6 +32,11 @@ abstract class Model implements ModelInterface
     /**
      * @var bool
      */
+    protected $_isRelationModified = false;
+
+    /**
+     * @var bool
+     */
     protected $_isDeleted = false;
 
     /**
@@ -63,8 +68,15 @@ abstract class Model implements ModelInterface
                     $this->doInsert($con);
                     $this->postSave($con);
                 } elseif ($this->_isModified) {
-                    $this->doUpdate($con);
-                    $this->postSave($con);
+                    if ($this->_isModified) {
+                        $this->doUpdate($con);
+                        $this->postSave($con);
+                    }
+                }
+
+                if ($this->_isRelationModified) {
+                    $this->_isRelationModified = false;
+                    $this->saveRelations($con);
                 }
             }
         } catch (\Exception $e) {
