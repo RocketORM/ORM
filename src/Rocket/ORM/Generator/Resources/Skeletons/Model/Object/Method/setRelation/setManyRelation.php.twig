@@ -1,0 +1,20 @@
+    /**
+     * @param array|{{ relation.relatedTable.phpName }}[] ${{ relation.phpName(false) }}
+     *
+     * @return $this
+     */
+    public function set{{ relation.phpName }}(array ${{ relation.phpName(false) }})
+    {
+        {% set relatedRelation = relation.relatedRelation -%}
+        foreach (${{ relation.phpName(false) }} as ${{ relation.relatedTable.phpName(false) }}) {
+            if ($this->{{ relation.localColumn.phpName }} != ${{ relation.relatedTable.phpName(false) }}->{{ relation.foreignColumn.methodName }}()) {
+                ${{ relation.relatedTable.phpName(false) }}->set{{ relation.foreignColumn.phpName(true) }}($this->{{ relation.localColumn.phpName }});
+            }
+
+            $this->add{{ relation.relatedTable.phpName }}(${{ relation.relatedTable.phpName(false) }});
+        }
+
+        $this->_isRelationModified = true;
+
+        return $this;
+    }

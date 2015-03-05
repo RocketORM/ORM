@@ -1,0 +1,25 @@
+    /**
+     * @param {{ relation.isMany ? 'array|' ~ relation.relatedTable.phpName ~ '[]' : relation.relatedTable.phpName }} ${{ relation.phpName(false) }}
+     *
+     * @return $this
+     */
+    public function set{{ relation.phpName }}({{ relation.relatedTable.phpName }} ${{ relation.phpName(false) }})
+    {
+        {% set relatedRelation = relation.relatedRelation -%}
+        {% if relation.isForeignKey -%}
+            $this->set{{ relation.localColumn.phpName(true) }}(${{ relation.phpName(false) }}->{{ relation.foreignColumn.methodName }}());
+        {%- else -%}
+            ${{ relation.phpName(false) }}->set{{ relation.foreignColumn.phpName(true) }}($this->{{ relation.localColumn.methodName }}());
+        {%- endif %}
+
+        $this->{{ relation.phpName(false) }} = ${{ relation.phpName(false) }};
+
+        {% if relatedRelation.isMany -%}
+            ${{ relation.phpName(false) }}->add{{ table.phpName }}($this);
+        {%- else -%}
+            ${{ relation.phpName(false) }}->set{{ table.phpName }}($this);
+        {%- endif %}
+
+
+        return $this;
+    }

@@ -166,10 +166,6 @@ class Base{{ table.phpName }} extends {{ baseModel }}
         {%- include 'Method/getRelation.php.twig' -%}
         {{ "\n\n" }}
         {%- include 'Method/setRelation.php.twig' -%}
-        {% if relation.isMany -%}
-            {{ "\n\n" }}
-            {%- include 'Method/addRelation.php.twig' -%}
-        {%- endif -%}
         {% if not loop.last -%}
             {{ "\n\n" }}
         {%- endif %}
