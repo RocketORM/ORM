@@ -16,6 +16,10 @@ namespace Rocket\ORM\Connection;
  */
 interface ConnectionInterface
 {
+    const CONNECTION_MODE_WRITE = 'write';
+    const CONNECTION_MODE_READ  = 'read';
+
+
     /**
      * @param string $databaseName
      *
@@ -26,7 +30,7 @@ interface ConnectionInterface
     /**
      * @param string $databaseName
      *
-     * @return void
+     * @return bool
      */
     public function createDatabase($databaseName);
 

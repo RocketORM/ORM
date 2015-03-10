@@ -11,6 +11,7 @@
 
 namespace Rocket\ORM\Model;
 
+use Rocket\ORM\Connection\ConnectionInterface;
 use Rocket\ORM\Model\Map\TableMapInterface;
 use Rocket\ORM\Rocket;
 
@@ -59,7 +60,7 @@ abstract class Model implements ModelInterface
         }
 
         if (null == $con) {
-            $con = Rocket::getConnection($this->getTableMap()->getConnectionName(), Rocket::CONNECTION_MODE_WRITE);
+            $con = Rocket::getConnection($this->getTableMap()->getConnectionName(), ConnectionInterface::CONNECTION_MODE_WRITE);
         }
 
         try {
@@ -111,7 +112,7 @@ abstract class Model implements ModelInterface
         }
 
         if (null == $con) {
-            $con = Rocket::getConnection($this->getTableMap()->getConnectionName(), Rocket::CONNECTION_MODE_WRITE);
+            $con = Rocket::getConnection($this->getTableMap()->getConnectionName(), ConnectionInterface::CONNECTION_MODE_WRITE);
         }
         try {
             if ($this->preDelete($con)) {

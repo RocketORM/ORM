@@ -23,9 +23,6 @@ class Rocket
 {
     const VERSION = '0.1.0';
 
-    const CONNECTION_MODE_WRITE = 0;
-    const CONNECTION_MODE_READ  = 1;
-
 
     /**
      * @var array
@@ -50,13 +47,13 @@ class Rocket
 
     /**
      * @param string $name The connection name
-     * @param int    $mode The connection mode, a Rocket class constant
+     * @param string $mode The connection mode, a Rocket class constant
      *
      * @return ConnectionInterface|\PDO
      *
      * @throws Connection\Exception\ConnectionNotFoundException
      */
-    public static function getConnection($name = null, $mode = self::CONNECTION_MODE_WRITE)
+    public static function getConnection($name = null, $mode = ConnectionInterface::CONNECTION_MODE_WRITE)
     {
         if (null == $name) {
             $name = self::getConfiguration('default_connection');
