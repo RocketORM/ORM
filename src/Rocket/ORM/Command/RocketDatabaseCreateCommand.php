@@ -54,21 +54,32 @@ class RocketDatabaseCreateCommand extends AbstractCommand
 
         $schemaCount = sizeof($schemas);
         if ($schemaCount == $pendingDatabaseCount) {
-            $output->write(sprintf('%d database%s will be created... ', $pendingDatabaseCount, 1 < $pendingDatabaseCount ? 's' : ''));
+            $output->write(sprintf(
+                '%d database%s will be created... ',
+                $pendingDatabaseCount,
+                1 < $pendingDatabaseCount ? 's' : ''
+            ));
         } elseif (0 == $pendingDatabaseCount) {
             $output->writeln('<info>All databases are already created.</info>');
 
             return 0;
         } else {
             $existDatabaseCount = $schemaCount - $pendingDatabaseCount;
-            $output->write(sprintf('%d database%s already exist, %d will be created... ', $existDatabaseCount, 1 < $existDatabaseCount ? 's' : '', $pendingDatabaseCount));
+            $output->write(sprintf(
+                '%d database%s already exist, %d will be created... ',
+                $existDatabaseCount,
+                1 < $existDatabaseCount ? 's' : '',
+                $pendingDatabaseCount
+            ));
         }
 
         try {
             foreach ($connections as $connectionName => $databases) {
                 $connection = Rocket::getConnection($connectionName);
                 foreach ($databases as $databaseName) {
-                    $connection->createDatabase($databaseName);
+                    if (!$connection->createDatabase($databaseName)) {
+                        throw new \RuntimeException('Cannot create the database "' . $databaseName . '"');
+                    }
                 }
             }
         } catch (\Exception $e) {

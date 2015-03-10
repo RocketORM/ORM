@@ -38,9 +38,10 @@ class ConnectionFactory
         if (!isset($config['connections'][$name])) {
             throw new ConnectionNotFoundException('The connection with name "' . $name . '" is not found in the configuration');
         } elseif (isset($config['connections'][$name]['mode']) && null != $config['connections'][$name]['mode'] && $mode != $config['connections'][$name]) {
-            throw new ConnectionModeException('Trying to use connection named "' . $name . '" with the mode "'
-                . (Rocket::CONNECTION_MODE_WRITE == $mode ? 'write' : 'read') . '", but got "' . $config['connections'][$name]['mode'] . '"')
-            ;
+            throw new ConnectionModeException(
+                'Trying to use connection named "' . $name . '" with the mode "'
+                . $mode . '", but got "' . $config['connections'][$name]['mode'] . '"'
+            );
         }
 
         $class = self::getClassNamespace($config, $name);
