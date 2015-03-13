@@ -33,11 +33,6 @@ abstract class Model implements ModelInterface
     /**
      * @var bool
      */
-    protected $_isRelationModified = false;
-
-    /**
-     * @var bool
-     */
     protected $_isDeleted = false;
 
     /**
@@ -73,11 +68,6 @@ abstract class Model implements ModelInterface
                         $this->doUpdate($con);
                         $this->postSave($con);
                     }
-                }
-
-                if ($this->_isRelationModified) {
-                    $this->_isRelationModified = false;
-                    $this->saveRelations($con);
                 }
             }
         } catch (\Exception $e) {
@@ -183,16 +173,6 @@ abstract class Model implements ModelInterface
         }
 
         return $this->tableMap;
-    }
-
-    /**
-     * @param \PDO $con
-     *
-     * @return bool
-     */
-    protected function saveRelations(\PDO $con)
-    {
-        return true;
     }
 
     /**

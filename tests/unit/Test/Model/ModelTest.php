@@ -97,7 +97,7 @@ class ModelTest extends RocketTestCase
 
         $company->setName('Foo');
 
-        $this->assertProtectedAttributeEquals(true, '_isModified', $company);
+        $this->assertEquals(true, $this->getObjectAttribute($company, '_isModified'));
 
         $result = $company->save();
 
@@ -106,9 +106,9 @@ class ModelTest extends RocketTestCase
 
         self::$companyScheduledDeletion[] = $company->getId();
 
-        $this->assertProtectedAttributeEquals(false, '_isModified', $company);
-        $this->assertProtectedAttributeEquals(false, '_isNew', $company);
-        $this->assertProtectedAttributeEquals(false, '_isDeleted', $company);
+        $this->assertEquals(false, $this->getObjectAttribute($company, '_isModified'));
+        $this->assertEquals(false, $this->getObjectAttribute($company, '_isNew'));
+        $this->assertEquals(false, $this->getObjectAttribute($company, '_isDeleted'));
         $this->assertCompanyIntegrity($company);
 
         return $company;
@@ -130,9 +130,9 @@ class ModelTest extends RocketTestCase
 
         $this->assertTrue($result, 'Cannot update the object');
         $this->assertEquals($id, $company->getId(), 'The primary key should not have been updated');
-        $this->assertProtectedAttributeEquals(false, '_isModified', $company);
-        $this->assertProtectedAttributeEquals(false, '_isNew', $company);
-        $this->assertProtectedAttributeEquals(false, '_isDeleted', $company);
+        $this->assertEquals(false, $this->getObjectAttribute($company, '_isModified'));
+        $this->assertEquals(false, $this->getObjectAttribute($company, '_isNew'));
+        $this->assertEquals(false, $this->getObjectAttribute($company, '_isDeleted'));
 
         $this->assertCompanyIntegrity($company);
     }
@@ -152,9 +152,9 @@ class ModelTest extends RocketTestCase
 
         $this->assertTrue($result);
         $this->assertCompanyIntegrity($company, true);
-        $this->assertProtectedAttributeEquals(false, '_isModified', $company);
-        $this->assertProtectedAttributeEquals(false, '_isNew', $company);
-        $this->assertProtectedAttributeEquals(true, '_isDeleted', $company);
+        $this->assertEquals(false, $this->getObjectAttribute($company, '_isModified'));
+        $this->assertEquals(false, $this->getObjectAttribute($company, '_isNew'));
+        $this->assertEquals(true, $this->getObjectAttribute($company, '_isDeleted'));
 
         return $company;
     }
@@ -328,8 +328,9 @@ class ModelTest extends RocketTestCase
      * @test
      *
      * @depends insert
+     * @depends update
      */
-    public function setRelation()
+    public function setRelationOneToMany()
     {
         $company = new Company();
         $company
@@ -348,6 +349,18 @@ class ModelTest extends RocketTestCase
         ;
 
         $this->assertEquals($company->getId(), $wheel->getCompanyId());
+
+        $wheel->save();
+
+        // Wheel integrity
+        $this->assertEquals(false, $this->getObjectAttribute($wheel, '_isNew'));
+        $this->assertEquals(false, $this->getObjectAttribute($wheel, '_isModified'));
+        $this->assertEquals(false, $this->getObjectAttribute($wheel, '_isDeleted'));
+
+        // Company integrity
+        $this->assertEquals(false, $this->getObjectAttribute($company, '_isNew'));
+        $this->assertEquals(false, $this->getObjectAttribute($company, '_isModified'));
+        $this->assertEquals(false, $this->getObjectAttribute($company, '_isDeleted'));
     }
 
     /**
@@ -391,19 +404,6 @@ class ModelTest extends RocketTestCase
         $method->setAccessible(true);
 
         return $method;
-    }
-
-    /**
-     * @param mixed   $expectedValue
-     * @param string  $attributeName
-     * @param object  $object
-     */
-    protected function assertProtectedAttributeEquals($expectedValue, $attributeName, $object)
-    {
-        $reflection = new \ReflectionObject($object);
-        $attribute = $reflection->getProperty($attributeName);
-        $attribute->setAccessible(true);
-        $this->assertEquals($expectedValue, $attribute->getValue($object));
     }
 
     /**
