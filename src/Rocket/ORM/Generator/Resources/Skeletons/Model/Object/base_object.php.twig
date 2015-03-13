@@ -89,10 +89,30 @@ class Base{{ table.phpName }} extends {{ baseModel }}
             {% if primaryKey.isAutoIncrement -%}
                 {{ "\n\n        " }}$this->{{ primaryKey.phpName }} = $con->lastInsertId();
             {%- endif -%}
+            {{ "\n\n" -}}
+            {% if table.hasRelations() %}
+        // Update relations if needed{{ "\n" -}}
+                {% for relation in table.relations -%}
+                    {% if relation.local == primaryKey.name -%}
+                        {% if relation.isMany %}
+        foreach ($this->{{ relation.phpName(false) }} as ${{ relation.phpName(false) }}) {
+            ${{ relation.phpName(false) }}->set{{ relation.foreignColumn.phpName(true) }}($this->{{ primaryKey.phpName }});
+        }
+        {{- "\n" -}}
+                        {%- else %}
+        if (null != $this->{{ relation.phpName(false) }}) {
+            $this->{{ relation.phpName(false) }}->set{{ relation.foreignColumn.phpName(true) }}($this->{{ primaryKey.phpName }});
+        }
+                        {%- endif %}
+                    {%- endif %}
+                {%- endfor %}
+            {%- endif %}
         {%- endfor -%}
-        {{ "\n        " -}}
+
+        {{ "\n\n        " -}}
         $this->_isNew = false;
         {{ "\n        " -}}
+
         $con->commit();
     }
 
