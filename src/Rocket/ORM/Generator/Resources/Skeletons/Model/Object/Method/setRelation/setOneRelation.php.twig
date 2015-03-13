@@ -9,7 +9,9 @@
         {% if relation.isForeignKey -%}
             $this->set{{ relation.localColumn.phpName(true) }}(${{ relation.phpName(false) }}->{{ relation.foreignColumn.methodName }}());
         {%- else -%}
+            if ($this->{{ relation.localColumn.methodName }}() != ${{ relation.phpName(false) }}->get{{ relation.foreignColumn.phpName(true) }}()) {
             ${{ relation.phpName(false) }}->set{{ relation.foreignColumn.phpName(true) }}($this->{{ relation.localColumn.methodName }}());
+        }
         {%- endif %}
 
         $this->{{ relation.phpName(false) }} = ${{ relation.phpName(false) }};
