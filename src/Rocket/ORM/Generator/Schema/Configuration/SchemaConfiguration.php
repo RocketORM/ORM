@@ -121,7 +121,7 @@ class SchemaConfiguration implements ConfigurationInterface
                         ->beforeNormalization()
                         ->ifString()
                             ->then(function ($value) {
-                                return TableMap::convertColumnTypeToConstant($value);
+                                return TableMap::convertColumnTypeToConstant($value); // @codeCoverageIgnore
                             })
                         ->end()
                         ->validate()
