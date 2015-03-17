@@ -31,11 +31,13 @@ class SQLitePDO extends PDO
     /**
      * @param string $databaseName
      *
-     * @return void
+     * @return bool
      */
     public function createDatabase($databaseName)
     {
         // No need to create database in SQLite
+
+        return true;
     }
 
     /**

@@ -11,22 +11,14 @@
 
 namespace Rocket\ORM\Connection\PDO;
 
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
 use Rocket\ORM\Connection\ConnectionFactoryInterface;
 use Rocket\ORM\Connection\ConnectionInterface;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-class PDO extends \PDO implements ConnectionFactoryInterface, ConnectionInterface, LoggerAwareInterface
+class PDO extends \PDO implements ConnectionFactoryInterface, ConnectionInterface
 {
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-
     /**
      * @param array $config
      *
@@ -39,16 +31,20 @@ class PDO extends \PDO implements ConnectionFactoryInterface, ConnectionInterfac
         ];
 
         if (isset($config['options'])) {
-            $options = array_merge($options, $config['options']);
+            // array_merge() cannot work here because the array keys are integer
+            $options = $config['options'] + $options;
         }
 
+
         // No database in the dns configuration, it is handled by the schema itself
-        $config['dsn'] = preg_replace('/dbname=(a-zA-Z0-9-_)+;?/', '', $config['dsn']);
+        $config['dsn'] = preg_replace('/dbname=[a-zA-Z0-9-_]+;?/', '', $config['dsn']);
 
         return new static($config['dsn'], $config['username'], $config['password'], $options);
     }
 
     /**
+     * // TODO rename "isDatabaseExists"
+     *
      * @param string $databaseName
      *
      * @return bool
@@ -64,12 +60,13 @@ class PDO extends \PDO implements ConnectionFactoryInterface, ConnectionInterfac
     /**
      * @param string $databaseName
      *
-     * @return void
+     * @return bool
      */
     public function createDatabase($databaseName)
     {
         $stmt = $this->prepare('CREATE DATABASE IF NOT EXISTS ' . $databaseName);
-        $stmt->execute();
+
+        return $stmt->execute();
     }
 
     /**
@@ -78,17 +75,5 @@ class PDO extends \PDO implements ConnectionFactoryInterface, ConnectionInterfac
     public static function getDriver()
     {
         return 'mysql';
-    }
-
-    /**
-     * Sets a logger instance on the object
-     *
-     * @param LoggerInterface $logger
-     *
-     * @return null
-     */
-    public function setLogger(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
     }
 }
