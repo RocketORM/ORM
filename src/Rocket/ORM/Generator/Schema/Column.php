@@ -116,8 +116,6 @@ class Column
 
     /**
      * @return string
-     *
-     * @codeCoverageIgnore LogicException cannot be reached by a test
      */
     public function getTypeConstantName()
     {
@@ -128,23 +126,23 @@ class Column
             }
         }
 
-        throw new \LogicException('Unknown value "' . $this->type . '" for constant TableMap::COLUMN_TYPE_*');
+        throw new \LogicException(
+            'Unknown value "' . $this->type . '" for constant TableMap::COLUMN_TYPE_* for column "' . $this->name . '"'
+        );
     }
 
     /**
      * @param bool $raw
      *
      * @return int|mixed
-     *
-     * @codeCoverageIgnore LogicException cannot be reached by a test
      */
     public function getDefault($raw = false)
     {
-        if ($raw) {
-            return $this->default;
-        }
-
         if (TableMap::COLUMN_TYPE_ENUM == $this->type) {
+            if ($raw) {
+                return $this->default;
+            }
+
             foreach ($this->values as $i => $value) {
                 if ($value == $this->default) {
                     return $i;
@@ -166,7 +164,7 @@ class Column
 
         $startDoc = '     * ';
         if (null != $this->description) {
-            $doc .= $startDoc . str_replace('*', '', $this->description) . PHP_EOL . $startDoc . PHP_EOL;
+            $doc .= $startDoc . str_replace('*/', '', $this->description) . PHP_EOL . $startDoc . PHP_EOL;
         }
 
         return $doc . $startDoc . '@var ' . $this->getTypeAsPhpDoc() . PHP_EOL . '     */';
