@@ -131,7 +131,10 @@ class Relation
             }
         }
 
-        throw new \LogicException('Unknown value "' . $this->type . '" for constant TableMap::RELATION_TYPE_*');
+        throw new \LogicException(
+            'Unknown value "' . $this->type . '" for constant TableMap::RELATION_TYPE_* '
+            . 'for relation "' . $this->phpName . '"'
+        );
     }
 
     /**
@@ -145,7 +148,7 @@ class Relation
     /**
      * @param Table $relatedTable
      */
-    public function setRelatedTable($relatedTable)
+    public function setRelatedTable(Table $relatedTable)
     {
         $this->relatedTable  = $relatedTable;
         $this->foreignColumn = $relatedTable->getColumn($this->foreign);
@@ -160,13 +163,13 @@ class Relation
     }
 
     /**
-     * @param bool $firstUpper True if the first letter must be upper case
+     * @param bool $firstLetterUpper True if the first letter must be upper case
      *
      * @return string
      */
-    public function getPhpName($firstUpper = true)
+    public function getPhpName($firstLetterUpper = true)
     {
-        if (!$firstUpper) {
+        if (!$firstLetterUpper) {
             return lcfirst($this->phpName);
         }
 
@@ -178,8 +181,10 @@ class Relation
      */
     public function isMany()
     {
-        return TableMap::RELATION_TYPE_MANY_TO_ONE === $this->type
-               || TableMap::RELATION_TYPE_MANY_TO_MANY === $this->type;
+        return
+            TableMap::RELATION_TYPE_MANY_TO_ONE === $this->type
+            || TableMap::RELATION_TYPE_MANY_TO_MANY === $this->type
+        ;
     }
 
     /**
