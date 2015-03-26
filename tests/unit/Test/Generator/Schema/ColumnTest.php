@@ -24,10 +24,35 @@ class ColumnTest extends RocketTestCase
 {
     /**
      * @test
+     *
+     * @dataProvider getTypeConstantNameProvider
+     *
+     * @param string $expectedValue
+     * @param string $columnType
      */
-    public function getTypeConstantName()
+    public function getTypeConstantName($expectedValue, $columnType)
     {
-        $this->assertEquals('COLUMN_TYPE_STRING', $this->createColumn()->getTypeConstantName());
+        $this->assertEquals($expectedValue, $this->createColumn([
+            'type' => $columnType
+        ])->getTypeConstantName());
+    }
+
+    /**
+     * @return array
+     */
+    public function getTypeConstantNameProvider()
+    {
+        return [
+            ['COLUMN_TYPE_STRING', TableMap::COLUMN_TYPE_STRING],
+            ['COLUMN_TYPE_ENUM', TableMap::COLUMN_TYPE_ENUM],
+            ['COLUMN_TYPE_BOOLEAN', TableMap::COLUMN_TYPE_BOOLEAN],
+            ['COLUMN_TYPE_DATE', TableMap::COLUMN_TYPE_DATE],
+            ['COLUMN_TYPE_DATETIME', TableMap::COLUMN_TYPE_DATETIME],
+            ['COLUMN_TYPE_DOUBLE', TableMap::COLUMN_TYPE_DOUBLE],
+            ['COLUMN_TYPE_FLOAT', TableMap::COLUMN_TYPE_FLOAT],
+            ['COLUMN_TYPE_INTEGER', TableMap::COLUMN_TYPE_INTEGER],
+            ['COLUMN_TYPE_TEXT', TableMap::COLUMN_TYPE_TEXT]
+        ];
     }
 
     /**
