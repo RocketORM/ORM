@@ -19,7 +19,7 @@ use Rocket\ORM\Rocket;
 use Rocket\ORM\Test\Generator\Model\ModelTestHelper;
 use Rocket\ORM\Test\Generator\Schema\SchemaTestHelper;
 use Rocket\ORM\Test\RocketTestCase;
-use Rocket\ORM\Test\Utils\String;
+use Rocket\ORM\Test\Utils\StringUtil;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -209,7 +209,7 @@ class ModelTest extends RocketTestCase
     public function saveException()
     {
         $this->createMockedThrowMethodCompany('doInsert')
-            ->setName(String::generateRandomString(10))
+            ->setName(StringUtil::generateRandomString(10))
         ->save();
     }
 
@@ -229,7 +229,7 @@ class ModelTest extends RocketTestCase
 
         try {
             $this->createMockedThrowMethodCompany('doInsert')
-                ->setName(String::generateRandomString(10))
+                ->setName(StringUtil::generateRandomString(10))
             ->save($con);
         } catch (\LogicException $e) {
             $this->assertFalse($con->inTransaction());
@@ -253,7 +253,7 @@ class ModelTest extends RocketTestCase
 
         // First save the object
         $company
-            ->setName(String::generateRandomString(10))
+            ->setName(StringUtil::generateRandomString(10))
         ->save();
         self::$companyScheduledDeletion[] = $company->getId();
 
@@ -334,7 +334,7 @@ class ModelTest extends RocketTestCase
     {
         $company = new Company();
         $company
-            ->setName(String::generateRandomString(10))
+            ->setName(StringUtil::generateRandomString(10))
             ->save()
         ;
 
@@ -343,7 +343,7 @@ class ModelTest extends RocketTestCase
         $wheel = new Wheel();
 
         $wheel
-            ->setUniqueName(String::generateRandomString(10))
+            ->setUniqueName(StringUtil::generateRandomString(10))
             ->setScore(95)
             ->setCompany($company)
         ;

@@ -17,7 +17,7 @@ use Rocket\ORM\Rocket;
 use Rocket\ORM\Test\Generator\Model\TableMapTestHelper;
 use Rocket\ORM\Test\Generator\Schema\SchemaTestHelper;
 use Rocket\ORM\Test\RocketTestCase;
-use Rocket\ORM\Test\Utils\String;
+use Rocket\ORM\Test\Utils\StringUtil;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -338,7 +338,7 @@ class TableMapTest extends RocketTestCase
         ]));
 
         // Hash is too long, return the MD5
-        $id = String::generateRandomString(34);
+        $id = StringUtil::generateRandomString(34);
         $this->assertEquals(md5($id), $tableMap->getPrimaryKeysHash([
             'bar' => 'foo',
             'id'  => $id,

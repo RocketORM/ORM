@@ -14,7 +14,7 @@ namespace Rocket\ORM\Test\Utils;
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-class String
+class StringUtil
 {
     /**
      * @param int  $length
