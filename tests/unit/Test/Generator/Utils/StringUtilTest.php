@@ -11,13 +11,13 @@
 
 namespace Test\Generator\Utils;
 
-use Rocket\ORM\Generator\Utils\String;
+use Rocket\ORM\Generator\Utils\StringUtil;
 use Rocket\ORM\Test\RocketTestCase;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  *
- * @covers \Rocket\ORM\Generator\Utils\String
+ * @covers \Rocket\ORM\Generator\Utils\StringUtil
  */
 class StringTest extends RocketTestCase
 {
@@ -32,8 +32,8 @@ class StringTest extends RocketTestCase
      */
     public function camelize($expectedUpper, $expectedLower, $testValue)
     {
-        $this->assertEquals($expectedUpper, String::camelize($testValue));
-        $this->assertEquals($expectedLower, String::camelize($testValue, false));
+        $this->assertEquals($expectedUpper, StringUtil::camelize($testValue));
+        $this->assertEquals($expectedLower, StringUtil::camelize($testValue, false));
     }
 
     /**

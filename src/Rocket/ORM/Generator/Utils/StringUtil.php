@@ -14,7 +14,7 @@ namespace Rocket\ORM\Generator\Utils;
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-class String
+class StringUtil
 {
     /**
      * @param string $string The string

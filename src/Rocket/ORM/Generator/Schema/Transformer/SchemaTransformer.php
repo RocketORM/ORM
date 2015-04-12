@@ -14,7 +14,7 @@ namespace Rocket\ORM\Generator\Schema\Transformer;
 use Rocket\ORM\Generator\Schema\Column;
 use Rocket\ORM\Generator\Schema\Schema;
 use Rocket\ORM\Generator\Schema\Table;
-use Rocket\ORM\Generator\Utils\String;
+use Rocket\ORM\Generator\Utils\StringUtil;
 use Rocket\ORM\Model\Map\TableMap;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
@@ -88,7 +88,7 @@ class SchemaTransformer implements SchemaTransformerInterface
     {
         foreach ($tables as $table) {
             if (null == $table->phpName) {
-                $table->phpName = String::camelize($table->name);
+                $table->phpName = StringUtil::camelize($table->name);
             }
 
             // TODO check if table phpName is named "RocketBaseModel"
@@ -106,7 +106,7 @@ class SchemaTransformer implements SchemaTransformerInterface
     {
         foreach ($columns as $column) {
             if (null == $column->phpName) {
-                $column->phpName = String::camelize($column->name, false);
+                $column->phpName = StringUtil::camelize($column->name, false);
             }
 
             if (true === $column->isPrimaryKey) {

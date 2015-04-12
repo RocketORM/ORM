@@ -15,7 +15,7 @@ use Rocket\ORM\Generator\Schema\Column;
 use Rocket\ORM\Generator\Schema\Relation;
 use Rocket\ORM\Generator\Schema\Schema;
 use Rocket\ORM\Generator\Schema\Table;
-use Rocket\ORM\Generator\Utils\String;
+use Rocket\ORM\Generator\Utils\StringUtil;
 use Rocket\ORM\Model\Map\TableMap;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
@@ -126,7 +126,7 @@ class SchemaRelationTransformer implements SchemaRelationTransformerInterface
                 $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
             } elseif (1 < $relatedTable->getPrimaryKeyCount()) {
                 $relation->type = TableMap::RELATION_TYPE_MANY_TO_ONE;
-                $relation->phpName = String::pluralize($relation->phpName);
+                $relation->phpName = StringUtil::pluralize($relation->phpName);
             } else {
                 $relation->type = TableMap::RELATION_TYPE_ONE_TO_ONE;
             }
@@ -146,7 +146,7 @@ class SchemaRelationTransformer implements SchemaRelationTransformerInterface
             $relatedType = TableMap::RELATION_TYPE_ONE_TO_MANY;
         } elseif (TableMap::RELATION_TYPE_ONE_TO_MANY == $relation->type) {
             $relatedType = TableMap::RELATION_TYPE_MANY_TO_ONE;
-            $phpName = String::pluralize($table->phpName);
+            $phpName = StringUtil::pluralize($table->phpName);
         } else {
             $relatedType = TableMap::RELATION_TYPE_ONE_TO_ONE;
         }
