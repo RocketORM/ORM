@@ -13,7 +13,9 @@ script:
   - ./vendor/bin/phpunit
 
 after_script:
-  - ./vendor/bin/test-reporter --coverage-report=tests/build/logs/clover.xml --stdout > codeclimate.json
+  - ./vendor/bin/test-reporter --coverage-report=tests/build/logs/clover.xml --stdout > codeclimate.json --coverage-clover=coverage.clover
+  - wget https://scrutinizer-ci.com/ocular.phar
+  - php ocular.phar code-coverage:upload --format=php-clover coverage.clover
   - "curl -X POST -d @codeclimate.json -H 'Content-Type: application/json' -H 'User-Agent: Code Climate (PHP Test Reporter v0.1.1)' https://codeclimate.com/test_reports"
 
 addons:
