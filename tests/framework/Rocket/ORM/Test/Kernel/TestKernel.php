@@ -112,7 +112,7 @@ class TestKernel
      */
     protected function loadSchemas()
     {
-        $this->schemas = (new SchemaLoader($this->schemaDir, [], new SchemaTransformer()))->load();
+        $this->schemas = (new SchemaLoader($this->schemaDir, []))->load();
     }
 
     /**

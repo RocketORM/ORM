@@ -15,6 +15,7 @@ use Rocket\ORM\Generator\Schema\Configuration\SchemaConfiguration;
 use Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException;
 use Rocket\ORM\Generator\Schema\Loader\Exception\SchemaNotFoundException;
 use Rocket\ORM\Generator\Schema\Schema;
+use Rocket\ORM\Generator\Schema\Transformer\SchemaRelationTransformerInterface;
 use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException as ConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
@@ -39,21 +40,19 @@ class SchemaLoader
     protected $exclude;
 
     /**
-     * @var SchemaTransformerInterface
+     * @var array
      */
-    protected $schemaTransformer;
+    protected $options;
 
 
     /**
-     * @param string|array               $path
-     * @param string|array               $exclude
-     * @param SchemaTransformerInterface $schemaTransformer
+     * @param string|array $path
+     * @param array        $options
      */
-    public function __construct($path, $exclude = [], SchemaTransformerInterface $schemaTransformer)
+    public function __construct($path, array $options = [])
     {
-        $this->path              = $path;
-        $this->exclude           = $exclude;
-        $this->schemaTransformer = $schemaTransformer;
+        $this->path    = $path;
+        $this->options = array_replace_recursive($this->getDefaultOptions(), $options);
     }
 
     /**
@@ -90,13 +89,58 @@ class SchemaLoader
         $processor = new Processor();
         $configuration = new SchemaConfiguration();
 
+        $defaultOptions = $this->getDefaultOptions();
+        $transformerClass = $this->options['transformer']['schema']['class'];
+
+        if (is_object($transformerClass)) {
+            $schemaTransformer = $transformerClass;
+        } else {
+            $schemaTransformer = new $transformerClass($this->options['model'], $defaultOptions['model']);
+        }
+
+        if (!$schemaTransformer instanceof SchemaTransformerInterface) {
+            throw new \InvalidArgumentException(
+                'The schema transformer class "' . $transformerClass . '" should implements '
+                . '\Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface'
+            );
+        }
+
         $normalizedSchemas = [];
         foreach ($schemas as $path => $schema) {
             try {
-                $normalizedSchemas[$path] = $this->schemaTransformer->transform($processor->processConfiguration($configuration, [$schema]), $path);
+                $normalizedSchemas[$path] = $schemaTransformer->transform(
+                    $processor->processConfiguration($configuration, [$schema]),
+                    $path
+                );
             } catch (ConfigurationException $e) {
                 throw new InvalidConfigurationException($path, $e);
             }
+        }
+
+        return $this->validateRelations($normalizedSchemas);
+    }
+
+    /**
+     * @param array|Schema[] $normalizedSchemas
+     *
+     * @return array|Schema[]
+     *
+     * @throws InvalidConfigurationException
+     */
+    protected function validateRelations(array $normalizedSchemas)
+    {
+        $transformerClass = $this->options['transformer']['relation']['class'];
+        if (is_object($transformerClass)) {
+            $schemaRelationTransformer = $transformerClass;
+        } else {
+            $schemaRelationTransformer = new $transformerClass();
+        }
+
+        if (!$schemaRelationTransformer instanceof SchemaRelationTransformerInterface) {
+            throw new \InvalidArgumentException(
+                'The schema relation transformer class "' . $transformerClass . '" should implements '
+                . '\Rocket\ORM\Generator\Schema\Transformer\SchemaRelationTransformerInterface'
+            );
         }
 
         $validSchemas = [];
@@ -106,12 +150,12 @@ class SchemaLoader
         foreach ($normalizedSchemas as $path => $schema) {
             try {
                 foreach ($schema->getTables() as $table) {
-                    $this->schemaTransformer->transformRelations($table, $normalizedSchemas);
+                    $schemaRelationTransformer->transform($table, $normalizedSchemas);
                 }
 
                 // Must wait for the relation transformations above ($relation->with)
                 foreach ($schema->getTables() as $table) {
-                    $this->schemaTransformer->transformRelatedRelations($table, $normalizedSchemas);
+                    $schemaRelationTransformer->transformRelatedRelations($table, $normalizedSchemas);
                 }
             } catch (ConfigurationException $e) {
                 throw new InvalidConfigurationException($path, $e);
@@ -134,7 +178,7 @@ class SchemaLoader
         $finder
             ->files()
             ->in($this->path)
-            ->exclude($this->exclude)
+            ->exclude($this->options['exclude'])
             ->name('/(.*)?schema.(yml|xml)/')
         ;
 
@@ -179,5 +223,27 @@ class SchemaLoader
     protected function parseYaml($path)
     {
         return Yaml::parse($path);
+    }
+
+    /**
+     * Return the default available configurable options
+     *
+     * @return array
+     */
+    protected function getDefaultOptions()
+    {
+        return [
+            'exclude'     => null,
+            'model'       => [
+                'schema'   => ['class' => '\Rocket\ORM\Generator\Schema\Schema'],
+                'table'    => ['class' => '\Rocket\ORM\Generator\Schema\Table'],
+                'column'   => ['class' => '\Rocket\ORM\Generator\Schema\Column'],
+                'relation' => ['class' => '\Rocket\ORM\Generator\Schema\Relation']
+            ],
+            'transformer' => [
+                'schema'   => ['class' => '\Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer'],
+                'relation' => ['class' => '\Rocket\ORM\Generator\Schema\Transformer\SchemaRelationTransformer']
+            ]
+        ];
     }
 }

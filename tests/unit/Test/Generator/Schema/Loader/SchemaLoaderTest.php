@@ -12,7 +12,7 @@
 namespace Test\Generator\Schema\Loader;
 
 use Rocket\ORM\Generator\Schema\Loader\SchemaLoader;
-use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer;
+use Rocket\ORM\Generator\Schema\Transformer\SchemaRelationTransformerInterface;
 use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface;
 use Rocket\ORM\Test\Generator\Schema\Loader\InlineSchemaLoader;
 use Rocket\ORM\Test\Generator\Schema\SchemaTestHelper;
@@ -63,7 +63,7 @@ class SchemaLoaderTest extends RocketTestCase
      */
     public function schemaNotFoundException()
     {
-        (new SchemaLoader(__DIR__, [], new SchemaTransformer()))->load();
+        (new SchemaLoader(__DIR__, []))->load();
     }
 
     /**
@@ -81,7 +81,7 @@ class SchemaLoaderTest extends RocketTestCase
         $this->assertTrue('/../Model' == $schemas[0]->relativeDirectory, 'Model output directory format');
 
         // Good load
-        $schemaLoader = new SchemaLoader(self::$schemaDirPath, [], new SchemaTransformer());
+        $schemaLoader = new SchemaLoader(self::$schemaDirPath, []);
         $schemas = $schemaLoader->load();
 
         $finder = new Finder();
@@ -100,8 +100,8 @@ class SchemaLoaderTest extends RocketTestCase
      */
     public function validateSchemaTransformerException()
     {
-        $schemaTransformer = $this->getMockBuilder('\Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer')
-            ->setMethods(['transform'])
+        $schemaTransformer = $this->getMockBuilder('\Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface')
+            ->disableOriginalConstructor()
             ->getMock()
         ;
 
@@ -112,7 +112,11 @@ class SchemaLoaderTest extends RocketTestCase
             ->willThrowException(new InvalidConfigurationException('Houston, we have a problem'))
         ;
 
-        (new InlineSchemaLoader([self::$validSchema], $schemaTransformer))->load();
+        (new InlineSchemaLoader([self::$validSchema], [
+            'transformer' => [
+                'schema' => ['class' => $schemaTransformer]
+            ]
+        ]))->load();
     }
 
     /**
@@ -123,18 +127,52 @@ class SchemaLoaderTest extends RocketTestCase
      */
     public function validateSchemaTransformerRelationException()
     {
-        $schemaTransformer = $this->getMockBuilder('\Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer')
-            ->setMethods(['transformRelations'])
+        $schemaTransformer = $this->getMockBuilder('\Rocket\ORM\Generator\Schema\Transformer\SchemaRelationTransformerInterface')
+            ->disableOriginalConstructor()
             ->getMock()
         ;
 
-        /** @var SchemaTransformerInterface|\PHPUnit_Framework_MockObject_MockObject $schemaTransformer */
+        /** @var SchemaRelationTransformerInterface|\PHPUnit_Framework_MockObject_MockObject $schemaTransformer */
         $schemaTransformer
             ->expects($this->once())
-            ->method('transformRelations')
+            ->method('transform')
             ->willThrowException(new InvalidConfigurationException('Houston, we have a problem'))
         ;
 
-        (new InlineSchemaLoader([self::$validSchema], $schemaTransformer))->load();
+        (new InlineSchemaLoader([self::$validSchema], [
+            'transformer' => [
+                'relation' => ['class' => $schemaTransformer]
+            ]
+        ]))->load();
+    }
+
+    /**
+     * @test
+     *
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage The schema transformer class "\Rocket\ORM\Rocket" should implements \Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface
+     */
+    public function schemaTransformerWrongInterfaceException()
+    {
+        (new InlineSchemaLoader([self::$validSchema], [
+            'transformer' => [
+                'schema' => ['class' => '\Rocket\ORM\Rocket']
+            ]
+        ]))->load();
+    }
+
+    /**
+     * @test
+     *
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage The schema relation transformer class "\Rocket\ORM\Rocket" should implements \Rocket\ORM\Generator\Schema\Transformer\SchemaRelationTransformerInterface
+     */
+    public function schemaRelationTransformerWrongInterfaceException()
+    {
+        (new InlineSchemaLoader([self::$validSchema], [
+            'transformer' => [
+                'relation' => ['class' => '\Rocket\ORM\Rocket']
+            ]
+        ]))->load();
     }
 }

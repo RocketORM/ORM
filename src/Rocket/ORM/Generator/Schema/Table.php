@@ -55,22 +55,28 @@ class Table
     /**
      * @param string $name
      * @param array  $data
+     * @param array  $classes
      */
-    public function __construct($name, array $data)
+    public function __construct($name, array $data, array $classes)
     {
         $this->name    = $name;
         $this->phpName = $data['phpName'];
         $this->type    = $data['type'];
 
+        $columnClass = $classes['column'];
+        $relationClass = $classes['relation'];
+
         foreach ($data['columns'] as $columnName => $columnData) {
-            $column = new Column($columnName, $columnData);
+            /** @var Column $column */
+            $column = new $columnClass($columnName, $columnData);
             $column->setTable($this);
 
             $this->columns[] = $column;
         }
 
         foreach ($data['relations'] as $with => $relationData) {
-            $relation = new Relation($with, $relationData);
+            /** @var Relation $relation */
+            $relation = new $relationClass($with, $relationData);
             $relation->setLocalTable($this);
 
             $this->relations[] = $relation;

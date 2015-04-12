@@ -97,6 +97,10 @@ class SchemaTest extends RocketTestCase
                     'relations' => []
                 ]
             ]
-        ], $data));
+        ], $data), [
+            'table'    => '\Rocket\ORM\Generator\Schema\Table',
+            'column'   => '\Rocket\ORM\Generator\Schema\Column',
+            'relation' => '\Rocket\ORM\Generator\Schema\Relation'
+        ]);
     }
 }

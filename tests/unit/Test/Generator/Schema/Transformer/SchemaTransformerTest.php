@@ -43,11 +43,15 @@ class SchemaTransformerTest extends RocketTestCase
      * @test
      *
      * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage The schema model must extend Rocket\ORM\Generator\Schema\Schema
+     * @expectedExceptionMessage The schema model ("\Rocket\ORM\Rocket") model must extend "\Rocket\ORM\Generator\Schema\Schema"
      */
     public function wrongSchemaModelClassException()
     {
-        new SchemaTransformer('\\Rocket\\ORM\\Rocket');
+        new SchemaTransformer([
+            'schema' => ['class' => '\Rocket\ORM\Rocket']
+        ], [
+            'schema' => ['class' => '\Rocket\ORM\Generator\Schema\Schema']
+        ]);
     }
 
     /**
@@ -57,9 +61,11 @@ class SchemaTransformerTest extends RocketTestCase
     {
         // Custom schema model class
         $this->assertNotNull(
-            new SchemaTransformer(
-                $this->getMockClass('\\Rocket\\ORM\\Generator\\Schema\\Schema', [], [], 'SchemaTest')
-            ),
+            new SchemaTransformer([
+                'schema' => ['class' => '\Rocket\ORM\Test\Generator\Schema\Schema']
+            ], [
+                'schema' => ['class' => '\Rocket\ORM\Generator\Schema\Schema']
+            ]),
             'Custom schema model class'
         );
     }
@@ -129,80 +135,6 @@ class SchemaTransformerTest extends RocketTestCase
         $wrongSchema['tables']['certificate']['columns']['is_valid']['default'] = 'not_a_boolean';
 
         (new InlineSchemaLoader([$wrongSchema]))->load();
-    }
-
-    /**
-     * @test
-     *
-     * @expectedException \Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid relation "car_company.wheel_notfound" (schema : "inline_0")
-     */
-    public function invalidRelationNameConfigurationValue()
-    {
-        // Wrong relation name
-        $wrongSchema = self::$validSchema;
-
-        $relations = $wrongSchema['tables']['car']['relations'];
-        $relations['car_company.wheel_notfound'] = $relations['car_company.wheel'];
-        unset($relations['car_company.wheel']);
-        $wrongSchema['tables']['car']['relations'] = $relations;
-
-        (new InlineSchemaLoader([$wrongSchema]))->load();
-    }
-
-    /**
-     * @test
-     *
-     * @expectedException \Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid local column value "notfound" for relation "car_company.wheel" (schema : "inline_0")
-     */
-    public function invalidRelationLocalColumnNameConfigurationValue()
-    {
-        // Wrong local column
-        $wrongSchema = self::$validSchema;
-
-        $wrongSchema['tables']['car']['relations']['car_company.wheel']['local'] = 'notfound';
-
-        (new InlineSchemaLoader([$wrongSchema]))->load();
-    }
-
-    /**
-     * @test
-     *
-     * @expectedException \Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid foreign column value "notfound" for relation "car_company.wheel" (schema : "inline_0")
-     */
-    public function invalidRelationForeignColumnNameConfigurationValue()
-    {
-        // Wrong local column
-        $wrongSchema = self::$validSchema;
-
-        $wrongSchema['tables']['car']['relations']['car_company.wheel']['foreign'] = 'notfound';
-
-        (new InlineSchemaLoader([$wrongSchema]))->load();
-    }
-
-    /**
-     * @test
-     *
-     * @expectedException \Rocket\ORM\Generator\Schema\Loader\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Too much table for the relation "wheel", prefix it with the database or use the object namespace (schema : "inline_1")
-     */
-    public function invalidRelationConfiguration()
-    {
-        // Too much table for the same relation name
-        $wrongSchema = self::$validSchema;
-        $wrongSchema2 = self::$validSchema;
-
-        $wrongSchema2['database'] = $wrongSchema['database'] . '2';
-        $wrongSchema2['namespace'] = $wrongSchema['namespace'] . '2';
-
-        $relations = $wrongSchema2['tables']['car']['relations'];
-        $relations['wheel'] = $relations['car_company.wheel'];
-        unset($relations['car_company.wheel']);
-        $wrongSchema2['tables']['car']['relations'] = $relations;
-
-        (new InlineSchemaLoader([$wrongSchema, $wrongSchema2]))->load();
     }
 
     /**

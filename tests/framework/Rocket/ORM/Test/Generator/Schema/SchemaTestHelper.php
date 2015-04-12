@@ -13,7 +13,6 @@ namespace Rocket\ORM\Test\Generator\Schema;
 
 use Rocket\ORM\Generator\Schema\Loader\SchemaLoader;
 use Rocket\ORM\Generator\Schema\Schema;
-use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer;
 use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface;
 use Rocket\ORM\Test\Generator\Schema\Loader\InlineSchemaLoader;
 use Symfony\Component\Finder\Finder;
@@ -58,11 +57,20 @@ trait SchemaTestHelper
             $schemasDir = __DIR__ . '/../../../../../../resources/schemas';
         }
 
-        if (null == $schemaTransformer) {
-            $schemaTransformer = new SchemaTransformer($schemaModelNamespace);
+        $options = [];
+        if (null != $schemaTransformer) {
+            $options['transformer'] = ['class' => $schemaTransformer];
         }
 
-        $schemaLoader = new SchemaLoader($schemasDir, [], $schemaTransformer);
+        if (null != $schemaModelNamespace) {
+            $options['model'] = [
+                'schema' => [
+                    ['class' => $schemaModelNamespace]
+                ]
+            ];
+        }
+
+        $schemaLoader = new SchemaLoader($schemasDir, [], $options);
         $schemas = $schemaLoader->load();
 
         $finder = new Finder();

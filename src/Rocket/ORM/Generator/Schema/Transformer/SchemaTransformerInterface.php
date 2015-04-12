@@ -12,7 +12,6 @@
 namespace Rocket\ORM\Generator\Schema\Transformer;
 
 use Rocket\ORM\Generator\Schema\Schema;
-use Rocket\ORM\Generator\Schema\Table;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -49,20 +48,4 @@ interface SchemaTransformerInterface
      * @return void
      */
     public function transformPrimaryKeys(array $columns);
-
-    /**
-     * @param Table $table
-     * @param array $schemas
-     *
-     * @return void
-     */
-    public function transformRelations(Table $table, array $schemas);
-
-    /**
-     * @param Table $table
-     * @param array $schemas
-     *
-     * @return void
-     */
-    public function transformRelatedRelations(Table $table, array $schemas);
 }

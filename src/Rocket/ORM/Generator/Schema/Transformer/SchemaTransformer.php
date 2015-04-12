@@ -12,7 +12,6 @@
 namespace Rocket\ORM\Generator\Schema\Transformer;
 
 use Rocket\ORM\Generator\Schema\Column;
-use Rocket\ORM\Generator\Schema\Relation;
 use Rocket\ORM\Generator\Schema\Schema;
 use Rocket\ORM\Generator\Schema\Table;
 use Rocket\ORM\Generator\Utils\String;
@@ -25,25 +24,27 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 class SchemaTransformer implements SchemaTransformerInterface
 {
     /**
-     * @var string
+     * @var array
      */
-    protected $modelNamespace;
+    protected $modelsNamespace = [];
 
 
     /**
-     * @param string $modelNamespace
+     * @param array $classes
+     * @param array $defaultClasses
      */
-    public function __construct($modelNamespace = '\\Rocket\\ORM\\Generator\\Schema\\Schema')
+    public function __construct(array $classes, array $defaultClasses)
     {
-        $defaultNamespace = '\\Rocket\\ORM\\Generator\\Schema\\Schema';
-        if ($modelNamespace != $defaultNamespace) {
-            $class = new \ReflectionClass($modelNamespace);
-            if (!$class->isSubclassOf($defaultNamespace)) {
-                throw new \InvalidArgumentException('The schema model must extend Rocket\ORM\Generator\Schema\Schema');
+        foreach ($classes as $type => $class) {
+            if (!$this->validateSchemaModelClass($class['class'], $defaultClasses[$type]['class'])) {
+                throw new \InvalidArgumentException(
+                    'The ' . $type . ' model ("' . $class['class'] . '") '
+                    . 'model must extend "' . $defaultClasses[$type]['class'] . '"'
+                );
             }
-        }
 
-        $this->modelNamespace = $modelNamespace;
+            $this->modelsNamespace[$type] = $class['class'];
+        }
     }
 
     /**
@@ -55,7 +56,11 @@ class SchemaTransformer implements SchemaTransformerInterface
     public function transform(array $schemaData, $path)
     {
         /** @var Schema $schema */
-        $schema = new $this->modelNamespace($schemaData);
+        $class = $this->modelsNamespace['schema'];
+        $classes = $this->modelsNamespace;
+        unset($classes['schema']);
+
+        $schema = new $class($schemaData, $classes);
 
         // Escape anti slashes
         $schema->namespace = str_replace('\\\\', '\\', $schema->namespace);
@@ -155,198 +160,6 @@ class SchemaTransformer implements SchemaTransformerInterface
     }
 
     /**
-     * @param Table $table
-     * @param array $schemas
-     *
-     * @return void
-     */
-    public function transformRelations(Table $table, array $schemas)
-    {
-        $relations = $table->getRelations();
-        foreach ($relations as $relation) {
-            // Check if local column exists
-            $localColumn = $table->getColumn($relation->local);
-            if (null == $localColumn) {
-                throw new InvalidConfigurationException('Invalid local column value "' . $relation->local . '" for relation "' . $relation->with . '"');
-            }
-
-            // Find the related relation in loaded schemas
-            $relatedTable = $this->guessRelatedTable($relation->with, $schemas);
-            $oldWith = $relation->with;
-            $relation->with = $relatedTable->getSchema()->escapedNamespace . '\\\\' . $relatedTable->phpName;
-
-            if (null == $relation->phpName) {
-                $relation->phpName = $relatedTable->phpName;
-            }
-
-            // Check if foreign column exists
-            $foreignColumn = $relatedTable->getColumn($relation->foreign);
-            if (null == $foreignColumn) {
-                throw new InvalidConfigurationException('Invalid foreign column value "' . $relation->foreign . '" for relation "' . $oldWith . '"');
-            }
-
-            // TODO check if the local column type == foreign column type
-
-            // Relation type guessing
-            $this->guessRelationType($localColumn, $relatedTable, $relation);
-
-            // Then, save the related table for check if the related relation has been created
-            $relation->setRelatedTable($relatedTable);
-        }
-    }
-
-    /**
-     * @param Table $table
-     * @param array $schemas
-     */
-    public function transformRelatedRelations(Table $table, array $schemas)
-    {
-        // Create all related relations that are not already created
-        foreach ($table->getRelations() as $i => $relation) {
-            if (null != $relation->getRelatedTable()) {
-                $this->createRelatedRelation($relation, $table, $relation->getRelatedTable());
-            }
-        }
-    }
-
-    /**
-     * Relations can be named in three ways :
-     *  - my_table
-     *  - database.my_table
-     *  - Example\Model\MyModel
-     *
-     * In some case, there can be more than one relation called with the same name.
-     *
-     * @param string $with    The relation
-     * @param array  $schemas All loaded schemas
-     *
-     * @throws InvalidConfigurationException
-     *
-     * @return Table
-     */
-    protected function guessRelatedTable($with, array $schemas)
-    {
-        $tables = [];
-        /** @var Schema $schema */
-        foreach ($schemas as $schema) {
-            $tables = array_merge($tables, $schema->findTables($with));
-        }
-
-        if (!isset($tables[0])) {
-            throw new InvalidConfigurationException('Invalid relation "' . $with . '"');
-        }
-
-        if (1 < sizeof($tables)) {
-            throw new InvalidConfigurationException('Too much table for the relation "' . $with . '", prefix it with the database or use the object namespace');
-        }
-
-        return $tables[0];
-    }
-
-    /**
-     * @param Relation $relation
-     * @param Table    $table
-     * @param Table    $relatedTable
-     */
-    protected function createRelatedRelation(Relation $relation, Table $table, Table $relatedTable)
-    {
-        // Inverse relation type
-        $phpName = $table->phpName;
-        if (TableMap::RELATION_TYPE_MANY_TO_ONE == $relation->type) {
-            $relatedType = TableMap::RELATION_TYPE_ONE_TO_MANY;
-        } elseif (TableMap::RELATION_TYPE_ONE_TO_MANY == $relation->type) {
-            $relatedType = TableMap::RELATION_TYPE_MANY_TO_ONE;
-            $phpName = $this->pluralize($table->phpName);
-        } else {
-            $relatedType = TableMap::RELATION_TYPE_ONE_TO_ONE;
-        }
-
-        $relatedRelation = new Relation($table->getSchema()->escapedNamespace . '\\\\' . $table->phpName, [
-            'local'    => $relation->foreign,
-            'foreign'  => $relation->local,
-            'type'     => $relatedType,
-            'phpName'  => $phpName,
-            'onUpdate' => $relation->onUpdate,
-            'onDelete' => $relation->onDelete,
-        ], false);
-        $relatedRelation->setLocalTable($relatedTable);
-        $relatedRelation->setRelatedTable($table);
-
-        if (!$relatedTable->hasRelation($relatedRelation->with)) {
-            $relatedTable->addRelation($relatedRelation);
-        }
-    }
-
-    /**
-     * Pluralizes English noun.
-     *
-     * @param  string  $word english noun to pluralize
-     *
-     * @return string
-     *
-     * @throws \LogicException
-     *
-     * @see https://github.com/whiteoctober/RestBundle/blob/master/Pluralization/Pluralization.php
-     * @codeCoverageIgnore
-     */
-    protected function pluralize($word)
-    {
-        static $plurals = [
-            '/(quiz)$/i'                => '\1zes',
-            '/^(ox)$/i'                 => '\1en',
-            '/([m|l])ouse$/i'           => '\1ice',
-            '/(matr|vert|ind)ix|ex$/i'  => '\1ices',
-            '/(x|ch|ss|sh)$/i'          => '\1es',
-            '/([^aeiouy]|qu)ies$/i'     => '\1y',
-            '/([^aeiouy]|qu)y$/i'       => '\1ies',
-            '/(hive)$/i'                => '\1s',
-            '/(?:([^f])fe|([lr])f)$/i'  => '\1\2ves',
-            '/sis$/i'                   => 'ses',
-            '/([ti])um$/i'              => '\1a',
-            '/(buffal|tomat)o$/i'       => '\1oes',
-            '/(bu)s$/i'                 => '\1ses',
-            '/(alias|status)/i'         => '\1es',
-            '/(octop|vir)us$/i'         => '\1i',
-            '/(ax|test)is$/i'           => '\1es',
-            '/s$/i'                     => 's',
-            '/$/'                       => 's'
-        ];
-
-        static $uncountables = [
-            'equipment', 'information', 'rice', 'money', 'species', 'series', 'fish', 'sheep'
-        ];
-
-        static $irregulars = [
-            'person'  => 'people',
-            'man'     => 'men',
-            'child'   => 'children',
-            'sex'     => 'sexes',
-            'move'    => 'moves'
-        ];
-
-        $lowerCasedWord = strtolower($word);
-        foreach ($uncountables as $uncountable) {
-            if ($uncountable == substr($lowerCasedWord, (-1 * strlen($uncountable)))) {
-                return $word;
-            }
-        }
-
-        foreach ($irregulars as $plural => $singular) {
-            if (preg_match('/(' . $plural . ')$/i', $word, $arr)) {
-                return preg_replace('/(' . $plural . ')$/i', substr($arr[0], 0, 1) . substr($singular, 1), $word);
-            }
-        }
-
-        foreach ($plurals as $rule => $replacement) {
-            if (preg_match($rule, $word)) {
-                return preg_replace($rule, $replacement, $word);
-            }
-        }
-
-        throw new \LogicException('Unknown plural for word "' . $word . '"');
-    }
-
-    /**
      * @param Schema $schema
      */
     protected function formatDirectory(Schema $schema)
@@ -364,23 +177,21 @@ class SchemaTransformer implements SchemaTransformerInterface
     }
 
     /**
-     * @param Column   $local
-     * @param Table    $relatedTable
-     * @param Relation $relation
+     * @param string $class
+     * @param string $defaultClass
+     *
+     * @return bool
      */
-    protected function guessRelationType(Column $local, Table $relatedTable, Relation $relation)
+    protected function validateSchemaModelClass($class, $defaultClass)
     {
-        if (!$local->isPrimaryKey) {
-            $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
-        } else {
-            if (1 < $relation->getLocalTable()->getPrimaryKeyCount()) {
-                $relation->type = TableMap::RELATION_TYPE_ONE_TO_MANY;
-            } elseif (1 < $relatedTable->getPrimaryKeyCount()) {
-                $relation->type = TableMap::RELATION_TYPE_MANY_TO_ONE;
-                $relation->phpName = $this->pluralize($relation->phpName);
-            } else {
-                $relation->type = TableMap::RELATION_TYPE_ONE_TO_ONE;
+        if ($class != $defaultClass) {
+            $class = new \ReflectionClass($class);
+
+            if (!$class->isSubclassOf($defaultClass)) {
+                return false;
             }
         }
+
+        return true;
     }
 }

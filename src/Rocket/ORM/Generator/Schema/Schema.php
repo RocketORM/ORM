@@ -54,16 +54,21 @@ class Schema
 
     /**
      * @param array $schema
+     * @param array $classes
      */
-    public function __construct(array $schema)
+    public function __construct(array $schema, array $classes)
     {
         $this->connection        = $schema['connection'];
         $this->namespace         = $schema['namespace'];
         $this->relativeDirectory = $schema['directory'];
         $this->database          = $schema['database'];
 
+        $tableClass = $classes['table'];
+        unset($classes['table']);
+
         foreach ($schema['tables'] as $tableName => $data) {
-            $table = new Table($tableName, $data);
+            /** @var Table $table */
+            $table = new $tableClass($tableName, $data, $classes);
             $table->setSchema($this);
 
             $this->tables[] = $table;

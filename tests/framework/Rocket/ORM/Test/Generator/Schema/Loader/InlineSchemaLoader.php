@@ -13,8 +13,6 @@ namespace Rocket\ORM\Test\Generator\Schema\Loader;
 
 use Rocket\ORM\Generator\Schema\Loader\SchemaLoader;
 use Rocket\ORM\Generator\Schema\Schema;
-use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformer;
-use Rocket\ORM\Generator\Schema\Transformer\SchemaTransformerInterface;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -28,18 +26,14 @@ class InlineSchemaLoader extends SchemaLoader
 
 
     /**
-     * @param array                      $schemas
-     * @param SchemaTransformerInterface $schemaTransformer
+     * @param array $schemas
+     * @param array $options
      */
-    public function __construct(array $schemas, SchemaTransformerInterface $schemaTransformer = null)
+    public function __construct(array $schemas, array $options = [])
     {
         $this->schemas = $schemas;
 
-        if (null == $schemaTransformer) {
-            $schemaTransformer = new SchemaTransformer();
-        }
-
-        parent::__construct(null, [], $schemaTransformer);
+        parent::__construct(null, $options);
     }
 
     /**
