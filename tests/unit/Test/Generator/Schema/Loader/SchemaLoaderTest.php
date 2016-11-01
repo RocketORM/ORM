@@ -50,7 +50,7 @@ class SchemaLoaderTest extends RocketTestCase
         parent::setUpBeforeClass();
 
         self::$schemaDirPath = self::$rootDir . '/resources/schemas';
-        self::$validSchema   = Yaml::parse(self::$schemaDirPath . '/car_schema.yml');
+        self::$validSchema   = Yaml::parse(file_get_contents(self::$schemaDirPath . '/car_schema.yml'));
     }
 
     /**

@@ -222,7 +222,7 @@ class SchemaLoader
      */
     protected function parseYaml($path)
     {
-        return Yaml::parse($path);
+        return Yaml::parse(file_get_contents($path));
     }
 
     /**

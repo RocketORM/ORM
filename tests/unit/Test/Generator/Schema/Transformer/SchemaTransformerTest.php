@@ -36,7 +36,7 @@ class SchemaTransformerTest extends RocketTestCase
     {
         parent::setUpBeforeClass();
 
-        self::$validSchema = Yaml::parse(self::$rootDir . '/resources/schemas' . '/car_schema.yml');
+        self::$validSchema = Yaml::parse(file_get_contents(self::$rootDir . '/resources/schemas' . '/car_schema.yml'));
     }
 
     /**
