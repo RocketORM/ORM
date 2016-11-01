@@ -13,7 +13,7 @@ namespace Test\Generator\Schema;
 
 use Rocket\ORM\Generator\Schema\Relation;
 use Rocket\ORM\Generator\Schema\Table;
-use Rocket\ORM\Model\Map\TableMap;
+use Rocket\ORM\Record\Map\TableMap;
 use Rocket\ORM\Test\RocketTestCase;
 
 /**

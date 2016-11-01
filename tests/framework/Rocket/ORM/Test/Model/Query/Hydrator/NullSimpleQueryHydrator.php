@@ -11,8 +11,8 @@
 
 namespace Rocket\ORM\Test\Model\Query\Hydrator;
 
-use Rocket\ORM\Model\Object\RocketObject;
-use Rocket\ORM\Model\Query\Hydrator\SimpleQueryHydrator;
+use Rocket\ORM\Record\ArrayRecord;
+use Rocket\ORM\Record\Query\Hydrator\SimpleQueryHydrator;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -27,7 +27,7 @@ class NullSimpleQueryHydrator extends SimpleQueryHydrator
         $data = [];
 
         while ($row = $stmt->fetch(\PDO::FETCH_NUM)) {
-            $data[] = new RocketObject([
+            $data[] = new ArrayRecord([
                 'foo' => 'bar',
                 'bar' => 'foo'
             ], $this->modelNamespace);

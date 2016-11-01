@@ -1,6 +1,6 @@
     /**
-     * @param array|\Rocket\ORM\Model\Object\RocketObject[] $values The model values, required values must be provided
-     * @param bool                                          $isNew  In case of the model is new, and will be inserted, pass the "true"
+     * @param array|\Rocket\ORM\Record\Object\RocketObject[] $values The record values, required values must be provided
+     * @param bool                                          $isNew  In case of the record is new, and will be inserted, pass the "true"
      *
      * @return void
      */
@@ -12,11 +12,11 @@
             if (isset($values['{{ column.name }}']) && null !== $values['{{ column.name }}']) {
             {{ "" }}
         {%- endif %}
-        {%- if constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_DATETIME') == column.type or
-              constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_DATE') == column.type
+        {%- if constant('\\Rocket\\ORM\\Record\\Map\\TableMap::COLUMN_TYPE_DATETIME') == column.type or
+              constant('\\Rocket\\ORM\\Record\\Map\\TableMap::COLUMN_TYPE_DATE') == column.type
         -%}
             $this->set{{ column.phpName(true) }}(new \DateTime($values['{{ column.name }}']));
-        {%- elseif constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_ENUM') == column.type -%}
+        {%- elseif constant('\\Rocket\\ORM\\Record\\Map\\TableMap::COLUMN_TYPE_ENUM') == column.type -%}
             $this->set{{ column.phpName(true) }}(self::$enum{{ column.phpName(true) }}[$values['{{ column.name }}']]);
         {%- else -%}
             $this->set{{ column.phpName(true) }}(({{ column.typeAsPhpDoc }}) $values['{{ column.name }}']);

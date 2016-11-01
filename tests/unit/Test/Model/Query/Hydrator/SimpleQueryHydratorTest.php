@@ -12,14 +12,14 @@
 namespace Test\Model\Query\Hydrator;
 
 use Fixture\Car\Model\CompanyQuery;
-use Rocket\ORM\Model\Query\Hydrator\SimpleQueryHydrator;
-use Rocket\ORM\Model\Query\QueryInterface;
+use Rocket\ORM\Record\Query\Hydrator\SimpleQueryHydrator;
+use Rocket\ORM\Record\Query\QueryInterface;
 use Rocket\ORM\Test\Model\Query\Hydrator\QueryHydratorTestCase;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  *
- * @covers \Rocket\ORM\Model\Query\Hydrator\SimpleQueryHydrator
+ * @covers \Rocket\ORM\Record\Query\Hydrator\SimpleQueryHydrator
  */
 class SimpleQueryHydratorTest extends QueryHydratorTestCase
 {

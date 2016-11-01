@@ -9,14 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace Rocket\ORM\Model\Object;
-
-use Rocket\ORM\Model\ModelInterface;
+namespace Rocket\ORM\Record;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-class RocketObject extends \ArrayObject
+class ArrayRecord extends \ArrayObject
 {
     /**
      * @var string
@@ -35,11 +33,11 @@ class RocketObject extends \ArrayObject
     }
 
     /**
-     * @return ModelInterface
+     * @return RecordInterface
      */
     public function hydrate()
     {
-        /** @var ModelInterface $model */
+        /** @var RecordInterface $model */
         $model = new $this->modelNamespace;
         $model->hydrate($this->getArrayCopy());
 

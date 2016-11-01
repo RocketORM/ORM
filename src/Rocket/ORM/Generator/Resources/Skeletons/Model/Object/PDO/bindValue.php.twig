@@ -3,16 +3,16 @@
 {{ '            ' }}
 {%- endif -%}
 $stmt->bindValue(':{{ (prefix is defined ? prefix : '') ~ column.name }}',{{ ' ' }}
-{%- if constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_DATE') == column.type -%}
+{%- if constant('\\Rocket\\ORM\\Record\\Map\\TableMap::COLUMN_TYPE_DATE') == column.type -%}
     $this->{{ column.methodName }}()->format('Y-m-d')
-{%- elseif constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_DATETIME') == column.type -%}
+{%- elseif constant('\\Rocket\\ORM\\Record\\Map\\TableMap::COLUMN_TYPE_DATETIME') == column.type -%}
     $this->{{ column.methodName }}()->format('Y-m-d H:i:s')
-{%- elseif constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_ENUM') == column.type -%}
+{%- elseif constant('\\Rocket\\ORM\\Record\\Map\\TableMap::COLUMN_TYPE_ENUM') == column.type -%}
     $this->{{ column.methodName }}(true)
 {%- else -%}
     $this->{{ column.methodName }}()
 {%- endif -%}
-, \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
+, \PDO::PARAM_{{ constant('\\Rocket\\ORM\\Record\\Map\\TableMap::COLUMN_TYPE_INTEGER') == column.type ? 'INT' : 'STR' }});
 {%- if not column.isRequired %}
 {{ "\n" }}        } else {
             $stmt->bindValue(':{{ (prefix is defined ? prefix : '') ~ column.name }}', null, \PDO::PARAM_NULL);

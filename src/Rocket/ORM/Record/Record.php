@@ -9,16 +9,16 @@
  * file that was distributed with this source code.
  */
 
-namespace Rocket\ORM\Model;
+namespace Rocket\ORM\Record;
 
 use Rocket\ORM\Connection\ConnectionInterface;
-use Rocket\ORM\Model\Map\TableMapInterface;
+use Rocket\ORM\Record\Map\TableMapInterface;
 use Rocket\ORM\Rocket;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-abstract class Model implements ModelInterface
+abstract class Record implements RecordInterface
 {
     /**
      * @var bool

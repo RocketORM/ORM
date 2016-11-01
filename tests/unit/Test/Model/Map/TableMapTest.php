@@ -12,7 +12,7 @@
 namespace Test\Model\Map;
 
 use Rocket\ORM\Generator\Model\TableMap\TableMapGenerator;
-use Rocket\ORM\Model\Map\TableMap;
+use Rocket\ORM\Record\Map\TableMap;
 use Rocket\ORM\Rocket;
 use Rocket\ORM\Test\Generator\Model\TableMapTestHelper;
 use Rocket\ORM\Test\Generator\Schema\SchemaTestHelper;
@@ -23,7 +23,7 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  *
- * @covers \Rocket\ORM\Model\Map\TableMap
+ * @covers \Rocket\ORM\Record\Map\TableMap
  */
 class TableMapTest extends RocketTestCase
 {
@@ -54,10 +54,10 @@ class TableMapTest extends RocketTestCase
     /**
      * @test
      *
-     * @expectedException \Rocket\ORM\Model\Map\Exception\RelationAlreadyExistsException
+     * @expectedException \Rocket\ORM\Record\Map\Exception\RelationAlreadyExistsException
      * @expectedExceptionMessage The relation between Fixture\Car\Model\Car and "Fixture\Car\Model\Wheel" already exists
      *
-     * @covers \Rocket\ORM\Model\Map\Exception\RelationAlreadyExistsException
+     * @covers \Rocket\ORM\Record\Map\Exception\RelationAlreadyExistsException
      */
     public function addRelationException()
     {
@@ -89,7 +89,7 @@ class TableMapTest extends RocketTestCase
      * @test
      *
      * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage The table map model must implement Rocket\ORM\Model\Map\TableMapInterface
+     * @expectedExceptionMessage The table map model must implement Rocket\ORM\Record\Map\TableMapInterface
      */
     public function wrongModelException()
     {

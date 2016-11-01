@@ -9,11 +9,15 @@
  * file that was distributed with this source code.
  */
 
-namespace Rocket\ORM\Model\Map\Exception;
-
-use Rocket\ORM\Exception\RocketException;
+namespace Rocket\ORM\Record\Query;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-class RelationAlreadyExistsException extends RocketException { }
+interface QueryInterface
+{
+    /**
+     * @return string
+     */
+    public function getSqlQuery();
+}

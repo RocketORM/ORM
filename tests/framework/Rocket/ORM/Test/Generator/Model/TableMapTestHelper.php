@@ -26,7 +26,7 @@ trait TableMapTestHelper
      * @param string $modelNamespace
      * @param array  $templateDirs
      */
-    public function generateTableMaps(array $schemas, $modelNamespace = '\\Rocket\\ORM\\Model\\Map\\TableMap', $templateDirs = [])
+    public function generateTableMaps(array $schemas, $modelNamespace = '\\Rocket\\ORM\\Record\\Map\\TableMap', $templateDirs = [])
     {
         if (!isset($schemas[0]) || !$schemas[0] instanceof Schema) {
             $this->markTestSkipped('Schema must be an instance of \\Rocket\\ORM\\Generator\\Schema\\Schema');

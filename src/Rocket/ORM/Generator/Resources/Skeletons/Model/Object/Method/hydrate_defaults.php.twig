@@ -7,7 +7,7 @@
             {% if null != column.default(true) %}
                 {{- "\n        " -}}
                 {%- set default = column.default(true) -%}
-                {% if constant('\\Rocket\\ORM\\Model\\Map\\TableMap::COLUMN_TYPE_STRING') == column.type -%}
+                {% if constant('\\Rocket\\ORM\\Record\\Map\\TableMap::COLUMN_TYPE_STRING') == column.type -%}
                     $this->{{ column.phpName }} = '{{ column.default(true) }}';
                 {%- else -%}
                     $this->{{ column.phpName }} = {{ column.default(true) }};

@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Rocket\ORM\Model\Query\SQLite;
+namespace Rocket\ORM\Record\Query\SQLite;
 
-use Rocket\ORM\Model\Query\Query as BaseQuery;
+use Rocket\ORM\Record\Query\Query as BaseQuery;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>

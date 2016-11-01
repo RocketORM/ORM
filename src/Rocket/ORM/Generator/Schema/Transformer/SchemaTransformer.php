@@ -15,7 +15,7 @@ use Rocket\ORM\Generator\Schema\Column;
 use Rocket\ORM\Generator\Schema\Schema;
 use Rocket\ORM\Generator\Schema\Table;
 use Rocket\ORM\Generator\Utils\StringUtil;
-use Rocket\ORM\Model\Map\TableMap;
+use Rocket\ORM\Record\Map\TableMap;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 /**

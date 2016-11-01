@@ -11,8 +11,8 @@
 
 namespace Rocket\ORM\Test\Model\Query\Hydrator;
 
-use Rocket\ORM\Model\Query\Hydrator\QueryHydratorInterface;
-use Rocket\ORM\Model\Query\QueryInterface;
+use Rocket\ORM\Record\Query\Hydrator\QueryHydratorInterface;
+use Rocket\ORM\Record\Query\QueryInterface;
 use Rocket\ORM\Rocket;
 use Rocket\ORM\Test\RocketTestCase;
 

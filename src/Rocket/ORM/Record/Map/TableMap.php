@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Rocket\ORM\Model\Map;
+namespace Rocket\ORM\Record\Map;
 
-use Rocket\ORM\Model\Map\Exception\RelationAlreadyExistsException;
+use Rocket\ORM\Record\Map\Exception\RelationAlreadyExistsException;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>

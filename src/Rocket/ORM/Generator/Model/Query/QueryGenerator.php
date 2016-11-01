@@ -35,11 +35,11 @@ class QueryGenerator extends Generator
      * @param string $modelNamespace
      * @param array  $templateDirs
      */
-    public function __construct($modelNamespace = '\\Rocket\\ORM\\Model\\Query\\Query', array $templateDirs = [])
+    public function __construct($modelNamespace = '\\Rocket\\ORM\\Record\\Query\\Query', array $templateDirs = [])
     {
         $class = new \ReflectionClass($modelNamespace);
-        if (!$class->implementsInterface('\\Rocket\\ORM\\Model\\Query\\QueryInterface')) {
-            throw new \InvalidArgumentException('The table map model must implement Rocket\ORM\Model\Query\QueryInterface');
+        if (!$class->implementsInterface('\\Rocket\\ORM\\Record\\Query\\QueryInterface')) {
+            throw new \InvalidArgumentException('The table map model must implement Rocket\ORM\Record\Query\QueryInterface');
         }
 
         $this->modelNamespace = $modelNamespace;

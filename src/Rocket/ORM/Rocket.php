@@ -14,7 +14,7 @@ namespace Rocket\ORM;
 use Rocket\ORM\Config\Exception\ConfigurationKeyNotFoundException;
 use Rocket\ORM\Connection\ConnectionFactory;
 use Rocket\ORM\Connection\ConnectionInterface;
-use Rocket\ORM\Model\Map\TableMapInterface;
+use Rocket\ORM\Record\Map\TableMapInterface;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -147,7 +147,7 @@ class Rocket
             if (!$tableMap instanceof TableMapInterface) {
                 throw new \InvalidArgumentException(
                     'The "' . $tableMapNamespace . '" table map must implement '
-                    . '"\Rocket\Model\TableMap\TableMapInterface"'
+                    . '"' . TableMapInterface::class . '"'
                 );
             }
 

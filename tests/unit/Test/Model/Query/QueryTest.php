@@ -15,8 +15,8 @@ use Fixture\Car\Model\CarQuery;
 use Fixture\Car\Model\Company;
 use Fixture\Car\Model\CompanyQuery;
 use Fixture\Car\Model\WheelQuery;
-use Rocket\ORM\Model\Object\RocketObject;
-use Rocket\ORM\Model\Query\Hydrator\QueryHydratorInterface;
+use Rocket\ORM\Record\ArrayRecord;
+use Rocket\ORM\Record\Query\Hydrator\QueryHydratorInterface;
 use Rocket\ORM\Rocket;
 use Rocket\ORM\Test\Fixture\Car\CompanyQueryTest;
 use Rocket\ORM\Test\RocketTestCase;
@@ -24,8 +24,8 @@ use Rocket\ORM\Test\RocketTestCase;
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  *
- * @covers \Rocket\ORM\Model\Query\Query
- * @covers \Rocket\ORM\Model\Query\SQLite\Query
+ * @covers \Rocket\ORM\Record\Query\Query
+ * @covers \Rocket\ORM\Record\Query\SQLite\Query
  */
 class QueryTest extends RocketTestCase
 {
@@ -189,7 +189,7 @@ class QueryTest extends RocketTestCase
 
             $this->assertNotNull($company);
             $this->assertInternalType('object', $company);
-            $this->assertTrue($company instanceof RocketObject);
+            $this->assertTrue($company instanceof ArrayRecord);
         }
 
         $company = $query
@@ -392,10 +392,10 @@ class QueryTest extends RocketTestCase
     /**
      * @test
      *
-     * @expectedException \Rocket\ORM\Model\Query\Exception\RelationNotFoundException
+     * @expectedException \Rocket\ORM\Record\Query\Exception\RelationNotFoundException
      * @expectedExceptionMessage Unknown relation with "FooBar" for model "\Fixture\Car\Model\Company"
      *
-     * @covers \Rocket\ORM\Model\Query\Exception\RelationNotFoundException
+     * @covers \Rocket\ORM\Record\Query\Exception\RelationNotFoundException
      */
     public function joinRelationNotFoundException()
     {
@@ -407,10 +407,10 @@ class QueryTest extends RocketTestCase
     /**
      * @test
      *
-     * @expectedException \Rocket\ORM\Model\Query\Exception\RelationAliasNotFoundException
+     * @expectedException \Rocket\ORM\Record\Query\Exception\RelationAliasNotFoundException
      * @expectedExceptionMessage Unknown alias for relation "FooBar" for model "\Fixture\Car\Model\Company"
      *
-     * @covers \Rocket\ORM\Model\Query\Exception\RelationAliasNotFoundException
+     * @covers \Rocket\ORM\Record\Query\Exception\RelationAliasNotFoundException
      */
     public function joinDeepRelationAliasNotFoundException()
     {

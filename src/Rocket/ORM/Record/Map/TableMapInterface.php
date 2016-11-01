@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Rocket\ORM\Model\Map;
+namespace Rocket\ORM\Record\Map;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>

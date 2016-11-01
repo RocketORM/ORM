@@ -14,7 +14,7 @@ namespace Test\Model;
 use Fixture\Car\Model\Car;
 use Fixture\Car\Model\Company;
 use Fixture\Car\Model\Wheel;
-use Rocket\ORM\Model\Model;
+use Rocket\ORM\Record\Record;
 use Rocket\ORM\Rocket;
 use Rocket\ORM\Test\Generator\Model\ModelTestHelper;
 use Rocket\ORM\Test\Generator\Schema\SchemaTestHelper;
@@ -24,7 +24,7 @@ use Rocket\ORM\Test\Utils\StringUtil;
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  *
- * @covers \Rocket\ORM\Model\Model
+ * @covers \Rocket\ORM\Record\Record
  */
 class ModelTest extends RocketTestCase
 {
@@ -392,12 +392,12 @@ class ModelTest extends RocketTestCase
     }
 
     /**
-     * @param Model  $object
+     * @param Record $object
      * @param string $methodName
      *
      * @return \ReflectionMethod
      */
-    protected function getProtectedMethod(Model $object, $methodName)
+    protected function getProtectedMethod(Record $object, $methodName)
     {
         $reflection = new \ReflectionObject($object);
         $method = $reflection->getMethod($methodName);

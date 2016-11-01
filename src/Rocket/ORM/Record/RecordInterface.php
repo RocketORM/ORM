@@ -9,12 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace Rocket\ORM\Model;
+namespace Rocket\ORM\Record;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  */
-interface ModelInterface
+interface RecordInterface
 {
     /**
      * @param array $values The model values, required values must be provided

@@ -12,13 +12,13 @@
 namespace Test\Model\Object;
 
 use Fixture\Car\Model\Company;
-use Rocket\ORM\Model\Object\RocketObject;
+use Rocket\ORM\Record\ArrayRecord;
 use Rocket\ORM\Test\RocketTestCase;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
  *
- * @covers \Rocket\ORM\Model\Object\RocketObject
+ * @covers \Rocket\ORM\Record\Object\ArrayRecord
  */
 class RocketObjectTest extends RocketTestCase
 {
@@ -27,7 +27,7 @@ class RocketObjectTest extends RocketTestCase
      */
     public function construct()
     {
-        $object = new RocketObject([
+        $object = new ArrayRecord([
             'id' => 1,
             'name' => 'Foo'
         ], '\Fixture\Car\Model\Company');
@@ -47,9 +47,9 @@ class RocketObjectTest extends RocketTestCase
      *
      * @depends construct
      *
-     * @param RocketObject $object
+     * @param \Rocket\ORM\Record\ArrayRecord $object
      */
-    public function hydrate(RocketObject $object)
+    public function hydrate(\Rocket\ORM\Record\ArrayRecord $object)
     {
         $company = $object->hydrate();
         $this->assertNotNull($company);

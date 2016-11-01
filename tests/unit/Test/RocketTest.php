@@ -13,7 +13,7 @@ namespace Test;
 
 use Fixture\Car\Model\TableMap\CompanyTableMap;
 use Rocket\ORM\Connection\ConnectionInterface;
-use Rocket\ORM\Model\Map\TableMap;
+use Rocket\ORM\Record\Map\TableMap;
 use Rocket\ORM\Rocket;
 use Rocket\ORM\Test\RocketTestCase;
 
@@ -37,7 +37,7 @@ class RocketTest extends RocketTestCase
         $attribute->setValue([]);
 
         $this->assertEquals('car', Rocket::getConfiguration('default_connection'));
-        $this->assertEquals('\Rocket\ORM\Model\Map\TableMap', Rocket::getConfiguration('model.table_map'));
+        $this->assertEquals('\Rocket\ORM\Record\Map\TableMap', Rocket::getConfiguration('model.table_map'));
 
         // Validate cache
         $cache = $attribute->getValue($rocket);
@@ -134,7 +134,7 @@ class RocketTest extends RocketTestCase
      * @test
      *
      * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage The "\Rocket\ORM\Test\Fixture\Car\TableMap\CompanyTableMap" table map must implement "\Rocket\Model\TableMap\TableMapInterface"
+     * @expectedExceptionMessage The "\Rocket\ORM\Test\Fixture\Car\TableMap\CompanyTableMap" table map must implement "Rocket\ORM\Record\Map\TableMapInterface"
      */
     public function getTableMapWrongInstanceException()
     {
@@ -171,4 +171,4 @@ class RocketTest extends RocketTestCase
         $this->assertEquals($con, $con2);
         $this->assertCount(1, $attribute->getValue($rocket));
     }
-} 
+}

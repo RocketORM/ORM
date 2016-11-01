@@ -34,11 +34,11 @@ class TableMapGenerator extends Generator
      * @param string $modelNamespace
      * @param array  $templateDirs
      */
-    public function __construct($modelNamespace = '\\Rocket\\ORM\\Model\\Map\\TableMap', array $templateDirs = [])
+    public function __construct($modelNamespace = '\\Rocket\\ORM\\Record\\Map\\TableMap', array $templateDirs = [])
     {
         $class = new \ReflectionClass($modelNamespace);
-        if (!$class->implementsInterface('\\Rocket\\ORM\\Model\\Map\\TableMapInterface')) {
-            throw new \InvalidArgumentException('The table map model must implement Rocket\ORM\Model\Map\TableMapInterface');
+        if (!$class->implementsInterface('\\Rocket\\ORM\\Record\\Map\\TableMapInterface')) {
+            throw new \InvalidArgumentException('The table map model must implement Rocket\ORM\Record\Map\TableMapInterface');
         }
 
         $this->modelNamespace = $modelNamespace;

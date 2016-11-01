@@ -11,8 +11,8 @@
 
 namespace Rocket\ORM\Test\Model\Query\Hydrator;
 
-use Rocket\ORM\Model\Object\RocketObject;
-use Rocket\ORM\Model\Query\Hydrator\ComplexQueryHydrator;
+use Rocket\ORM\Record\ArrayRecord;
+use Rocket\ORM\Record\Query\Hydrator\ComplexQueryHydrator;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -25,7 +25,7 @@ class NullComplexQueryHydrator extends ComplexQueryHydrator
     public function hydrate(\PDOStatement $stmt)
     {
         return [
-            new RocketObject([
+            new ArrayRecord([
                 'foo' => 'bar',
                 'bar' => 'foo'
             ], $this->modelNamespace)

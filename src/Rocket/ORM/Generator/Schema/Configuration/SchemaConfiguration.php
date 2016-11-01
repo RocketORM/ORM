@@ -11,7 +11,7 @@
 
 namespace Rocket\ORM\Generator\Schema\Configuration;
 
-use Rocket\ORM\Model\Map\TableMap;
+use Rocket\ORM\Record\Map\TableMap;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;

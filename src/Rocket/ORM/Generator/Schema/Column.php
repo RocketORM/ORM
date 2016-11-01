@@ -11,7 +11,7 @@
 
 namespace Rocket\ORM\Generator\Schema;
 
-use Rocket\ORM\Model\Map\TableMap;
+use Rocket\ORM\Record\Map\TableMap;
 
 /**
  * @author Sylvain Lorinet <sylvain.lorinet@gmail.com>
@@ -119,7 +119,7 @@ class Column
      */
     public function getTypeConstantName()
     {
-        $reflection = new \ReflectionClass('\\Rocket\\ORM\\Model\\Map\\TableMap');
+        $reflection = new \ReflectionClass('\\Rocket\\ORM\\Record\\Map\\TableMap');
         foreach ($reflection->getConstants() as $name => $value) {
             if ($this->type == $value) {
                 return $name;

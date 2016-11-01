@@ -26,7 +26,7 @@ trait ModelTestHelper
      * @param string $modelNamespace
      * @param array  $templateDirs
      */
-    public function generateObjects(array $schemas, $modelNamespace = '\\Rocket\\ORM\\Model\\Model', $templateDirs = [])
+    public function generateObjects(array $schemas, $modelNamespace = '\\Rocket\\ORM\\Record\\Record', $templateDirs = [])
     {
         if (!isset($schemas[0]) || !$schemas[0] instanceof Schema) {
             $this->markTestSkipped('Schema must be an instance of \\Rocket\\ORM\\Generator\\Schema\\Schema');
